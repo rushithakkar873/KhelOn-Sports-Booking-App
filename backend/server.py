@@ -1,15 +1,19 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
+from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime
-
+from datetime import datetime, timedelta
+import hashlib
+import jwt
+from passlib.context import CryptContext
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -17,44 +21,559 @@ load_dotenv(ROOT_DIR / '.env')
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ.get('DB_NAME', 'playon_db')]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Security
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Create a router with the /api prefix
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+security = HTTPBearer()
+
+# Create the main app
+app = FastAPI(title="Playon API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
 
+# Utility functions
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
-# Add your routes to the router instead of directly to app
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+    
+    user = await db.users.find_one({"_id": user_id})
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+    return user
+
+# Pydantic Models
+class UserCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    mobile: str = Field(..., min_length=10, max_length=15)
+    password: str = Field(..., min_length=6)
+    role: str = Field(default="player", pattern="^(player|venue_owner)$")
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    mobile: str
+    role: str
+    sports_interests: List[str] = []
+    location: Optional[str] = None
+    created_at: datetime
+
+class VenueCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=200)
+    sport: str = Field(..., min_length=2, max_length=50)
+    location: str = Field(..., min_length=5, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    facilities: List[str] = []
+    pricing: Dict[str, float] = {}  # e.g., {"hourly": 800, "daily": 5000}
+    available_slots: List[str] = []
+    images: List[str] = []  # base64 encoded images
+    contact_phone: Optional[str] = None
+    rules: Optional[str] = None
+
+class VenueResponse(BaseModel):
+    id: str
+    name: str
+    sport: str
+    location: str
+    description: Optional[str]
+    facilities: List[str]
+    pricing: Dict[str, float]
+    available_slots: List[str]
+    images: List[str]
+    contact_phone: Optional[str]
+    rules: Optional[str]
+    owner_id: str
+    rating: float = 0.0
+    total_bookings: int = 0
+    created_at: datetime
+
+class BookingCreate(BaseModel):
+    venue_id: str
+    date: str  # YYYY-MM-DD format
+    time_slot: str  # e.g., "18:00-19:00"
+    duration: int = Field(..., ge=1, le=12)  # hours
+    notes: Optional[str] = Field(None, max_length=500)
+
+class BookingResponse(BaseModel):
+    id: str
+    venue_id: str
+    user_id: str
+    date: str
+    time_slot: str
+    duration: int
+    amount: float
+    status: str = "confirmed"  # confirmed, cancelled, completed
+    payment_status: str = "pending"  # pending, paid, failed
+    notes: Optional[str]
+    created_at: datetime
+
+class TournamentCreate(BaseModel):
+    name: str = Field(..., min_length=3, max_length=200)
+    sport: str = Field(..., min_length=2, max_length=50)
+    venue_id: Optional[str] = None
+    location: str = Field(..., min_length=5, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    format: str = Field(..., min_length=3, max_length=100)  # e.g., "Single Elimination"
+    max_participants: int = Field(..., ge=2, le=1000)
+    registration_fee: float = Field(..., ge=0)
+    start_date: str  # YYYY-MM-DD format
+    end_date: str    # YYYY-MM-DD format
+    rules: Optional[str] = Field(None, max_length=2000)
+    prizes: Optional[str] = Field(None, max_length=1000)
+
+class TournamentResponse(BaseModel):
+    id: str
+    name: str
+    sport: str
+    venue_id: Optional[str]
+    location: str
+    description: Optional[str]
+    format: str
+    max_participants: int
+    current_participants: int = 0
+    registration_fee: float
+    start_date: str
+    end_date: str
+    status: str = "upcoming"  # upcoming, ongoing, completed
+    organizer_id: str
+    organizer_name: str
+    rules: Optional[str]
+    prizes: Optional[str]
+    created_at: datetime
+
+# Authentication Routes
+@api_router.post("/auth/register", response_model=Dict[str, str])
+async def register_user(user_data: UserCreate):
+    # Check if user already exists
+    existing_user = await db.users.find_one({
+        "$or": [
+            {"email": user_data.email},
+            {"mobile": user_data.mobile}
+        ]
+    })
+    
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email or mobile already exists"
+        )
+    
+    # Validate mobile number format (basic validation)
+    if not re.match(r"^[+]?[1-9]\d{1,14}$", user_data.mobile.replace(" ", "")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid mobile number format"
+        )
+    
+    # Create user
+    user_id = str(uuid.uuid4())
+    hashed_password = get_password_hash(user_data.password)
+    
+    user_doc = {
+        "_id": user_id,
+        "name": user_data.name,
+        "email": user_data.email,
+        "mobile": user_data.mobile,
+        "password": hashed_password,
+        "role": user_data.role,
+        "sports_interests": [],
+        "location": None,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "is_active": True
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    return {
+        "message": "User registered successfully",
+        "user_id": user_id
+    }
+
+@api_router.post("/auth/login")
+async def login_user(credentials: UserLogin):
+    # Find user
+    user = await db.users.find_one({"email": credentials.email})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Verify password
+    if not verify_password(credentials.password, user["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["_id"]}, expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user["_id"],
+            "name": user["name"],
+            "email": user["email"],
+            "role": user["role"],
+            "sports_interests": user.get("sports_interests", [])
+        }
+    }
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_current_user_profile(current_user: dict = Depends(get_current_user)):
+    return UserResponse(
+        id=current_user["_id"],
+        name=current_user["name"],
+        email=current_user["email"],
+        mobile=current_user["mobile"],
+        role=current_user["role"],
+        sports_interests=current_user.get("sports_interests", []),
+        location=current_user.get("location"),
+        created_at=current_user["created_at"]
+    )
+
+# Venue Routes
+@api_router.post("/venues", response_model=Dict[str, str])
+async def create_venue(venue_data: VenueCreate, current_user: dict = Depends(get_current_user)):
+    if current_user["role"] != "venue_owner":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only venue owners can create venues"
+        )
+    
+    venue_id = str(uuid.uuid4())
+    venue_doc = {
+        "_id": venue_id,
+        **venue_data.dict(),
+        "owner_id": current_user["_id"],
+        "rating": 0.0,
+        "total_bookings": 0,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "is_active": True
+    }
+    
+    await db.venues.insert_one(venue_doc)
+    
+    return {
+        "message": "Venue created successfully",
+        "venue_id": venue_id
+    }
+
+@api_router.get("/venues", response_model=List[VenueResponse])
+async def get_venues(
+    sport: Optional[str] = None,
+    location: Optional[str] = None,
+    limit: int = 20,
+    offset: int = 0
+):
+    query = {"is_active": True}
+    
+    if sport:
+        query["sport"] = {"$regex": sport, "$options": "i"}
+    
+    if location:
+        query["location"] = {"$regex": location, "$options": "i"}
+    
+    venues = await db.venues.find(query).skip(offset).limit(limit).to_list(limit)
+    
+    venue_responses = []
+    for venue in venues:
+        # Get owner name
+        owner = await db.users.find_one({"_id": venue["owner_id"]})
+        owner_name = owner["name"] if owner else "Unknown"
+        
+        venue_responses.append(VenueResponse(
+            id=venue["_id"],
+            name=venue["name"],
+            sport=venue["sport"],
+            location=venue["location"],
+            description=venue.get("description"),
+            facilities=venue.get("facilities", []),
+            pricing=venue.get("pricing", {}),
+            available_slots=venue.get("available_slots", []),
+            images=venue.get("images", []),
+            contact_phone=venue.get("contact_phone"),
+            rules=venue.get("rules"),
+            owner_id=venue["owner_id"],
+            rating=venue.get("rating", 0.0),
+            total_bookings=venue.get("total_bookings", 0),
+            created_at=venue["created_at"]
+        ))
+    
+    return venue_responses
+
+@api_router.get("/venues/{venue_id}", response_model=VenueResponse)
+async def get_venue(venue_id: str):
+    venue = await db.venues.find_one({"_id": venue_id, "is_active": True})
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found"
+        )
+    
+    return VenueResponse(
+        id=venue["_id"],
+        name=venue["name"],
+        sport=venue["sport"],
+        location=venue["location"],
+        description=venue.get("description"),
+        facilities=venue.get("facilities", []),
+        pricing=venue.get("pricing", {}),
+        available_slots=venue.get("available_slots", []),
+        images=venue.get("images", []),
+        contact_phone=venue.get("contact_phone"),
+        rules=venue.get("rules"),
+        owner_id=venue["owner_id"],
+        rating=venue.get("rating", 0.0),
+        total_bookings=venue.get("total_bookings", 0),
+        created_at=venue["created_at"]
+    )
+
+# Booking Routes
+@api_router.post("/bookings", response_model=Dict[str, Any])
+async def create_booking(booking_data: BookingCreate, current_user: dict = Depends(get_current_user)):
+    # Verify venue exists
+    venue = await db.venues.find_one({"_id": booking_data.venue_id, "is_active": True})
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found"
+        )
+    
+    # Check if slot is available (basic check)
+    existing_booking = await db.bookings.find_one({
+        "venue_id": booking_data.venue_id,
+        "date": booking_data.date,
+        "time_slot": booking_data.time_slot,
+        "status": {"$ne": "cancelled"}
+    })
+    
+    if existing_booking:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This time slot is already booked"
+        )
+    
+    # Calculate amount (using hourly rate from venue pricing)
+    hourly_rate = venue.get("pricing", {}).get("hourly", 1000)  # default rate
+    total_amount = hourly_rate * booking_data.duration
+    
+    booking_id = str(uuid.uuid4())
+    booking_doc = {
+        "_id": booking_id,
+        "venue_id": booking_data.venue_id,
+        "user_id": current_user["_id"],
+        "date": booking_data.date,
+        "time_slot": booking_data.time_slot,
+        "duration": booking_data.duration,
+        "amount": total_amount,
+        "status": "confirmed",
+        "payment_status": "pending",
+        "notes": booking_data.notes,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    
+    await db.bookings.insert_one(booking_doc)
+    
+    # Update venue booking count
+    await db.venues.update_one(
+        {"_id": booking_data.venue_id},
+        {"$inc": {"total_bookings": 1}}
+    )
+    
+    return {
+        "message": "Booking created successfully",
+        "booking_id": booking_id,
+        "amount": total_amount,
+        "payment_url": f"/api/payments/booking/{booking_id}"  # Mock payment URL
+    }
+
+@api_router.get("/bookings", response_model=List[BookingResponse])
+async def get_user_bookings(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {"user_id": current_user["_id"]}
+    
+    if status:
+        query["status"] = status
+    
+    bookings = await db.bookings.find(query).sort("created_at", -1).to_list(100)
+    
+    return [BookingResponse(
+        id=booking["_id"],
+        venue_id=booking["venue_id"],
+        user_id=booking["user_id"],
+        date=booking["date"],
+        time_slot=booking["time_slot"],
+        duration=booking["duration"],
+        amount=booking["amount"],
+        status=booking["status"],
+        payment_status=booking["payment_status"],
+        notes=booking.get("notes"),
+        created_at=booking["created_at"]
+    ) for booking in bookings]
+
+# Tournament Routes
+@api_router.post("/tournaments", response_model=Dict[str, str])
+async def create_tournament(tournament_data: TournamentCreate, current_user: dict = Depends(get_current_user)):
+    tournament_id = str(uuid.uuid4())
+    tournament_doc = {
+        "_id": tournament_id,
+        **tournament_data.dict(),
+        "organizer_id": current_user["_id"],
+        "organizer_name": current_user["name"],
+        "current_participants": 0,
+        "status": "upcoming",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "is_active": True
+    }
+    
+    await db.tournaments.insert_one(tournament_doc)
+    
+    return {
+        "message": "Tournament created successfully",
+        "tournament_id": tournament_id
+    }
+
+@api_router.get("/tournaments", response_model=List[TournamentResponse])
+async def get_tournaments(
+    sport: Optional[str] = None,
+    status: Optional[str] = "upcoming",
+    location: Optional[str] = None,
+    limit: int = 20,
+    offset: int = 0
+):
+    query = {"is_active": True}
+    
+    if sport:
+        query["sport"] = {"$regex": sport, "$options": "i"}
+    
+    if status:
+        query["status"] = status
+        
+    if location:
+        query["location"] = {"$regex": location, "$options": "i"}
+    
+    tournaments = await db.tournaments.find(query).skip(offset).limit(limit).to_list(limit)
+    
+    return [TournamentResponse(
+        id=tournament["_id"],
+        name=tournament["name"],
+        sport=tournament["sport"],
+        venue_id=tournament.get("venue_id"),
+        location=tournament["location"],
+        description=tournament.get("description"),
+        format=tournament["format"],
+        max_participants=tournament["max_participants"],
+        current_participants=tournament.get("current_participants", 0),
+        registration_fee=tournament["registration_fee"],
+        start_date=tournament["start_date"],
+        end_date=tournament["end_date"],
+        status=tournament["status"],
+        organizer_id=tournament["organizer_id"],
+        organizer_name=tournament["organizer_name"],
+        rules=tournament.get("rules"),
+        prizes=tournament.get("prizes"),
+        created_at=tournament["created_at"]
+    ) for tournament in tournaments]
+
+@api_router.get("/tournaments/{tournament_id}", response_model=TournamentResponse)
+async def get_tournament(tournament_id: str):
+    tournament = await db.tournaments.find_one({"_id": tournament_id, "is_active": True})
+    if not tournament:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tournament not found"
+        )
+    
+    return TournamentResponse(
+        id=tournament["_id"],
+        name=tournament["name"],
+        sport=tournament["sport"],
+        venue_id=tournament.get("venue_id"),
+        location=tournament["location"],
+        description=tournament.get("description"),
+        format=tournament["format"],
+        max_participants=tournament["max_participants"],
+        current_participants=tournament.get("current_participants", 0),
+        registration_fee=tournament["registration_fee"],
+        start_date=tournament["start_date"],
+        end_date=tournament["end_date"],
+        status=tournament["status"],
+        organizer_id=tournament["organizer_id"],
+        organizer_name=tournament["organizer_name"],
+        rules=tournament.get("rules"),
+        prizes=tournament.get("prizes"),
+        created_at=tournament["created_at"]
+    )
+
+# Basic health and root routes
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Playon API v1.0.0", "status": "running"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
+@api_router.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow(),
+        "version": "1.0.0"
+    }
 
 # Include the router in the main app
 app.include_router(api_router)
 
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -73,3 +592,7 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
