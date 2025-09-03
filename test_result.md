@@ -176,6 +176,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED: All venue owner authentication endpoints working perfectly. ✅ POST /api/venue-owner/register with business details (Elite Sports Complex, GST: 24ABCDE1234F1Z5), ✅ POST /api/venue-owner/login with JWT token generation and user_type validation, ✅ GET /api/venue-owner/profile with complete business information retrieval, ✅ Proper role-based access control, ✅ Duplicate registration prevention, ✅ Invalid login rejection. Tested with realistic Indian venue owner data (Rajesh Kumar). All authentication features functioning correctly."
+      - working: true
+        agent: "testing"
+        comment: "RE-TESTED AFTER RECENT CHANGES: All venue owner authentication endpoints still working perfectly. ✅ Registration with business details (Elite Sports Complex, GST: 24ABCDE1234F1Z5), ✅ Login with JWT token and user_type='venue_owner', ✅ Profile retrieval with complete business information, ✅ Proper error handling for invalid credentials and duplicate registrations. Fixed setuptools dependency issue. All authentication features confirmed working correctly after recent changes."
 
   - task: "Venue Owner Venue Management API"
     implemented: true
