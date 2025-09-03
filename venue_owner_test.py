@@ -25,11 +25,12 @@ class VenueOwnerAPITester:
         self.player_token = None
         self.player_id = None
         
-        # Realistic Indian venue owner data as requested
+        # Realistic Indian venue owner data as requested (with timestamp for uniqueness)
+        timestamp = int(time.time())
         self.venue_owner_data = {
             "name": "Rajesh Kumar",
-            "email": "rajesh@elitesports.com",
-            "mobile": "9876543210",
+            "email": f"rajesh{timestamp}@elitesports.com",
+            "mobile": f"987654{timestamp % 10000:04d}",
             "password": "securepass123",
             "business_name": "Elite Sports Complex",
             "business_address": "Plot No. 45, Sector 18, Noida, Uttar Pradesh 201301",
@@ -39,8 +40,8 @@ class VenueOwnerAPITester:
         # Test player for booking creation
         self.test_player = {
             "name": "Arjun Singh",
-            "email": "arjun.singh@example.com",
-            "mobile": "9876543211",
+            "email": f"arjun{timestamp}@example.com",
+            "mobile": f"987654{timestamp % 9999 + 1:04d}",
             "password": "playerpass123",
             "role": "player"
         }
