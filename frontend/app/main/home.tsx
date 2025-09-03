@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#000000',
     marginTop: 4,
   },
   notificationButton: {
