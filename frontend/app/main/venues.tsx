@@ -99,26 +99,8 @@ export default function VenuesScreen() {
         availableSlots: ['8:00 AM', '9:00 AM', '8:00 PM', '9:00 PM'],
       },
     ];
-    
+
     setVenues(mockVenues);
-  };
-
-  const filterVenues = () => {
-    let filtered = venues;
-
-    if (selectedSport !== 'All') {
-      filtered = filtered.filter(venue => venue.sport === selectedSport);
-    }
-
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(venue =>
-        venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        venue.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        venue.sport.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredVenues(filtered);
   };
 
   const onRefresh = async () => {
@@ -127,8 +109,27 @@ export default function VenuesScreen() {
     setIsRefreshing(false);
   };
 
-  const handleBookVenue = (venueId: string) => {
-    router.push(`/booking/venue/${venueId}`);
+  const filterVenues = () => {
+    let filtered = venues;
+
+    if (searchQuery) {
+      filtered = filtered.filter(venue =>
+        venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        venue.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        venue.sport.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedSport !== 'All') {
+      filtered = filtered.filter(venue => venue.sport === selectedSport);
+    }
+
+    setFilteredVenues(filtered);
+  };
+
+  const handleVenuePress = (venue: Venue) => {
+    Alert.alert('Venue Selected', `You selected ${venue.name}`);
+    // Navigate to venue details or booking
   };
 
   return (
@@ -137,20 +138,20 @@ export default function VenuesScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Find Venues</Text>
         <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => router.push('/venues/add')}
+          style={styles.mapButton}
+          onPress={() => Alert.alert('Map View', 'Map view coming soon!')}
         >
-          <Ionicons name="add" size={24} color="#FF6B35" />
+          <Ionicons name="map-outline" size={20} color="#000000" />
         </TouchableOpacity>
       </View>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color="#666666" />
+          <Ionicons name="search-outline" size={20} color="#9ca3af" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search venues or locations..."
+            placeholder="Search venues, location, sport..."
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -160,25 +161,23 @@ export default function VenuesScreen() {
       {/* Sports Filter */}
       <ScrollView 
         horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.sportsFilter}
-        contentContainerStyle={styles.sportsFilterContent}
+        showsHorizontalScrollIndicator={false} 
+        style={styles.filtersContainer}
+        contentContainerStyle={styles.filtersContent}
       >
         {sports.map((sport) => (
           <TouchableOpacity
             key={sport}
             style={[
-              styles.sportChip,
-              selectedSport === sport && styles.sportChipActive,
+              styles.filterChip,
+              selectedSport === sport && styles.filterChipActive
             ]}
             onPress={() => setSelectedSport(sport)}
           >
-            <Text
-              style={[
-                styles.sportChipText,
-                selectedSport === sport && styles.sportChipTextActive,
-              ]}
-            >
+            <Text style={[
+              styles.filterChipText,
+              selectedSport === sport && styles.filterChipTextActive
+            ]}>
               {sport}
             </Text>
           </TouchableOpacity>
@@ -188,79 +187,81 @@ export default function VenuesScreen() {
       {/* Venues List */}
       <ScrollView 
         style={styles.venuesList}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
-        showsVerticalScrollIndicator={false}
       >
-        {filteredVenues.length === 0 ? (
+        {filteredVenues.map((venue) => (
+          <TouchableOpacity
+            key={venue.id}
+            style={styles.venueCard}
+            onPress={() => handleVenuePress(venue)}
+          >
+            <View style={styles.venueImageContainer}>
+              <View style={styles.venueImagePlaceholder}>
+                <Ionicons name="location" size={32} color="#000000" />
+              </View>
+              <View style={styles.ratingBadge}>
+                <Ionicons name="star" size={12} color="#fbbf24" />
+                <Text style={styles.ratingText}>{venue.rating}</Text>
+              </View>
+            </View>
+
+            <View style={styles.venueContent}>
+              <View style={styles.venueHeader}>
+                <Text style={styles.venueName}>{venue.name}</Text>
+                <Text style={styles.venuePrice}>₹{venue.price}/hr</Text>
+              </View>
+
+              <View style={styles.venueLocation}>
+                <Ionicons name="location-outline" size={14} color="#9ca3af" />
+                <Text style={styles.venueLocationText}>{venue.location}</Text>
+              </View>
+
+              <View style={styles.venueSport}>
+                <Text style={styles.venueSportText}>{venue.sport}</Text>
+              </View>
+
+              <View style={styles.venueFacilities}>
+                {venue.facilities.slice(0, 3).map((facility, index) => (
+                  <View key={index} style={styles.facilityTag}>
+                    <Text style={styles.facilityTagText}>{facility}</Text>
+                  </View>
+                ))}
+                {venue.facilities.length > 3 && (
+                  <Text style={styles.moreFacilities}>+{venue.facilities.length - 3} more</Text>
+                )}
+              </View>
+
+              <View style={styles.venueSlots}>
+                <Text style={styles.slotsLabel}>Available today:</Text>
+                <View style={styles.slotsContainer}>
+                  {venue.availableSlots.slice(0, 2).map((slot, index) => (
+                    <Text key={index} style={styles.slotTime}>{slot}</Text>
+                  ))}
+                  {venue.availableSlots.length > 2 && (
+                    <Text style={styles.moreSlots}>+{venue.availableSlots.length - 2}</Text>
+                  )}
+                </View>
+              </View>
+
+              <TouchableOpacity style={styles.bookButton}>
+                <Text style={styles.bookButtonText}>Book Now</Text>
+                <Ionicons name="arrow-forward" size={16} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        ))}
+
+        {filteredVenues.length === 0 && (
           <View style={styles.emptyState}>
-            <Ionicons name="location-outline" size={64} color="#CCCCCC" />
-            <Text style={styles.emptyStateText}>No venues found</Text>
-            <Text style={styles.emptyStateSubtext}>
+            <Ionicons name="search-outline" size={48} color="#9ca3af" />
+            <Text style={styles.emptyStateTitle}>No venues found</Text>
+            <Text style={styles.emptyStateText}>
               Try adjusting your search or filters
             </Text>
           </View>
-        ) : (
-          filteredVenues.map((venue) => (
-            <TouchableOpacity
-              key={venue.id}
-              style={styles.venueCard}
-              onPress={() => router.push(`/venues/${venue.id}`)}
-            >
-              <View style={styles.venueImageContainer}>
-                <View style={styles.venueImagePlaceholder}>
-                  <Ionicons name="location-outline" size={32} color="#FF6B35" />
-                </View>
-                <View style={styles.venueRatingBadge}>
-                  <Ionicons name="star" size={12} color="#FFD700" />
-                  <Text style={styles.venueRatingText}>{venue.rating}</Text>
-                </View>
-              </View>
-
-              <View style={styles.venueDetails}>
-                <View style={styles.venueHeader}>
-                  <Text style={styles.venueName}>{venue.name}</Text>
-                  <View style={styles.venueSportBadge}>
-                    <Text style={styles.venueSportText}>{venue.sport}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.venueLocation}>
-                  <Ionicons name="location-outline" size={14} color="#666666" />
-                  <Text style={styles.venueLocationText}>{venue.location}</Text>
-                </View>
-
-                <View style={styles.venueFacilities}>
-                  {venue.facilities.slice(0, 3).map((facility, index) => (
-                    <View key={index} style={styles.facilityBadge}>
-                      <Text style={styles.facilityText}>{facility}</Text>
-                    </View>
-                  ))}
-                  {venue.facilities.length > 3 && (
-                    <Text style={styles.moreFacilities}>
-                      +{venue.facilities.length - 3} more
-                    </Text>
-                  )}
-                </View>
-
-                <View style={styles.venueFooter}>
-                  <View style={styles.venuePrice}>
-                    <Text style={styles.venuePriceText}>₹{venue.price}</Text>
-                    <Text style={styles.venuePriceUnit}>/hour</Text>
-                  </View>
-                  
-                  <TouchableOpacity
-                    style={styles.bookButton}
-                    onPress={() => handleBookVenue(venue.id)}
-                  >
-                    <Text style={styles.bookButtonText}>Book Now</Text>
-                    <Ionicons name="arrow-forward" size={16} color="white" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))
         )}
       </ScrollView>
     </SafeAreaView>
@@ -270,7 +271,7 @@ export default function VenuesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
@@ -281,15 +282,15 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#000000',
   },
-  addButton: {
+  mapButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f3f4f6',
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 48,
@@ -308,88 +309,72 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#1A1A1A',
+    color: '#000000',
     marginLeft: 12,
   },
-  sportsFilter: {
-    marginBottom: 24,
+  filtersContainer: {
+    marginBottom: 20,
   },
-  sportsFilterContent: {
-    paddingLeft: 24,
-    paddingRight: 24,
+  filtersContent: {
+    paddingHorizontal: 24,
   },
-  sportChip: {
-    backgroundColor: '#F8F9FA',
+  filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    backgroundColor: '#f3f4f6',
     marginRight: 12,
   },
-  sportChipActive: {
-    backgroundColor: '#FF6B35',
+  filterChipActive: {
+    backgroundColor: '#000000',
   },
-  sportChipText: {
+  filterChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666666',
+    color: '#6b7280',
   },
-  sportChipTextActive: {
-    color: 'white',
+  filterChipTextActive: {
+    color: '#ffffff',
   },
   venuesList: {
     flex: 1,
     paddingHorizontal: 24,
   },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 64,
-  },
-  emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666666',
-    marginTop: 16,
-  },
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: '#999999',
-    marginTop: 8,
-  },
   venueCard: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f9fafb',
     borderRadius: 16,
-    marginBottom: 16,
+    marginBottom: 20,
     overflow: 'hidden',
   },
   venueImageContainer: {
     position: 'relative',
+    height: 160,
   },
   venueImagePlaceholder: {
-    height: 120,
-    backgroundColor: 'white',
+    flex: 1,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  venueRatingBadge: {
+  ratingBadge: {
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: 'white',
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#ffffff',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
-  venueRatingText: {
+  ratingText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#000000',
     marginLeft: 4,
   },
-  venueDetails: {
-    padding: 16,
+  venueContent: {
+    padding: 20,
   },
   venueHeader: {
     flexDirection: 'row',
@@ -400,85 +385,113 @@ const styles = StyleSheet.create({
   venueName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#000000',
     flex: 1,
     marginRight: 12,
   },
-  venueSportBadge: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  venueSportText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'white',
+  venuePrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
   },
   venueLocation: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   venueLocationText: {
     fontSize: 14,
-    color: '#666666',
+    color: '#6b7280',
     marginLeft: 4,
+  },
+  venueSport: {
+    marginBottom: 12,
+  },
+  venueSportText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2d2d2d',
   },
   venueFacilities: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  facilityBadge: {
-    backgroundColor: 'white',
+  facilityTag: {
+    backgroundColor: '#e5e7eb',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    marginRight: 8,
+    marginRight: 6,
     marginBottom: 4,
   },
-  facilityText: {
-    fontSize: 12,
-    color: '#666666',
+  facilityTagText: {
+    fontSize: 11,
+    color: '#374151',
+    fontWeight: '500',
   },
   moreFacilities: {
-    fontSize: 12,
-    color: '#FF6B35',
-    fontWeight: '600',
+    fontSize: 11,
+    color: '#6b7280',
+    fontWeight: '500',
   },
-  venueFooter: {
+  venueSlots: {
+    marginBottom: 16,
+  },
+  slotsLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 6,
+  },
+  slotsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  venuePrice: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+  slotTime: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#000000',
+    backgroundColor: '#e5e7eb',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 6,
   },
-  venuePriceText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FF6B35',
-  },
-  venuePriceUnit: {
-    fontSize: 14,
-    color: '#666666',
-    marginLeft: 4,
+  moreSlots: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '500',
   },
   bookButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+    paddingVertical: 12,
+    borderRadius: 12,
   },
   bookButtonText: {
-    color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    marginRight: 6,
+    color: '#ffffff',
+    marginRight: 8,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
   },
 });
