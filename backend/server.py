@@ -98,17 +98,54 @@ class UserResponse(BaseModel):
     location: Optional[str] = None
     created_at: datetime
 
+# Venue Owner Models
+class VenueOwnerCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    mobile: str = Field(..., min_length=10, max_length=15)
+    password: str = Field(..., min_length=6)
+    business_name: Optional[str] = Field(None, max_length=200)
+    business_address: Optional[str] = Field(None, max_length=500)
+    gst_number: Optional[str] = Field(None, max_length=20)
+
+class VenueOwnerResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    mobile: str
+    business_name: Optional[str]
+    business_address: Optional[str]
+    gst_number: Optional[str]
+    total_venues: int = 0
+    total_bookings: int = 0
+    total_revenue: float = 0.0
+    is_active: bool = True
+    created_at: datetime
+
+class SlotCreate(BaseModel):
+    day_of_week: int = Field(..., ge=0, le=6)  # 0=Monday, 6=Sunday
+    start_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")  # HH:MM format
+    end_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
+    capacity: int = Field(default=1, ge=1, le=100)
+    price_per_hour: float = Field(..., ge=0)
+    is_peak_hour: bool = False
+
 class VenueCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=200)
-    sport: str = Field(..., min_length=2, max_length=50)
-    location: str = Field(..., min_length=5, max_length=200)
+    sports_supported: List[str] = Field(..., min_items=1)  # ["cricket", "football", "badminton"]
+    address: str = Field(..., min_length=10, max_length=500)
+    city: str = Field(..., min_length=2, max_length=100)
+    state: str = Field(..., min_length=2, max_length=100)
+    pincode: str = Field(..., min_length=6, max_length=6)
     description: Optional[str] = Field(None, max_length=1000)
-    facilities: List[str] = []
-    pricing: Dict[str, float] = {}  # e.g., {"hourly": 800, "daily": 5000}
-    available_slots: List[str] = []
-    images: List[str] = []  # base64 encoded images
-    contact_phone: Optional[str] = None
-    rules: Optional[str] = None
+    amenities: List[str] = []  # ["parking", "washroom", "lighting", "seating"]
+    base_price_per_hour: float = Field(..., ge=0)
+    contact_phone: str = Field(..., min_length=10, max_length=15)
+    whatsapp_number: Optional[str] = Field(None, min_length=10, max_length=15)
+    images: List[str] = []  # Will be URLs after S3 upload
+    rules_and_regulations: Optional[str] = Field(None, max_length=2000)
+    cancellation_policy: Optional[str] = Field(None, max_length=1000)
+    slots: List[SlotCreate] = []
 
 class VenueResponse(BaseModel):
     id: str
