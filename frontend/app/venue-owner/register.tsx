@@ -120,7 +120,7 @@ export default function VenueOwnerRegister() {
 
         <View style={styles.logoContainer}>
           <View style={styles.logo}>
-            <Ionicons name="business" size={48} color="#2563eb" />
+            <Ionicons name="business" size={48} color="#000000" />
           </View>
           <Text style={styles.title}>Register as Venue Owner</Text>
           <Text style={styles.subtitle}>Start managing your sports venue today</Text>
