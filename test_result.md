@@ -221,6 +221,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED: Venue owner analytics dashboard endpoint working perfectly. ✅ GET /api/venue-owner/analytics/dashboard with comprehensive metrics (total venues, bookings, revenue, occupancy rate), ✅ Recent bookings analysis, ✅ Revenue trend tracking, ✅ Top sports analysis, ✅ Peak hours identification, ✅ Date range filtering support, ✅ Proper data aggregation and calculations. All analytics features functioning correctly."
+      - working: true
+        agent: "testing"
+        comment: "RE-TESTED AFTER RECENT CHANGES: Venue owner analytics dashboard endpoint still working perfectly. ✅ Comprehensive metrics (2 venues, 0 bookings, ₹0 revenue, 0% occupancy), ✅ Date range filtering (start_date, end_date, both), ✅ Revenue trend data structure, ✅ Top sports and peak hours analysis, ✅ Recent bookings tracking, ✅ Proper data aggregation and calculations. All analytics features confirmed working correctly after recent changes."
 
 frontend:
   - task: "Authentication Screens"
