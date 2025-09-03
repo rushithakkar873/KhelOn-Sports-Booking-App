@@ -112,7 +112,7 @@ class VenueOwnerDashboardTester:
             elif method.upper() == "POST":
                 response = requests.post(url, headers=headers, json=data, timeout=30)
             elif method.upper() == "PUT":
-                response = requests.put(url, headers=headers, json=data, timeout=30)
+                response = requests.put(url, headers=headers, json=data, params=params, timeout=30)
             else:
                 raise ValueError(f"Unsupported method: {method}")
             
