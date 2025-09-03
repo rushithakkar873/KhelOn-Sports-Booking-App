@@ -722,6 +722,231 @@ async def update_booking_status(
         "new_status": new_status
     }
 
+# Payment Routes
+@api_router.post("/payments/create-order", response_model=PaymentOrderResponse)
+async def create_payment_order(order_data: PaymentOrderCreate, current_user: dict = Depends(get_current_user)):
+    if not razorpay_client:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Payment service is not configured"
+        )
+    
+    # Verify booking exists and belongs to user
+    booking = await db.bookings.find_one({"_id": order_data.booking_id, "user_id": current_user["_id"]})
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found"
+        )
+    
+    if booking.get("payment_status") == "paid":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This booking is already paid"
+        )
+    
+    # Create Razorpay order
+    amount_in_paise = int(order_data.amount * 100)  # Convert to paise
+    
+    try:
+        razorpay_order = razorpay_client.order.create({
+            "amount": amount_in_paise,
+            "currency": order_data.currency,
+            "payment_capture": 1
+        })
+        
+        # Store transaction record
+        transaction_id = str(uuid.uuid4())
+        transaction = {
+            "_id": transaction_id,
+            "booking_id": order_data.booking_id,
+            "order_id": razorpay_order["id"],
+            "payment_id": None,
+            "amount": order_data.amount,
+            "currency": order_data.currency,
+            "status": "created",
+            "payment_method": None,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        await db.transactions.insert_one(transaction)
+        
+        return PaymentOrderResponse(
+            order_id=razorpay_order["id"],
+            amount=amount_in_paise,
+            currency=order_data.currency,
+            status="created"
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create payment order: {str(e)}"
+        )
+
+@api_router.post("/payments/verify")
+async def verify_payment(payment_data: PaymentVerification, current_user: dict = Depends(get_current_user)):
+    if not razorpay_client:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Payment service is not configured"
+        )
+    
+    try:
+        # Verify payment signature
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': payment_data.razorpay_order_id,
+            'razorpay_payment_id': payment_data.razorpay_payment_id,
+            'razorpay_signature': payment_data.razorpay_signature
+        })
+        
+        # Update transaction
+        await db.transactions.update_one(
+            {"order_id": payment_data.razorpay_order_id},
+            {
+                "$set": {
+                    "payment_id": payment_data.razorpay_payment_id,
+                    "status": "paid",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Get transaction to find booking
+        transaction = await db.transactions.find_one({"order_id": payment_data.razorpay_order_id})
+        if transaction:
+            # Update booking payment status
+            await db.bookings.update_one(
+                {"_id": transaction["booking_id"]},
+                {
+                    "$set": {
+                        "payment_status": "paid",
+                        "payment_id": payment_data.razorpay_payment_id,
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            
+            # Update venue owner's revenue
+            booking = await db.bookings.find_one({"_id": transaction["booking_id"]})
+            if booking:
+                venue = await db.venues.find_one({"_id": booking["venue_id"]})
+                if venue:
+                    await db.venue_owners.update_one(
+                        {"_id": venue["owner_id"]},
+                        {
+                            "$inc": {
+                                "total_revenue": transaction["amount"],
+                                "total_bookings": 1
+                            }
+                        }
+                    )
+        
+        return {"message": "Payment verified successfully", "status": "paid"}
+        
+    except Exception as e:
+        # Update transaction as failed
+        await db.transactions.update_one(
+            {"order_id": payment_data.razorpay_order_id},
+            {
+                "$set": {
+                    "status": "failed",
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Payment verification failed: {str(e)}"
+        )
+
+# Venue Owner Analytics Routes
+@api_router.get("/venue-owner/analytics/dashboard")
+async def get_analytics_dashboard(
+    current_owner: dict = Depends(get_current_venue_owner),
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    # Get owner's venues
+    venues = await db.venues.find({"owner_id": current_owner["_id"]}).to_list(length=None)
+    venue_ids = [venue["_id"] for venue in venues]
+    
+    if not venue_ids:
+        return {
+            "total_venues": 0,
+            "total_bookings": 0,
+            "total_revenue": 0.0,
+            "occupancy_rate": 0.0,
+            "recent_bookings": [],
+            "revenue_trend": [],
+            "top_sports": [],
+            "peak_hours": []
+        }
+    
+    # Build date filter
+    date_filter = {}
+    if start_date and end_date:
+        date_filter = {"booking_date": {"$gte": start_date, "$lte": end_date}}
+    elif start_date:
+        date_filter = {"booking_date": {"$gte": start_date}}
+    elif end_date:
+        date_filter = {"booking_date": {"$lte": end_date}}
+    
+    # Get bookings for analytics
+    booking_query = {"venue_id": {"$in": venue_ids}, **date_filter}
+    bookings = await db.bookings.find(booking_query).to_list(length=None)
+    
+    # Calculate metrics
+    total_bookings = len(bookings)
+    paid_bookings = [b for b in bookings if b.get("payment_status") == "paid"]
+    total_revenue = sum(booking["total_amount"] for booking in paid_bookings)
+    
+    # Calculate occupancy rate (simplified)
+    total_slots = sum(len(venue.get("slots", [])) for venue in venues) * 7  # per week
+    occupancy_rate = (total_bookings / max(total_slots, 1)) * 100 if total_slots > 0 else 0
+    
+    # Recent bookings (last 10)
+    recent_bookings = sorted(bookings, key=lambda x: x["created_at"], reverse=True)[:10]
+    
+    # Revenue trend (last 7 days)
+    revenue_trend = []
+    from collections import defaultdict
+    daily_revenue = defaultdict(float)
+    
+    for booking in paid_bookings:
+        daily_revenue[booking["booking_date"]] += booking["total_amount"]
+    
+    # Top sports
+    sport_counts = defaultdict(int)
+    for booking in bookings:
+        venue = next((v for v in venues if v["_id"] == booking["venue_id"]), None)
+        if venue:
+            for sport in venue.get("sports_supported", []):
+                sport_counts[sport] += 1
+    
+    top_sports = sorted(sport_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    # Peak hours analysis
+    hour_counts = defaultdict(int)
+    for booking in bookings:
+        hour = booking.get("start_time", "00:00")[:2]
+        hour_counts[int(hour)] += 1
+    
+    peak_hours = sorted(hour_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    return {
+        "total_venues": len(venues),
+        "total_bookings": total_bookings,
+        "total_revenue": total_revenue,
+        "occupancy_rate": round(occupancy_rate, 2),
+        "recent_bookings": recent_bookings[:5],  # Limit to 5 for dashboard
+        "revenue_trend": dict(daily_revenue),
+        "top_sports": [{"sport": sport, "count": count} for sport, count in top_sports],
+        "peak_hours": [{"hour": f"{hour:02d}:00", "count": count} for hour, count in peak_hours]
+    }
+
 @api_router.post("/auth/register", response_model=Dict[str, str])
 async def register_user(user_data: UserCreate):
     # Check if user already exists
