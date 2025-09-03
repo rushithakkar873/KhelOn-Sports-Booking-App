@@ -80,7 +80,7 @@ export default function VenueOwnerLogin() {
 
         <View style={styles.logoContainer}>
           <View style={styles.logo}>
-            <Ionicons name="business" size={48} color="#2563eb" />
+            <Ionicons name="business" size={48} color="#000000" />
           </View>
           <Text style={styles.title}>Venue Owner Portal</Text>
           <Text style={styles.subtitle}>Manage your sports venue with ease</Text>
