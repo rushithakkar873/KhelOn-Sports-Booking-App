@@ -21,8 +21,8 @@ export default function MainLayout() {
           fontWeight: '600',
           marginTop: 4,
         },
-        tabBarActiveTintColor: '#FF6B35',
-        tabBarInactiveTintColor: '#666666',
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#9ca3af',
       }}
     >
       <Tabs.Screen
