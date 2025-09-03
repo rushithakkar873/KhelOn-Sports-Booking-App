@@ -191,6 +191,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED: All venue owner venue management endpoints working perfectly. ✅ POST /api/venue-owner/venues with comprehensive slot configuration (4 time slots for cricket ground), ✅ GET /api/venue-owner/venues with pagination and filtering, ✅ GET /api/venue-owner/venues/{venue_id} with detailed venue information, ✅ PUT /api/venue-owner/venues/{venue_id}/status for activation/deactivation, ✅ Proper venue ownership validation, ✅ Slot processing and storage. Tested with realistic Mumbai cricket ground data. All venue management features functioning correctly."
+      - working: true
+        agent: "testing"
+        comment: "RE-TESTED AFTER RECENT CHANGES: All venue owner venue management endpoints still working perfectly. ✅ Venue creation with comprehensive slot configuration (4 slots for Elite Cricket Ground Mumbai), ✅ Venue listing with pagination (2 venues), ✅ Active venue filtering, ✅ Individual venue details with amenities and pricing, ✅ Venue status updates (deactivate/reactivate) using query parameters, ✅ Proper ownership validation. All venue management features confirmed working correctly after recent changes."
 
   - task: "Venue Owner Booking Management API"
     implemented: true
