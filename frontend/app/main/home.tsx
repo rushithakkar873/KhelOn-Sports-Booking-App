@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
   tournamentName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#000000',
     marginBottom: 4,
   },
   tournamentLocation: {
