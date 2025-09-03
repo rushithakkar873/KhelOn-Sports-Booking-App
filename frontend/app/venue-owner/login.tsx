@@ -275,13 +275,13 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     borderWidth: 1,
-    borderColor: '#2563eb',
+    borderColor: '#000000',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
   registerButtonText: {
-    color: '#2563eb',
+    color: '#000000',
     fontSize: 16,
     fontWeight: '600',
   },
