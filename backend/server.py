@@ -293,7 +293,123 @@ class TournamentResponse(BaseModel):
     prizes: Optional[str]
     created_at: datetime
 
-# Authentication Routes
+# Venue Owner Authentication Routes
+@api_router.post("/venue-owner/register", response_model=Dict[str, str])
+async def register_venue_owner(owner_data: VenueOwnerCreate):
+    # Check if venue owner already exists
+    existing_owner = await db.venue_owners.find_one({
+        "$or": [
+            {"email": owner_data.email},
+            {"mobile": owner_data.mobile}
+        ]
+    })
+    
+    if existing_owner:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Venue owner with this email or mobile already exists"
+        )
+    
+    # Create new venue owner
+    owner_id = str(uuid.uuid4())
+    hashed_password = get_password_hash(owner_data.password)
+    
+    new_owner = {
+        "_id": owner_id,
+        "name": owner_data.name,
+        "email": owner_data.email,
+        "mobile": owner_data.mobile,
+        "password": hashed_password,
+        "business_name": owner_data.business_name,
+        "business_address": owner_data.business_address,
+        "gst_number": owner_data.gst_number,
+        "total_venues": 0,
+        "total_bookings": 0,
+        "total_revenue": 0.0,
+        "is_active": True,
+        "created_at": datetime.utcnow()
+    }
+    
+    await db.venue_owners.insert_one(new_owner)
+    
+    return {
+        "message": "Venue owner registered successfully",
+        "owner_id": owner_id
+    }
+
+@api_router.post("/venue-owner/login")
+async def login_venue_owner(credentials: UserLogin):
+    # Find venue owner
+    owner = await db.venue_owners.find_one({"email": credentials.email})
+    if not owner or not verify_password(credentials.password, owner["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    if not owner.get("is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account is deactivated"
+        )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": owner["_id"], "type": "venue_owner"}, 
+        expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user_type": "venue_owner",
+        "owner_id": owner["_id"],
+        "name": owner["name"]
+    }
+
+async def get_current_venue_owner(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        token = credentials.credentials
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        owner_id: str = payload.get("sub")
+        user_type: str = payload.get("type")
+        
+        if owner_id is None or user_type != "venue_owner":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
+    except jwt.PyJWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+        )
+    
+    owner = await db.venue_owners.find_one({"_id": owner_id})
+    if owner is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Venue owner not found",
+        )
+    return owner
+
+@api_router.get("/venue-owner/profile", response_model=VenueOwnerResponse)
+async def get_venue_owner_profile(current_owner: dict = Depends(get_current_venue_owner)):
+    return VenueOwnerResponse(
+        id=current_owner["_id"],
+        name=current_owner["name"],
+        email=current_owner["email"],
+        mobile=current_owner["mobile"],
+        business_name=current_owner.get("business_name"),
+        business_address=current_owner.get("business_address"),
+        gst_number=current_owner.get("gst_number"),
+        total_venues=current_owner.get("total_venues", 0),
+        total_bookings=current_owner.get("total_bookings", 0),
+        total_revenue=current_owner.get("total_revenue", 0.0),
+        is_active=current_owner.get("is_active", True),
+        created_at=current_owner["created_at"]
+    )
 @api_router.post("/auth/register", response_model=Dict[str, str])
 async def register_user(user_data: UserCreate):
     # Check if user already exists
