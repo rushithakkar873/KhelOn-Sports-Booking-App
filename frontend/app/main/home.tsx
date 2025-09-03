@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#1A1A1A',
+    color: '#000000',
     marginLeft: 12,
   },
   filterButton: {
