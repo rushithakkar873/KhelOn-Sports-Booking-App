@@ -181,7 +181,7 @@ export default function HomeScreen() {
             />
           </View>
           <TouchableOpacity style={styles.filterButton}>
-            <Ionicons name="options-outline" size={20} color="#FF6B35" />
+            <Ionicons name="options-outline" size={20} color="#000000" />
           </TouchableOpacity>
         </View>
 
