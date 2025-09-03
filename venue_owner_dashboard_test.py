@@ -273,7 +273,7 @@ class VenueOwnerDashboardTester:
         # Test venue status update (deactivate)
         if self.test_venue_id:
             result = self.make_request("PUT", f"/venue-owner/venues/{self.test_venue_id}/status", 
-                                     {"is_active": False}, auth_token=self.venue_owner_token)
+                                     auth_token=self.venue_owner_token, params={"is_active": False})
             if result["success"]:
                 print("✅ Venue deactivation successful")
                 print(f"   Message: {result['data'].get('message')}")
@@ -283,7 +283,7 @@ class VenueOwnerDashboardTester:
             
             # Reactivate venue
             result = self.make_request("PUT", f"/venue-owner/venues/{self.test_venue_id}/status", 
-                                     {"is_active": True}, auth_token=self.venue_owner_token)
+                                     auth_token=self.venue_owner_token, params={"is_active": True})
             if result["success"]:
                 print("✅ Venue reactivation successful")
             else:
