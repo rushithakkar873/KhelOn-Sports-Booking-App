@@ -206,6 +206,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED: All venue owner booking management endpoints working perfectly. ✅ GET /api/venue-owner/bookings with filtering by venue, status, and date range, ✅ GET /api/venue-owner/bookings/{booking_id} with detailed booking information, ✅ PUT /api/venue-owner/bookings/{booking_id}/status for status updates (confirmed/cancelled/completed), ✅ Proper venue ownership validation for bookings, ✅ Comprehensive filtering and pagination. All booking management features functioning correctly."
+      - working: true
+        agent: "testing"
+        comment: "RE-TESTED AFTER RECENT CHANGES: All venue owner booking management endpoints still working perfectly. ✅ Booking listing with pagination and filtering (by venue, status, date range), ✅ Individual booking details retrieval, ✅ Booking status updates using query parameters, ✅ Proper ownership validation (only bookings for owner's venues), ✅ Comprehensive filtering capabilities. All booking management features confirmed working correctly after recent changes."
 
   - task: "Venue Owner Analytics Dashboard API"
     implemented: true
