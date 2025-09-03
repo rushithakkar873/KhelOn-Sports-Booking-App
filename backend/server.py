@@ -230,6 +230,35 @@ class BookingResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+# Payment Models
+class PaymentOrderCreate(BaseModel):
+    booking_id: str
+    amount: float  # In INR
+    currency: str = "INR"
+
+class PaymentOrderResponse(BaseModel):
+    order_id: str
+    amount: int  # In paise
+    currency: str
+    status: str
+
+class PaymentVerification(BaseModel):
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    razorpay_signature: str
+
+class TransactionResponse(BaseModel):
+    id: str
+    booking_id: str
+    order_id: str
+    payment_id: Optional[str]
+    amount: float
+    currency: str
+    status: str  # created, paid, failed, refunded
+    payment_method: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
 class TournamentCreate(BaseModel):
     name: str = Field(..., min_length=3, max_length=200)
     sport: str = Field(..., min_length=2, max_length=50)
