@@ -525,9 +525,9 @@ class VenueOwnerAPITester:
             return True
         
         # Test updating booking to completed
-        data = {"new_status": "completed"}
+        params = {"new_status": "completed"}
         result = self.make_request("PUT", f"/venue-owner/bookings/{self.test_booking_id}/status",
-                                 data=data, auth_token=self.venue_owner_token)
+                                 auth_token=self.venue_owner_token, params=params)
         if result["success"]:
             print("✅ Booking status update successful")
             print(f"   Message: {result['data'].get('message')}")
@@ -537,9 +537,9 @@ class VenueOwnerAPITester:
             return False
         
         # Test invalid status
-        data = {"new_status": "invalid_status"}
+        params = {"new_status": "invalid_status"}
         result = self.make_request("PUT", f"/venue-owner/bookings/{self.test_booking_id}/status",
-                                 data=data, auth_token=self.venue_owner_token)
+                                 auth_token=self.venue_owner_token, params=params)
         if not result["success"] and result["status_code"] == 400:
             print("✅ Invalid booking status properly rejected")
         else:
