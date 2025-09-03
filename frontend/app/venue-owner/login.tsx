@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     fontSize: 14,
-    color: '#2563eb',
+    color: '#000000',
     fontWeight: '600',
   },
 });
