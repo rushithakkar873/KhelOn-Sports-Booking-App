@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   },
   seeAllText: {
     fontSize: 14,
-    color: '#FF6B35',
+    color: '#000000',
     fontWeight: '600',
   },
   quickActionsGrid: {
