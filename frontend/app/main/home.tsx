@@ -221,7 +221,7 @@ export default function HomeScreen() {
                 onPress={() => router.push(`/venues/${venue.id}`)}
               >
                 <View style={styles.venueImagePlaceholder}>
-                  <Ionicons name="location-outline" size={32} color="#FF6B35" />
+                  <Ionicons name="location-outline" size={32} color="#000000" />
                 </View>
                 <View style={styles.venueInfo}>
                   <Text style={styles.venueName} numberOfLines={1}>
