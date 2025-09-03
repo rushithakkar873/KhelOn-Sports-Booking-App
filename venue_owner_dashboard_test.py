@@ -589,7 +589,7 @@ class VenueOwnerDashboardTester:
         # Test invalid venue status update
         if self.test_venue_id:
             result = self.make_request("PUT", f"/venue-owner/venues/{self.test_venue_id}/status",
-                                     {"is_active": "invalid_boolean"}, auth_token=self.venue_owner_token)
+                                     auth_token=self.venue_owner_token, params={"is_active": "invalid_boolean"})
             if not result["success"]:
                 print("✅ Invalid venue status update properly rejected")
             else:
@@ -599,7 +599,7 @@ class VenueOwnerDashboardTester:
         # Test invalid booking status update
         if self.test_booking_id:
             result = self.make_request("PUT", f"/venue-owner/bookings/{self.test_booking_id}/status",
-                                     {"new_status": "invalid_status"}, auth_token=self.venue_owner_token)
+                                     auth_token=self.venue_owner_token, params={"new_status": "invalid_status"})
             if not result["success"] and result["status_code"] == 400:
                 print("✅ Invalid booking status update properly rejected")
             else:
