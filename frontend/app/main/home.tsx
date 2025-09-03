@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   quickActionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#000000',
     marginBottom: 4,
     textAlign: 'center',
   },
