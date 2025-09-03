@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,70 +7,125 @@ import {
   TouchableOpacity,
   Alert,
   Switch,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 interface UserProfile {
+  id: string;
   name: string;
   email: string;
   mobile: string;
-  role: 'player' | 'venue_owner';
+  joinedDate: string;
   sportsInterests: string[];
-  location: string;
-  joinDate: string;
+  totalBookings: number;
+  totalSpent: number;
+  favoriteVenues: number;
+}
+
+interface NotificationSettings {
+  bookingReminders: boolean;
+  newVenues: boolean;
+  tournaments: boolean;
+  promotions: boolean;
+  emailNotifications: boolean;
 }
 
 export default function ProfileScreen() {
-  const [user, setUser] = useState<UserProfile>({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    mobile: '+91 98765 43210',
-    role: 'player',
-    sportsInterests: ['Badminton', 'Cricket', 'Football'],
-    location: 'Bangalore, Karnataka',
-    joinDate: '2024-12-01',
-  });
-
-  const [notifications, setNotifications] = useState({
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
     bookingReminders: true,
-    tournamentUpdates: true,
+    newVenues: false,
+    tournaments: true,
     promotions: false,
+    emailNotifications: true,
   });
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
   const router = useRouter();
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    // Mock data - replace with API call
+    const mockProfile: UserProfile = {
+      id: '1',
+      name: 'Arjun Patel',
+      email: 'arjun.patel@example.com',
+      mobile: '+91 9876543210',
+      joinedDate: '2024-08-15',
+      sportsInterests: ['Cricket', 'Badminton', 'Football'],
+      totalBookings: 24,
+      totalSpent: 18500,
+      favoriteVenues: 5,
+    };
+
+    setProfile(mockProfile);
+  };
+
+  const onRefresh = async () => {
+    setIsRefreshing(true);
+    await loadProfile();
+    setIsRefreshing(false);
+  };
+
+  const handleEditProfile = () => {
+    Alert.alert('Edit Profile', 'Profile editing feature coming soon!');
+  };
+
+  const handleNotificationToggle = (setting: keyof NotificationSettings) => {
+    setNotificationSettings(prev => ({
+      ...prev,
+      [setting]: !prev[setting]
+    }));
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: () => {
+            // Handle logout logic
+            router.replace('/auth/login');
+          }
+        }
+      ]
+    );
+  };
 
   const menuItems = [
     {
-      icon: 'person-outline',
-      title: 'Edit Profile',
-      subtitle: 'Update your personal information',
-      onPress: () => router.push('/profile/edit'),
+      icon: 'heart-outline',
+      title: 'Favorite Venues',
+      subtitle: 'Your saved venues',
+      onPress: () => Alert.alert('Coming Soon!'),
+    },
+    {
+      icon: 'trophy-outline',
+      title: 'My Tournaments',
+      subtitle: 'Tournaments you joined',
+      onPress: () => Alert.alert('Coming Soon!'),
     },
     {
       icon: 'card-outline',
       title: 'Payment Methods',
-      subtitle: 'Manage your payment options',
-      onPress: () => router.push('/profile/payments'),
+      subtitle: 'Manage payment options',
+      onPress: () => Alert.alert('Coming Soon!'),
     },
     {
       icon: 'receipt-outline',
-      title: 'Transaction History',
-      subtitle: 'View all your payments',
-      onPress: () => router.push('/profile/transactions'),
-    },
-    {
-      icon: 'star-outline',
-      title: 'My Reviews',
-      subtitle: 'Reviews you\'ve given',
-      onPress: () => Alert.alert('Coming Soon!'),
-    },
-    {
-      icon: 'people-outline',
-      title: 'Invite Friends',
-      subtitle: 'Share the app with friends',
-      onPress: () => Alert.alert('Coming Soon!'),
+      title: 'Booking History',
+      subtitle: 'View all your bookings',
+      onPress: () => router.push('/main/bookings'),
     },
     {
       icon: 'help-circle-outline',
@@ -79,191 +134,192 @@ export default function ProfileScreen() {
       onPress: () => Alert.alert('Coming Soon!'),
     },
     {
-      icon: 'document-text-outline',
-      title: 'Terms & Privacy',
-      subtitle: 'Legal information',
+      icon: 'shield-outline',
+      title: 'Privacy Policy',
+      subtitle: 'Read our privacy policy',
       onPress: () => Alert.alert('Coming Soon!'),
     },
   ];
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            // Clear user session and navigate to auth
-            router.replace('/');
-          },
-        },
-      ]
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
+      </SafeAreaView>
     );
-  };
-
-  const formatJoinDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      month: 'long', 
-      year: 'numeric' 
-    });
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
+      <ScrollView 
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Profile</Text>
+          <TouchableOpacity 
+            style={styles.editButton}
+            onPress={handleEditProfile}
+          >
+            <Ionicons name="create-outline" size={20} color="#000000" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
+          <View style={styles.profileHeader}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+              <Ionicons name="person" size={40} color="#6b7280" />
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>{profile.name}</Text>
+              <Text style={styles.profileEmail}>{profile.email}</Text>
+              <Text style={styles.profileMobile}>{profile.mobile}</Text>
+              <Text style={styles.joinDate}>
+                Joined {new Date(profile.joinedDate).toLocaleDateString('en-IN', { 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
               </Text>
             </View>
-            <View style={styles.roleBadge}>
-              <Ionicons 
-                name={user.role === 'venue_owner' ? 'business' : 'person'} 
-                size={16} 
-                color="white" 
-              />
+          </View>
+
+          {/* Sports Interests */}
+          <View style={styles.sportsSection}>
+            <Text style={styles.sportsTitle}>Sports Interests</Text>
+            <View style={styles.sportsContainer}>
+              {profile.sportsInterests.map((sport, index) => (
+                <View key={index} style={styles.sportTag}>
+                  <Text style={styles.sportTagText}>{sport}</Text>
+                </View>
+              ))}
             </View>
           </View>
+        </View>
+
+        {/* Stats Cards */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{profile.totalBookings}</Text>
+            <Text style={styles.statLabel}>Total Bookings</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>₹{profile.totalSpent.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>Total Spent</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{profile.favoriteVenues}</Text>
+            <Text style={styles.statLabel}>Favorite Venues</Text>
+          </View>
+        </View>
+
+        {/* Notification Settings */}
+        <View style={styles.settingsCard}>
+          <Text style={styles.settingsTitle}>Notification Settings</Text>
           
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
-          <Text style={styles.joinDate}>
-            Member since {formatJoinDate(user.joinDate)}
-          </Text>
-
-          {/* Quick Stats */}
-          <View style={styles.quickStats}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>12</Text>
-              <Text style={styles.statLabel}>Bookings</Text>
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Booking Reminders</Text>
+              <Text style={styles.settingDescription}>Get reminded about upcoming bookings</Text>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>3</Text>
-              <Text style={styles.statLabel}>Tournaments</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>4.8</Text>
-              <Text style={styles.statLabel}>Rating</Text>
-            </View>
+            <Switch
+              value={notificationSettings.bookingReminders}
+              onValueChange={() => handleNotificationToggle('bookingReminders')}
+              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
+              thumbColor={notificationSettings.bookingReminders ? '#000000' : '#9ca3af'}
+            />
           </View>
-        </View>
 
-        {/* Sports Interests */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Sports Interests</Text>
-          <View style={styles.sportsContainer}>
-            {user.sportsInterests.map((sport, index) => (
-              <View key={index} style={styles.sportChip}>
-                <Text style={styles.sportText}>{sport}</Text>
-              </View>
-            ))}
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>New Venues</Text>
+              <Text style={styles.settingDescription}>Notify about new venues in your area</Text>
+            </View>
+            <Switch
+              value={notificationSettings.newVenues}
+              onValueChange={() => handleNotificationToggle('newVenues')}
+              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
+              thumbColor={notificationSettings.newVenues ? '#000000' : '#9ca3af'}
+            />
           </View>
-        </View>
 
-        {/* Notifications */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
-          <View style={styles.notificationsList}>
-            <View style={styles.notificationItem}>
-              <View style={styles.notificationInfo}>
-                <Text style={styles.notificationTitle}>Booking Reminders</Text>
-                <Text style={styles.notificationSubtitle}>
-                  Get reminded about upcoming bookings
-                </Text>
-              </View>
-              <Switch
-                value={notifications.bookingReminders}
-                onValueChange={(value) => 
-                  setNotifications(prev => ({...prev, bookingReminders: value}))
-                }
-                trackColor={{ false: '#E5E5E5', true: '#FF6B35' }}
-                thumbColor="#FFFFFF"
-              />
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Tournaments</Text>
+              <Text style={styles.settingDescription}>Updates about tournaments</Text>
             </View>
+            <Switch
+              value={notificationSettings.tournaments}
+              onValueChange={() => handleNotificationToggle('tournaments')}
+              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
+              thumbColor={notificationSettings.tournaments ? '#000000' : '#9ca3af'}
+            />
+          </View>
 
-            <View style={styles.notificationItem}>
-              <View style={styles.notificationInfo}>
-                <Text style={styles.notificationTitle}>Tournament Updates</Text>
-                <Text style={styles.notificationSubtitle}>
-                  Updates about tournaments you joined
-                </Text>
-              </View>
-              <Switch
-                value={notifications.tournamentUpdates}
-                onValueChange={(value) => 
-                  setNotifications(prev => ({...prev, tournamentUpdates: value}))
-                }
-                trackColor={{ false: '#E5E5E5', true: '#FF6B35' }}
-                thumbColor="#FFFFFF"
-              />
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Promotions</Text>
+              <Text style={styles.settingDescription}>Special offers and discounts</Text>
             </View>
+            <Switch
+              value={notificationSettings.promotions}
+              onValueChange={() => handleNotificationToggle('promotions')}
+              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
+              thumbColor={notificationSettings.promotions ? '#000000' : '#9ca3af'}
+            />
+          </View>
 
-            <View style={styles.notificationItem}>
-              <View style={styles.notificationInfo}>
-                <Text style={styles.notificationTitle}>Promotions</Text>
-                <Text style={styles.notificationSubtitle}>
-                  Special offers and discounts
-                </Text>
-              </View>
-              <Switch
-                value={notifications.promotions}
-                onValueChange={(value) => 
-                  setNotifications(prev => ({...prev, promotions: value}))
-                }
-                trackColor={{ false: '#E5E5E5', true: '#FF6B35' }}
-                thumbColor="#FFFFFF"
-              />
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingLabel}>Email Notifications</Text>
+              <Text style={styles.settingDescription}>Receive notifications via email</Text>
             </View>
+            <Switch
+              value={notificationSettings.emailNotifications}
+              onValueChange={() => handleNotificationToggle('emailNotifications')}
+              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
+              thumbColor={notificationSettings.emailNotifications ? '#000000' : '#9ca3af'}
+            />
           </View>
         </View>
 
         {/* Menu Items */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          <View style={styles.menuList}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.menuItem}
-                onPress={item.onPress}
-              >
-                <View style={styles.menuIcon}>
-                  <Ionicons name={item.icon as any} size={24} color="#666666" />
+        <View style={styles.menuSection}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.menuItem}
+              onPress={item.onPress}
+            >
+              <View style={styles.menuItemLeft}>
+                <View style={styles.menuItemIcon}>
+                  <Ionicons name={item.icon as any} size={20} color="#6b7280" />
                 </View>
-                <View style={styles.menuContent}>
-                  <Text style={styles.menuTitle}>{item.title}</Text>
-                  <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                <View style={styles.menuItemText}>
+                  <Text style={styles.menuItemTitle}>{item.title}</Text>
+                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#CCCCCC" />
-              </TouchableOpacity>
-            ))}
-          </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Logout Button */}
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={24} color="#F44336" />
-            <Text style={styles.logoutText}>Logout</Text>
+        <View style={styles.logoutSection}>
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+            <Text style={styles.logoutButtonText}>Logout</Text>
           </TouchableOpacity>
-        </View>
-
-        {/* App Version */}
-        <View style={styles.footer}>
-          <Text style={styles.versionText}>Playon v1.0.0</Text>
-          <Text style={styles.copyrightText}>© 2025 Playon. All rights reserved.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -273,206 +329,233 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#6b7280',
   },
   scrollView: {
     flex: 1,
   },
-  profileHeader: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 32,
-    backgroundColor: '#F8F9FA',
+    paddingTop: 20,
+    paddingBottom: 24,
   },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 16,
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  editButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileCard: {
+    backgroundColor: '#f9fafb',
+    marginHorizontal: 24,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    marginBottom: 20,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 16,
   },
-  avatarText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  roleBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: 'white',
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 4,
-  },
-  userEmail: {
-    fontSize: 16,
-    color: '#666666',
-    marginBottom: 4,
-  },
-  joinDate: {
-    fontSize: 14,
-    color: '#999999',
-    marginBottom: 24,
-  },
-  quickStats: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    paddingVertical: 20,
-    paddingHorizontal: 32,
-    alignItems: 'center',
-  },
-  statItem: {
-    alignItems: 'center',
+  profileInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
-  statNumber: {
+  profileName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: '#000000',
     marginBottom: 4,
   },
-  statLabel: {
+  profileEmail: {
     fontSize: 14,
-    color: '#666666',
+    color: '#6b7280',
+    marginBottom: 2,
   },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#E5E5E5',
-    marginHorizontal: 16,
+  profileMobile: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 8,
   },
-  section: {
-    paddingHorizontal: 24,
-    paddingVertical: 24,
+  joinDate: {
+    fontSize: 12,
+    color: '#9ca3af',
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 16,
+  sportsSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    paddingTop: 20,
+  },
+  sportsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 12,
   },
   sportsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
   },
-  sportChip: {
-    backgroundColor: '#FFF4F0',
-    borderColor: '#FF6B35',
-    borderWidth: 1,
+  sportTag: {
+    backgroundColor: '#000000',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
+    marginRight: 8,
+    marginBottom: 8,
   },
-  sportText: {
-    fontSize: 14,
-    color: '#FF6B35',
+  sportTagText: {
+    fontSize: 12,
+    color: '#ffffff',
     fontWeight: '600',
   },
-  notificationsList: {
-    gap: 16,
-  },
-  notificationItem: {
+  statsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#F8F9FA',
-    padding: 16,
-    borderRadius: 12,
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
-  notificationInfo: {
+  statCard: {
+    flex: 1,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 4,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  settingsCard: {
+    backgroundColor: '#f9fafb',
+    marginHorizontal: 24,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  settingsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  settingInfo: {
     flex: 1,
     marginRight: 16,
   },
-  notificationTitle: {
+  settingLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 4,
+    color: '#000000',
+    marginBottom: 2,
   },
-  notificationSubtitle: {
-    fontSize: 14,
-    color: '#666666',
+  settingDescription: {
+    fontSize: 12,
+    color: '#6b7280',
   },
-  menuList: {
-    gap: 4,
+  menuSection: {
+    backgroundColor: '#f9fafb',
+    marginHorizontal: 24,
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
-  menuIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'white',
+  menuItemLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  menuContent: {
     flex: 1,
   },
-  menuTitle: {
+  menuItemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  menuItemText: {
+    flex: 1,
+  },
+  menuItemTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#000000',
     marginBottom: 2,
   },
-  menuSubtitle: {
-    fontSize: 14,
-    color: '#666666',
+  menuItemSubtitle: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  logoutSection: {
+    paddingHorizontal: 24,
+    marginBottom: 40,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFF0F0',
+    backgroundColor: '#f9fafb',
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#FFE0E0',
+    borderColor: '#fecaca',
   },
-  logoutText: {
+  logoutButtonText: {
     fontSize: 16,
+    color: '#ef4444',
     fontWeight: '600',
-    color: '#F44336',
     marginLeft: 8,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: 24,
-  },
-  versionText: {
-    fontSize: 14,
-    color: '#999999',
-    marginBottom: 4,
-  },
-  copyrightText: {
-    fontSize: 12,
-    color: '#CCCCCC',
   },
 });

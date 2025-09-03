@@ -16,29 +16,24 @@ interface Booking {
   id: string;
   venueName: string;
   sport: string;
-  location: string;
   date: string;
-  timeSlot: string;
+  time: string;
   duration: number;
   amount: number;
-  status: 'upcoming' | 'completed' | 'cancelled';
-  bookingDate: string;
+  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
   paymentStatus: 'paid' | 'pending' | 'failed';
+  location: string;
 }
 
 export default function BookingsScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
-  const [selectedTab, setSelectedTab] = useState('upcoming');
+  const [selectedTab, setSelectedTab] = useState<string>('All');
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   const router = useRouter();
 
-  const tabs = [
-    { key: 'upcoming', label: 'Upcoming', icon: 'time-outline' },
-    { key: 'completed', label: 'Completed', icon: 'checkmark-circle-outline' },
-    { key: 'cancelled', label: 'Cancelled', icon: 'close-circle-outline' },
-  ];
+  const tabs = ['All', 'Upcoming', 'Completed', 'Cancelled'];
 
   useEffect(() => {
     loadBookings();
@@ -53,77 +48,67 @@ export default function BookingsScreen() {
     const mockBookings: Booking[] = [
       {
         id: '1',
-        venueName: 'SportZone Arena',
-        sport: 'Badminton',
-        location: 'Koramangala, Bangalore',
-        date: '2025-01-28',
-        timeSlot: '18:00 - 19:00',
-        duration: 1,
-        amount: 800,
-        status: 'upcoming',
-        bookingDate: '2025-01-20',
+        venueName: 'Elite Cricket Ground',
+        sport: 'Cricket',
+        date: '2025-01-18',
+        time: '18:00 - 20:00',
+        duration: 2,
+        amount: 2400,
+        status: 'confirmed',
         paymentStatus: 'paid',
+        location: 'Andheri, Mumbai',
       },
       {
         id: '2',
-        venueName: 'Elite Cricket Ground',
-        sport: 'Cricket',
-        location: 'Andheri, Mumbai',
-        date: '2025-01-30',
-        timeSlot: '14:00 - 17:00',
-        duration: 3,
-        amount: 3600,
-        status: 'upcoming',
-        bookingDate: '2025-01-21',
-        paymentStatus: 'paid',
+        venueName: 'SportZone Arena',
+        sport: 'Badminton',
+        date: '2025-01-20',
+        time: '08:00 - 09:00',
+        duration: 1,
+        amount: 800,
+        status: 'pending',
+        paymentStatus: 'pending',
+        location: 'Koramangala, Bangalore',
       },
       {
         id: '3',
-        venueName: 'Ace Tennis Club',
-        sport: 'Tennis',
-        location: 'Banjara Hills, Hyderabad',
+        venueName: 'Champions Football Club',
+        sport: 'Football',
         date: '2025-01-15',
-        timeSlot: '07:00 - 08:00',
+        time: '19:00 - 20:00',
         duration: 1,
-        amount: 600,
+        amount: 1000,
         status: 'completed',
-        bookingDate: '2025-01-10',
         paymentStatus: 'paid',
+        location: 'Connaught Place, Delhi',
       },
       {
         id: '4',
-        venueName: 'Champions Football Club',
-        sport: 'Football',
-        location: 'Connaught Place, Delhi',
+        venueName: 'Ace Tennis Club',
+        sport: 'Tennis',
         date: '2025-01-12',
-        timeSlot: '19:00 - 20:00',
+        time: '07:00 - 08:00',
         duration: 1,
-        amount: 1000,
+        amount: 600,
         status: 'cancelled',
-        bookingDate: '2025-01-08',
-        paymentStatus: 'paid',
+        paymentStatus: 'failed',
+        location: 'Banjara Hills, Hyderabad',
       },
       {
         id: '5',
         venueName: 'Hoops Basketball Arena',
         sport: 'Basketball',
-        location: 'Electronic City, Bangalore',
-        date: '2025-02-02',
-        timeSlot: '20:00 - 21:00',
+        date: '2025-01-22',
+        time: '20:00 - 21:00',
         duration: 1,
         amount: 500,
-        status: 'upcoming',
-        bookingDate: '2025-01-22',
-        paymentStatus: 'pending',
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        location: 'Electronic City, Bangalore',
       },
     ];
-    
-    setBookings(mockBookings);
-  };
 
-  const filterBookings = () => {
-    const filtered = bookings.filter(booking => booking.status === selectedTab);
-    setFilteredBookings(filtered);
+    setBookings(mockBookings);
   };
 
   const onRefresh = async () => {
@@ -132,64 +117,132 @@ export default function BookingsScreen() {
     setIsRefreshing(false);
   };
 
-  const handleCancelBooking = (bookingId: string) => {
-    Alert.alert(
-      'Cancel Booking',
-      'Are you sure you want to cancel this booking? This action cannot be undone.',
-      [
-        {
-          text: 'No',
-          style: 'cancel',
-        },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: () => {
-            // Update booking status to cancelled
-            setBookings(prev => 
-              prev.map(booking => 
-                booking.id === bookingId 
-                  ? { ...booking, status: 'cancelled' as const }
-                  : booking
-              )
-            );
-            Alert.alert('Success', 'Booking cancelled successfully');
-          },
-        },
-      ]
-    );
+  const filterBookings = () => {
+    let filtered = bookings;
+
+    if (selectedTab !== 'All') {
+      const today = new Date();
+      
+      switch (selectedTab) {
+        case 'Upcoming':
+          filtered = bookings.filter(booking => {
+            const bookingDate = new Date(booking.date);
+            return bookingDate >= today && (booking.status === 'confirmed' || booking.status === 'pending');
+          });
+          break;
+        case 'Completed':
+          filtered = bookings.filter(booking => booking.status === 'completed');
+          break;
+        case 'Cancelled':
+          filtered = bookings.filter(booking => booking.status === 'cancelled');
+          break;
+      }
+    }
+
+    setFilteredBookings(filtered);
   };
 
-  const handleRebook = (booking: Booking) => {
-    router.push('/main/venues');
+  const handleBookingAction = (booking: Booking, action: string) => {
+    switch (action) {
+      case 'cancel':
+        Alert.alert(
+          'Cancel Booking',
+          `Are you sure you want to cancel this booking for ${booking.venueName}?`,
+          [
+            { text: 'No', style: 'cancel' },
+            { 
+              text: 'Yes, Cancel', 
+              style: 'destructive',
+              onPress: () => {
+                // Update booking status
+                setBookings(bookings.map(b => 
+                  b.id === booking.id 
+                    ? { ...b, status: 'cancelled' as const }
+                    : b
+                ));
+                Alert.alert('Success', 'Booking cancelled successfully');
+              }
+            }
+          ]
+        );
+        break;
+      case 'rebook':
+        Alert.alert(
+          'Rebook Venue',
+          `Would you like to book ${booking.venueName} again?`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Book Again', onPress: () => Alert.alert('Redirect', 'Redirecting to booking...') }
+          ]
+        );
+        break;
+      case 'details':
+        Alert.alert('Booking Details', `Venue: ${booking.venueName}\nDate: ${booking.date}\nTime: ${booking.time}\nAmount: ₹${booking.amount}`);
+        break;
+      case 'pay':
+        Alert.alert('Payment', `Pay ₹${booking.amount} for ${booking.venueName}?`, [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Pay Now', 
+            onPress: () => {
+              setBookings(bookings.map(b => 
+                b.id === booking.id 
+                  ? { ...b, paymentStatus: 'paid' as const, status: 'confirmed' as const }
+                  : b
+              ));
+              Alert.alert('Success', 'Payment completed successfully');
+            }
+          }
+        ]);
+        break;
+    }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'upcoming': return '#FF6B35';
-      case 'completed': return '#4CAF50';
-      case 'cancelled': return '#F44336';
-      default: return '#666666';
+      case 'confirmed':
+        return '#000000';
+      case 'pending':
+        return '#f59e0b';
+      case 'completed':
+        return '#10b981';
+      case 'cancelled':
+        return '#ef4444';
+      default:
+        return '#6b7280';
     }
   };
 
-  const getPaymentStatusColor = (status: string) => {
+  const getStatusBgColor = (status: string) => {
     switch (status) {
-      case 'paid': return '#4CAF50';
-      case 'pending': return '#FF9800';
-      case 'failed': return '#F44336';
-      default: return '#666666';
+      case 'confirmed':
+        return '#f3f4f6';
+      case 'pending':
+        return '#fef3c7';
+      case 'completed':
+        return '#d1fae5';
+      case 'cancelled':
+        return '#fee2e2';
+      default:
+        return '#f3f4f6';
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      weekday: 'short',
-      day: 'numeric', 
-      month: 'short',
-      year: 'numeric'
-    });
+  const getSportIcon = (sport: string) => {
+    switch (sport.toLowerCase()) {
+      case 'cricket':
+        return 'baseball-outline';
+      case 'football':
+        return 'football-outline';
+      case 'badminton':
+        return 'tennisball-outline';
+      case 'tennis':
+        return 'tennisball-outline';
+      case 'basketball':
+        return 'basketball-outline';
+      default:
+        return 'fitness-outline';
+    }
   };
 
   return (
@@ -198,169 +251,160 @@ export default function BookingsScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Bookings</Text>
         <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => router.push('/main/venues')}
+          style={styles.filterButton}
+          onPress={() => Alert.alert('Filter', 'Filter options coming soon!')}
         >
-          <Ionicons name="add" size={24} color="#FF6B35" />
+          <Ionicons name="options-outline" size={20} color="#000000" />
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        style={styles.tabsContainer}
+        contentContainerStyle={styles.tabsContent}
+      >
         {tabs.map((tab) => (
           <TouchableOpacity
-            key={tab.key}
+            key={tab}
             style={[
-              styles.tab,
-              selectedTab === tab.key && styles.tabActive,
+              styles.tabChip,
+              selectedTab === tab && styles.tabChipActive
             ]}
-            onPress={() => setSelectedTab(tab.key)}
+            onPress={() => setSelectedTab(tab)}
           >
-            <Ionicons 
-              name={tab.icon as any} 
-              size={20} 
-              color={selectedTab === tab.key ? '#FF6B35' : '#666666'} 
-            />
-            <Text
-              style={[
-                styles.tabText,
-                selectedTab === tab.key && styles.tabTextActive,
-              ]}
-            >
-              {tab.label}
+            <Text style={[
+              styles.tabChipText,
+              selectedTab === tab && styles.tabChipTextActive
+            ]}>
+              {tab}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* Bookings List */}
       <ScrollView 
         style={styles.bookingsList}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
-        showsVerticalScrollIndicator={false}
       >
-        {filteredBookings.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="calendar-outline" size={64} color="#CCCCCC" />
-            <Text style={styles.emptyStateText}>No {selectedTab} bookings</Text>
-            <Text style={styles.emptyStateSubtext}>
-              {selectedTab === 'upcoming' 
-                ? 'Book a venue to see your upcoming reservations'
-                : `You don't have any ${selectedTab} bookings yet`
-              }
-            </Text>
-            {selectedTab === 'upcoming' && (
-              <TouchableOpacity 
-                style={styles.emptyStateButton}
-                onPress={() => router.push('/main/venues')}
-              >
-                <Text style={styles.emptyStateButtonText}>Book Now</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : (
-          filteredBookings.map((booking) => (
-            <View key={booking.id} style={styles.bookingCard}>
-              <View style={styles.bookingHeader}>
-                <View style={styles.bookingIcon}>
-                  <Ionicons name="location-outline" size={20} color="#FF6B35" />
+        {filteredBookings.map((booking) => (
+          <View key={booking.id} style={styles.bookingCard}>
+            <View style={styles.bookingHeader}>
+              <View style={styles.venueInfo}>
+                <View style={styles.sportIcon}>
+                  <Ionicons name={getSportIcon(booking.sport) as any} size={20} color="#000000" />
                 </View>
-                <View style={styles.bookingStatus}>
-                  <View 
-                    style={[
-                      styles.statusDot, 
-                      { backgroundColor: getStatusColor(booking.status) }
-                    ]} 
-                  />
-                  <Text style={styles.statusText}>{booking.status.toUpperCase()}</Text>
+                <View style={styles.venueDetails}>
+                  <Text style={styles.venueName}>{booking.venueName}</Text>
+                  <Text style={styles.venueLocation}>{booking.location}</Text>
                 </View>
               </View>
-
-              <View style={styles.bookingContent}>
-                <Text style={styles.venueName}>{booking.venueName}</Text>
-                <Text style={styles.venueLocation}>{booking.location}</Text>
-                
-                <View style={styles.bookingDetails}>
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailItem}>
-                      <Ionicons name="fitness-outline" size={16} color="#666666" />
-                      <Text style={styles.detailText}>{booking.sport}</Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                      <Ionicons name="calendar-outline" size={16} color="#666666" />
-                      <Text style={styles.detailText}>{formatDate(booking.date)}</Text>
-                    </View>
-                  </View>
-                  
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailItem}>
-                      <Ionicons name="time-outline" size={16} color="#666666" />
-                      <Text style={styles.detailText}>{booking.timeSlot}</Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                      <Ionicons name="hourglass-outline" size={16} color="#666666" />
-                      <Text style={styles.detailText}>{booking.duration}h</Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.bookingFooter}>
-                  <View style={styles.paymentInfo}>
-                    <Text style={styles.amountText}>₹{booking.amount}</Text>
-                    <View style={styles.paymentStatus}>
-                      <View 
-                        style={[
-                          styles.paymentDot, 
-                          { backgroundColor: getPaymentStatusColor(booking.paymentStatus) }
-                        ]} 
-                      />
-                      <Text style={styles.paymentStatusText}>
-                        {booking.paymentStatus.toUpperCase()}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.bookingActions}>
-                    {booking.status === 'upcoming' && (
-                      <>
-                        {booking.paymentStatus === 'pending' && (
-                          <TouchableOpacity style={styles.payButton}>
-                            <Text style={styles.payButtonText}>Pay Now</Text>
-                          </TouchableOpacity>
-                        )}
-                        <TouchableOpacity 
-                          style={styles.cancelButton}
-                          onPress={() => handleCancelBooking(booking.id)}
-                        >
-                          <Text style={styles.cancelButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                      </>
-                    )}
-                    
-                    {booking.status === 'completed' && (
-                      <TouchableOpacity 
-                        style={styles.rebookButton}
-                        onPress={() => handleRebook(booking)}
-                      >
-                        <Text style={styles.rebookButtonText}>Book Again</Text>
-                      </TouchableOpacity>
-                    )}
-                    
-                    {booking.status === 'cancelled' && (
-                      <TouchableOpacity 
-                        style={styles.rebookButton}
-                        onPress={() => handleRebook(booking)}
-                      >
-                        <Text style={styles.rebookButtonText}>Rebook</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusBgColor(booking.status) }
+              ]}>
+                <Text style={[
+                  styles.statusText,
+                  { color: getStatusColor(booking.status) }
+                ]}>
+                  {booking.status.toUpperCase()}
+                </Text>
               </View>
             </View>
-          ))
+
+            <View style={styles.bookingDetails}>
+              <View style={styles.detailRow}>
+                <Ionicons name="calendar-outline" size={16} color="#6b7280" />
+                <Text style={styles.detailText}>
+                  {new Date(booking.date).toLocaleDateString('en-IN', { 
+                    weekday: 'short', 
+                    day: '2-digit', 
+                    month: 'short' 
+                  })}
+                </Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Ionicons name="time-outline" size={16} color="#6b7280" />
+                <Text style={styles.detailText}>{booking.time}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Ionicons name="cash-outline" size={16} color="#6b7280" />
+                <Text style={styles.detailText}>₹{booking.amount}</Text>
+              </View>
+            </View>
+
+            <View style={styles.paymentStatus}>
+              <View style={styles.paymentInfo}>
+                <Text style={styles.paymentLabel}>Payment: </Text>
+                <Text style={[
+                  styles.paymentStatusText,
+                  { color: booking.paymentStatus === 'paid' ? '#10b981' : booking.paymentStatus === 'failed' ? '#ef4444' : '#f59e0b' }
+                ]}>
+                  {booking.paymentStatus.toUpperCase()}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.bookingActions}>
+              <TouchableOpacity 
+                style={styles.actionButton}
+                onPress={() => handleBookingAction(booking, 'details')}
+              >
+                <Text style={styles.actionButtonText}>Details</Text>
+              </TouchableOpacity>
+
+              {booking.status === 'pending' && booking.paymentStatus === 'pending' && (
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.payButton]}
+                  onPress={() => handleBookingAction(booking, 'pay')}
+                >
+                  <Text style={[styles.actionButtonText, styles.payButtonText]}>Pay Now</Text>
+                </TouchableOpacity>
+              )}
+
+              {(booking.status === 'confirmed' || booking.status === 'pending') && (
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.cancelButton]}
+                  onPress={() => handleBookingAction(booking, 'cancel')}
+                >
+                  <Text style={[styles.actionButtonText, styles.cancelButtonText]}>Cancel</Text>
+                </TouchableOpacity>
+              )}
+
+              {booking.status === 'completed' && (
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.rebookButton]}
+                  onPress={() => handleBookingAction(booking, 'rebook')}
+                >
+                  <Text style={[styles.actionButtonText, styles.rebookButtonText]}>Book Again</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ))}
+
+        {filteredBookings.length === 0 && (
+          <View style={styles.emptyState}>
+            <Ionicons name="calendar-outline" size={48} color="#9ca3af" />
+            <Text style={styles.emptyStateTitle}>No bookings found</Text>
+            <Text style={styles.emptyStateText}>
+              {selectedTab === 'All' 
+                ? "You haven't made any bookings yet"
+                : `No ${selectedTab.toLowerCase()} bookings`
+              }
+            </Text>
+            <TouchableOpacity 
+              style={styles.browseVenuesButton}
+              onPress={() => router.push('/main/venues')}
+            >
+              <Text style={styles.browseVenuesButtonText}>Browse Venues</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -370,7 +414,7 @@ export default function BookingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
@@ -381,218 +425,183 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#000000',
   },
-  addButton: {
+  filterButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabsContainer: {
-    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  tabsContent: {
     paddingHorizontal: 24,
-    marginBottom: 24,
   },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F8F9FA',
-    paddingVertical: 12,
-    marginRight: 8,
-    borderRadius: 12,
+  tabChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f3f4f6',
+    marginRight: 12,
   },
-  tabActive: {
-    backgroundColor: '#FFF4F0',
-    borderColor: '#FF6B35',
-    borderWidth: 1,
+  tabChipActive: {
+    backgroundColor: '#000000',
   },
-  tabText: {
+  tabChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666666',
-    marginLeft: 8,
+    color: '#6b7280',
   },
-  tabTextActive: {
-    color: '#FF6B35',
+  tabChipTextActive: {
+    color: '#ffffff',
   },
   bookingsList: {
     flex: 1,
     paddingHorizontal: 24,
   },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 64,
-  },
-  emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666666',
-    marginTop: 16,
-  },
-  emptyStateSubtext: {
-    fontSize: 14,
-    color: '#999999',
-    marginTop: 8,
-    textAlign: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyStateButton: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  emptyStateButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   bookingCard: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f9fafb',
     borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
-    overflow: 'hidden',
   },
   bookingHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingBottom: 0,
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
-  bookingIcon: {
+  venueInfo: {
+    flexDirection: 'row',
+    flex: 1,
+  },
+  sportIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 12,
   },
-  bookingStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#666666',
-  },
-  bookingContent: {
-    padding: 16,
+  venueDetails: {
+    flex: 1,
   },
   venueName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#000000',
     marginBottom: 4,
   },
   venueLocation: {
     fontSize: 14,
-    color: '#666666',
-    marginBottom: 16,
+    color: '#6b7280',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '600',
   },
   bookingDetails: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   detailRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  detailItem: {
-    flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    marginBottom: 6,
   },
   detailText: {
     fontSize: 14,
-    color: '#666666',
-    marginLeft: 6,
-  },
-  bookingFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  paymentInfo: {
-    alignItems: 'flex-start',
-  },
-  amountText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FF6B35',
-    marginBottom: 4,
+    color: '#6b7280',
+    marginLeft: 8,
   },
   paymentStatus: {
+    marginBottom: 16,
+  },
+  paymentInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  paymentDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 4,
+  paymentLabel: {
+    fontSize: 14,
+    color: '#6b7280',
   },
   paymentStatusText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#666666',
+    fontSize: 14,
+    fontWeight: '600',
   },
   bookingActions: {
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+  },
+  actionButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  actionButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6b7280',
   },
   payButton: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: '#000000',
   },
   payButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#ffffff',
   },
   cancelButton: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#F44336',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: '#fee2e2',
   },
   cancelButtonText: {
-    color: '#F44336',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#ef4444',
   },
   rebookButton: {
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: '#000000',
   },
   rebookButtonText: {
-    color: 'white',
+    color: '#ffffff',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  browseVenuesButton: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  browseVenuesButtonText: {
     fontSize: 14,
     fontWeight: '600',
+    color: '#ffffff',
   },
 });
