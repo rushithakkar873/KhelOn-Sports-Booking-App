@@ -410,6 +410,172 @@ async def get_venue_owner_profile(current_owner: dict = Depends(get_current_venu
         is_active=current_owner.get("is_active", True),
         created_at=current_owner["created_at"]
     )
+
+# Venue Owner - Venue Management Routes
+@api_router.post("/venue-owner/venues", response_model=Dict[str, str])
+async def create_venue_by_owner(venue_data: VenueCreate, current_owner: dict = Depends(get_current_venue_owner)):
+    venue_id = str(uuid.uuid4())
+    
+    # Process slots
+    processed_slots = []
+    for slot_data in venue_data.slots:
+        slot_id = str(uuid.uuid4())
+        processed_slots.append({
+            "_id": slot_id,
+            "day_of_week": slot_data.day_of_week,
+            "start_time": slot_data.start_time,
+            "end_time": slot_data.end_time,
+            "capacity": slot_data.capacity,
+            "price_per_hour": slot_data.price_per_hour,
+            "is_peak_hour": slot_data.is_peak_hour,
+            "is_active": True,
+            "created_at": datetime.utcnow()
+        })
+    
+    new_venue = {
+        "_id": venue_id,
+        "name": venue_data.name,
+        "owner_id": current_owner["_id"],
+        "owner_name": current_owner["name"],
+        "sports_supported": venue_data.sports_supported,
+        "address": venue_data.address,
+        "city": venue_data.city,
+        "state": venue_data.state,
+        "pincode": venue_data.pincode,
+        "description": venue_data.description,
+        "amenities": venue_data.amenities,
+        "base_price_per_hour": venue_data.base_price_per_hour,
+        "contact_phone": venue_data.contact_phone,
+        "whatsapp_number": venue_data.whatsapp_number,
+        "images": venue_data.images,  # Will be S3 URLs
+        "rules_and_regulations": venue_data.rules_and_regulations,
+        "cancellation_policy": venue_data.cancellation_policy,
+        "slots": processed_slots,
+        "rating": 0.0,
+        "total_bookings": 0,
+        "total_reviews": 0,
+        "is_active": True,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+    
+    await db.venues.insert_one(new_venue)
+    
+    # Update venue owner's venue count
+    await db.venue_owners.update_one(
+        {"_id": current_owner["_id"]},
+        {"$inc": {"total_venues": 1}}
+    )
+    
+    return {
+        "message": "Venue created successfully",
+        "venue_id": venue_id
+    }
+
+@api_router.get("/venue-owner/venues", response_model=List[VenueResponse])
+async def get_owner_venues(
+    current_owner: dict = Depends(get_current_venue_owner),
+    skip: int = 0,
+    limit: int = 10,
+    is_active: Optional[bool] = None
+):
+    query = {"owner_id": current_owner["_id"]}
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    venues = await db.venues.find(query).skip(skip).limit(limit).to_list(length=limit)
+    
+    venue_responses = []
+    for venue in venues:
+        venue_responses.append(VenueResponse(
+            id=venue["_id"],
+            name=venue["name"],
+            owner_id=venue["owner_id"],
+            owner_name=venue["owner_name"],
+            sports_supported=venue["sports_supported"],
+            address=venue["address"],
+            city=venue["city"],
+            state=venue["state"],
+            pincode=venue["pincode"],
+            description=venue.get("description"),
+            amenities=venue.get("amenities", []),
+            base_price_per_hour=venue["base_price_per_hour"],
+            contact_phone=venue["contact_phone"],
+            whatsapp_number=venue.get("whatsapp_number"),
+            images=venue.get("images", []),
+            rules_and_regulations=venue.get("rules_and_regulations"),
+            cancellation_policy=venue.get("cancellation_policy"),
+            rating=venue.get("rating", 0.0),
+            total_bookings=venue.get("total_bookings", 0),
+            total_reviews=venue.get("total_reviews", 0),
+            is_active=venue.get("is_active", True),
+            slots=venue.get("slots", []),
+            created_at=venue["created_at"]
+        ))
+    
+    return venue_responses
+
+@api_router.get("/venue-owner/venues/{venue_id}", response_model=VenueResponse)
+async def get_owner_venue(venue_id: str, current_owner: dict = Depends(get_current_venue_owner)):
+    venue = await db.venues.find_one({"_id": venue_id, "owner_id": current_owner["_id"]})
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found"
+        )
+    
+    return VenueResponse(
+        id=venue["_id"],
+        name=venue["name"],
+        owner_id=venue["owner_id"],
+        owner_name=venue["owner_name"],
+        sports_supported=venue["sports_supported"],
+        address=venue["address"],
+        city=venue["city"],
+        state=venue["state"],
+        pincode=venue["pincode"],
+        description=venue.get("description"),
+        amenities=venue.get("amenities", []),
+        base_price_per_hour=venue["base_price_per_hour"],
+        contact_phone=venue["contact_phone"],
+        whatsapp_number=venue.get("whatsapp_number"),
+        images=venue.get("images", []),
+        rules_and_regulations=venue.get("rules_and_regulations"),
+        cancellation_policy=venue.get("cancellation_policy"),
+        rating=venue.get("rating", 0.0),
+        total_bookings=venue.get("total_bookings", 0),
+        total_reviews=venue.get("total_reviews", 0),
+        is_active=venue.get("is_active", True),
+        slots=venue.get("slots", []),
+        created_at=venue["created_at"]
+    )
+
+@api_router.put("/venue-owner/venues/{venue_id}/status")
+async def update_venue_status(
+    venue_id: str, 
+    is_active: bool,
+    current_owner: dict = Depends(get_current_venue_owner)
+):
+    result = await db.venues.update_one(
+        {"_id": venue_id, "owner_id": current_owner["_id"]},
+        {
+            "$set": {
+                "is_active": is_active,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found"
+        )
+    
+    return {
+        "message": f"Venue {'activated' if is_active else 'deactivated'} successfully"
+    }
+
 @api_router.post("/auth/register", response_model=Dict[str, str])
 async def register_user(user_data: UserCreate):
     # Check if user already exists
