@@ -150,39 +150,67 @@ class VenueCreate(BaseModel):
 class VenueResponse(BaseModel):
     id: str
     name: str
-    sport: str
-    location: str
-    description: Optional[str]
-    facilities: List[str]
-    pricing: Dict[str, float]
-    available_slots: List[str]
-    images: List[str]
-    contact_phone: Optional[str]
-    rules: Optional[str]
     owner_id: str
+    owner_name: str
+    sports_supported: List[str]
+    address: str
+    city: str
+    state: str
+    pincode: str
+    description: Optional[str]
+    amenities: List[str]
+    base_price_per_hour: float
+    contact_phone: str
+    whatsapp_number: Optional[str]
+    images: List[str]
+    rules_and_regulations: Optional[str]
+    cancellation_policy: Optional[str]
     rating: float = 0.0
     total_bookings: int = 0
+    total_reviews: int = 0
+    is_active: bool = True
+    slots: List[Dict] = []  # Will contain slot information
     created_at: datetime
+
+class SlotResponse(BaseModel):
+    id: str
+    venue_id: str
+    day_of_week: int
+    start_time: str
+    end_time: str
+    capacity: int
+    price_per_hour: float
+    is_peak_hour: bool
+    is_active: bool = True
 
 class BookingCreate(BaseModel):
     venue_id: str
-    date: str  # YYYY-MM-DD format
-    time_slot: str  # e.g., "18:00-19:00"
-    duration: int = Field(..., ge=1, le=12)  # hours
+    slot_id: str
+    booking_date: str  # YYYY-MM-DD format
+    duration_hours: int = Field(..., ge=1, le=12)
+    player_name: str = Field(..., min_length=2, max_length=100)
+    player_phone: str = Field(..., min_length=10, max_length=15)
     notes: Optional[str] = Field(None, max_length=500)
 
 class BookingResponse(BaseModel):
     id: str
     venue_id: str
+    venue_name: str
+    slot_id: str
     user_id: str
-    date: str
-    time_slot: str
-    duration: int
-    amount: float
+    booking_date: str
+    start_time: str
+    end_time: str
+    duration_hours: int
+    total_amount: float
     status: str = "confirmed"  # confirmed, cancelled, completed
-    payment_status: str = "pending"  # pending, paid, failed
+    payment_status: str = "pending"  # pending, paid, failed, refunded
+    payment_id: Optional[str] = None
+    player_name: str
+    player_phone: str
     notes: Optional[str]
     created_at: datetime
+    updated_at: datetime
 
 class TournamentCreate(BaseModel):
     name: str = Field(..., min_length=3, max_length=200)
