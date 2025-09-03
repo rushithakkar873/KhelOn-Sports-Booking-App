@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   venuePrice: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FF6B35',
+    color: '#000000',
   },
   venueRating: {
     flexDirection: 'row',
