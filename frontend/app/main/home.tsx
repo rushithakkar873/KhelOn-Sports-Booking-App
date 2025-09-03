@@ -233,7 +233,7 @@ export default function HomeScreen() {
                   <View style={styles.venueDetails}>
                     <Text style={styles.venuePrice}>₹{venue.price}/hr</Text>
                     <View style={styles.venueRating}>
-                      <Ionicons name="star" size={12} color="#FFD700" />
+                      <Ionicons name="star" size={12} color="#fbbf24" />
                       <Text style={styles.venueRatingText}>{venue.rating}</Text>
                     </View>
                   </View>
