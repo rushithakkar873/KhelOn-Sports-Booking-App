@@ -435,7 +435,7 @@ class VenueOwnerDashboardTester:
             
             # Test booking status update
             result = self.make_request("PUT", f"/venue-owner/bookings/{self.test_booking_id}/status",
-                                     {"new_status": "completed"}, auth_token=self.venue_owner_token)
+                                     auth_token=self.venue_owner_token, params={"new_status": "completed"})
             if result["success"]:
                 print("✅ Booking status update successful")
                 print(f"   Message: {result['data'].get('message')}")
