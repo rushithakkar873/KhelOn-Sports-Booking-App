@@ -947,6 +947,7 @@ async def get_analytics_dashboard(
         "peak_hours": [{"hour": f"{hour:02d}:00", "count": count} for hour, count in peak_hours]
     }
 
+# Authentication Routes
 @api_router.post("/auth/register", response_model=Dict[str, str])
 async def register_user(user_data: UserCreate):
     # Check if user already exists
