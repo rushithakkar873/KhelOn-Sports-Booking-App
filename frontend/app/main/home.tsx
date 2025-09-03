@@ -258,7 +258,7 @@ export default function HomeScreen() {
               onPress={() => router.push(`/tournaments/${tournament.id}`)}
             >
               <View style={styles.tournamentIcon}>
-                <Ionicons name="trophy-outline" size={24} color="#FF6B35" />
+                <Ionicons name="trophy-outline" size={24} color="#000000" />
               </View>
               <View style={styles.tournamentInfo}>
                 <Text style={styles.tournamentName}>{tournament.name}</Text>
