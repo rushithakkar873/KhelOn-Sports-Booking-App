@@ -286,17 +286,17 @@ frontend:
         agent: "main"
         comment: "My bookings screen with status tabs, booking cards showing venue details, payment status, and action buttons for cancel/rebook."
 
-  - task: "Profile Screen"
+  - task: "Venue Owner Dashboard Screens"
     implemented: true
     working: true
-    file: "/app/frontend/app/main/profile.tsx"
+    file: "/app/frontend/app/venue-owner/dashboard/"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "main"
-        comment: "Complete profile screen with user info, sports interests, notification settings, menu items, and logout functionality."
+        comment: "Implemented all 4 venue owner dashboard screens: venues.tsx (venue management with stats, status toggle, slot controls), bookings.tsx (booking management with filtering, actions, details), analytics.tsx (enhanced charts, KPIs, time filters), profile.tsx (profile editing, notification settings, business info). All screens use mock data, include proper modals, loading states, and comprehensive functionality."
 
 metadata:
   created_by: "main_agent"
