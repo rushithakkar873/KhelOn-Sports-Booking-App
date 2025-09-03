@@ -341,7 +341,7 @@ class VenueOwnerAPITester:
         # Test deactivating venue
         params = {"is_active": False}
         result = self.make_request("PUT", f"/venue-owner/venues/{self.test_venue_id}/status", 
-                                 data=params, auth_token=self.venue_owner_token)
+                                 auth_token=self.venue_owner_token, params=params)
         if result["success"]:
             print("✅ Venue deactivation successful")
             print(f"   Message: {result['data'].get('message')}")
@@ -352,7 +352,7 @@ class VenueOwnerAPITester:
         # Test reactivating venue
         params = {"is_active": True}
         result = self.make_request("PUT", f"/venue-owner/venues/{self.test_venue_id}/status",
-                                 data=params, auth_token=self.venue_owner_token)
+                                 auth_token=self.venue_owner_token, params=params)
         if result["success"]:
             print("✅ Venue reactivation successful")
             print(f"   Message: {result['data'].get('message')}")
