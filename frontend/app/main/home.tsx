@@ -164,7 +164,7 @@ export default function HomeScreen() {
             style={styles.notificationButton}
             onPress={() => Alert.alert('Notifications', 'No new notifications')}
           >
-            <Ionicons name="notifications-outline" size={24} color="#1A1A1A" />
+            <Ionicons name="notifications-outline" size={24} color="#000000" />
           </TouchableOpacity>
         </View>
 
