@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingRight: 16,
     fontSize: 16,
-    color: '#1f2937',
+    color: '#000000',
   },
   eyeIcon: {
     padding: 16,
