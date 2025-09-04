@@ -37,13 +37,45 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      // Mock login - replace with actual API call
+      // Determine API endpoint based on user role
+      const apiEndpoint = userRole === 'venue_owner' 
+        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/venue-owner/login`
+        : `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/login`;
+
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.toLowerCase().trim(),
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Navigate based on user role
+        const destination = userRole === 'venue_owner' 
+          ? '/venue-owner/dashboard'
+          : '/main/home';
+        
+        Alert.alert('Success', 'Login successful!', [
+          { text: 'OK', onPress: () => router.replace(destination) }
+        ]);
+      } else {
+        Alert.alert('Error', data.detail || 'Login failed');
+      }
+    } catch (error) {
+      // Fallback to mock login for development
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For demo purposes, navigate to main app
-      router.replace('/main/home');
-    } catch (error) {
-      Alert.alert('Error', 'Login failed. Please try again.');
+      const destination = userRole === 'venue_owner' 
+        ? '/venue-owner/dashboard'
+        : '/main/home';
+      
+      router.replace(destination);
     } finally {
       setIsLoading(false);
     }
