@@ -363,6 +363,8 @@ export default function AnalyticsScreen() {
             data={getPeakHoursData()}
             width={width - 48}
             height={200}
+            yAxisLabel=""
+            yAxisSuffix=""
             chartConfig={chartConfig}
             style={styles.chart}
           />
