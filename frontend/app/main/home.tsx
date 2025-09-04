@@ -148,138 +148,165 @@ export default function HomeScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>Good morning!</Text>
-            <Text style={styles.userName}>Ready to play?</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={() => Alert.alert('Notifications', 'No new notifications')}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#000000" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={20} color="#666666" />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search venues, tournaments, sports..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-            />
-          </View>
-          <TouchableOpacity style={styles.filterButton}>
-            <Ionicons name="options-outline" size={20} color="#000000" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map((action, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.quickActionCard}
-                onPress={action.onPress}
-              >
-                <View style={[styles.quickActionIcon, { backgroundColor: action.color }]}>
-                  <Ionicons name={action.icon} size={24} color="white" />
-                </View>
-                <Text style={styles.quickActionTitle}>{action.title}</Text>
-                <Text style={styles.quickActionSubtitle}>{action.subtitle}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Nearby Venues */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Nearby Venues</Text>
-            <TouchableOpacity onPress={() => router.push('/main/venues')}>
-              <Text style={styles.seeAllText}>See All</Text>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+          style={styles.scrollView}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.greeting}>Hello, Player</Text>
+              <Text style={styles.subtitle}>Welcome to PlayOn</Text>
+            </View>
+            <TouchableOpacity style={styles.profileButton}>
+              <View style={styles.avatar}>
+                <Ionicons name="person" size={20} color="#212529" />
+              </View>
             </TouchableOpacity>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {nearbyVenues.map((venue) => (
-              <TouchableOpacity
-                key={venue.id}
-                style={styles.venueCard}
-                onPress={() => router.push(`/venues/${venue.id}`)}
+
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Ionicons name="search-outline" size={20} color="#9ca3af" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search"
+                placeholderTextColor="#9ca3af"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onSubmitEditing={handleSearch}
+              />
+            </View>
+            <TouchableOpacity style={styles.filterButton}>
+              <Ionicons name="options-outline" size={20} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Select your sport */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Select your sport</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsContainer}>
+              {['Cricket', 'Football', 'Badminton', 'Tennis'].map((sport, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.chip, index === 0 && styles.chipSelected]}
+                >
+                  <Text style={[styles.chipText, index === 0 && styles.chipTextSelected]}>
+                    {sport}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Main Featured Venue Card */}
+          <View style={styles.section}>
+            <TouchableOpacity style={styles.featuredVenueCard}>
+              <ImageBackground
+                source={{ uri: 'https://images.unsplash.com/photo-1611630483685-472d017cbb4f' }}
+                style={styles.featuredVenueImage}
+                imageStyle={styles.featuredVenueImageStyle}
               >
-                <View style={styles.venueImagePlaceholder}>
-                  <Ionicons name="location-outline" size={32} color="#000000" />
-                </View>
-                <View style={styles.venueInfo}>
-                  <Text style={styles.venueName} numberOfLines={1}>
-                    {venue.name}
-                  </Text>
-                  <Text style={styles.venueLocation} numberOfLines={1}>
-                    {venue.location}
-                  </Text>
-                  <View style={styles.venueDetails}>
-                    <Text style={styles.venuePrice}>₹{venue.price}/hr</Text>
-                    <View style={styles.venueRating}>
-                      <Ionicons name="star" size={12} color="#fbbf24" />
-                      <Text style={styles.venueRatingText}>{venue.rating}</Text>
+                <View style={styles.featuredVenueOverlay} />
+                <View style={styles.featuredVenueContent}>
+                  <TouchableOpacity style={styles.favoriteButton}>
+                    <Ionicons name="heart-outline" size={20} color="#ffffff" />
+                  </TouchableOpacity>
+                  <View style={styles.featuredVenueInfo}>
+                    <Text style={styles.featuredVenueName}>Elite Sports Arena</Text>
+                    <View style={styles.featuredVenueRating}>
+                      <Ionicons name="star" size={14} color="#fbbf24" />
+                      <Text style={styles.featuredVenueRatingText}>4.8</Text>
+                      <Text style={styles.featuredVenueReviews}>143 reviews</Text>
                     </View>
                   </View>
+                  <TouchableOpacity style={styles.seeMoreButton}>
+                    <Text style={styles.seeMoreText}>See more</Text>
+                    <View style={styles.seeMoreArrow}>
+                      <Ionicons name="chevron-forward" size={16} color="#212529" />
+                    </View>
+                  </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Upcoming Tournaments */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Upcoming Tournaments</Text>
-            <TouchableOpacity onPress={() => router.push('/main/tournaments')}>
-              <Text style={styles.seeAllText}>See All</Text>
+              </ImageBackground>
             </TouchableOpacity>
           </View>
-          {upcomingTournaments.map((tournament) => (
-            <TouchableOpacity
-              key={tournament.id}
-              style={styles.tournamentCard}
-              onPress={() => router.push(`/tournaments/${tournament.id}`)}
-            >
-              <View style={styles.tournamentIcon}>
-                <Ionicons name="trophy-outline" size={24} color="#000000" />
-              </View>
-              <View style={styles.tournamentInfo}>
-                <Text style={styles.tournamentName}>{tournament.name}</Text>
-                <Text style={styles.tournamentLocation}>{tournament.location}</Text>
-                <View style={styles.tournamentDetails}>
-                  <Text style={styles.tournamentFee}>₹{tournament.registrationFee}</Text>
-                  <Text style={styles.tournamentParticipants}>
-                    {tournament.participantsCount}/{tournament.maxParticipants} joined
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.tournamentAction}>
-                <Ionicons name="chevron-forward" size={20} color="#666666" />
-              </View>
-            </TouchableOpacity>
-          ))}
+
+          {/* Upcoming tournaments */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Upcoming tournaments</Text>
+              <TouchableOpacity onPress={() => router.push('/main/tournaments')}>
+                <Text style={styles.seeAllText}>See all</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {upcomingTournaments.map((tournament, index) => (
+                <TouchableOpacity
+                  key={tournament.id}
+                  style={styles.tournamentCard}
+                  onPress={() => router.push(`/tournaments/${tournament.id}`)}
+                >
+                  <ImageBackground
+                    source={{ 
+                      uri: index === 0 
+                        ? 'https://images.unsplash.com/photo-1629285483773-6b5cde2171d7'
+                        : 'https://images.unsplash.com/photo-1487466365202-1afdb86c764e'
+                    }}
+                    style={styles.tournamentImage}
+                    imageStyle={styles.tournamentImageStyle}
+                  >
+                    <TouchableOpacity style={styles.tournamentFavorite}>
+                      <Ionicons name="heart-outline" size={16} color="#ffffff" />
+                    </TouchableOpacity>
+                  </ImageBackground>
+                  <View style={styles.tournamentInfo}>
+                    <Text style={styles.tournamentName} numberOfLines={1}>
+                      {tournament.name}
+                    </Text>
+                    <Text style={styles.tournamentMeta}>
+                      5 days • from ₹{tournament.registrationFee}/person
+                    </Text>
+                    <View style={styles.tournamentRating}>
+                      <Ionicons name="star" size={12} color="#fbbf24" />
+                      <Text style={styles.tournamentRatingText}>4.6</Text>
+                      <Text style={styles.tournamentReviews}>56 reviews</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Add some bottom padding */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </SafeAreaView>
+
+      {/* Bottom Navigation Overlay */}
+      <View style={styles.bottomNavContainer}>
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={styles.navItem}>
+            <Ionicons name="home" size={20} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+            <Ionicons name="grid-outline" size={20} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+            <Ionicons name="heart-outline" size={20} color="#ffffff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.navItem}>
+            <Ionicons name="ellipsis-horizontal" size={20} color="#ffffff" />
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }
 
