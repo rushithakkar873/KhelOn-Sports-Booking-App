@@ -217,20 +217,6 @@ export default function LoginScreen() {
                 >
                   <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
                 </TouchableOpacity>
-
-                <View style={styles.divider}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>or</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-
-                <TouchableOpacity 
-                  style={styles.venueOwnerButton}
-                  onPress={() => router.push('/venue-owner/login')}
-                >
-                  <Ionicons name="business-outline" size={20} color="#212529" />
-                  <Text style={styles.venueOwnerButtonText}>Sign in as Venue Owner</Text>
-                </TouchableOpacity>
               </View>
 
               {/* Footer */}
