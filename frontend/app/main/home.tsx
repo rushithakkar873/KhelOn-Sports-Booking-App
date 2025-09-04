@@ -129,14 +129,14 @@ export default function HomeScreen() {
       title: 'Create Tournament',
       subtitle: 'Organize your own tournament',
       color: '#2d2d2d',
-      onPress: () => router.push('/tournaments/create'),
+      onPress: () => router.push('/main/tournaments'),
     },
     {
       icon: 'calendar-outline' as const,
       title: 'Quick Book',
       subtitle: 'Book a slot now',
       color: '#3d3d3d',
-      onPress: () => router.push('/booking/quick'),
+      onPress: () => router.push('/main/venues'),
     },
     {
       icon: 'people-outline' as const,
