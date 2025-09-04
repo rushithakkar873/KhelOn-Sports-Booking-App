@@ -25,6 +25,7 @@ interface Booking {
   status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
   paymentStatus: 'paid' | 'pending' | 'failed';
   location: string;
+  image: string;
 }
 
 export default function BookingsScreen() {
