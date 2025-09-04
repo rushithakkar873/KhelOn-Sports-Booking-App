@@ -325,6 +325,8 @@ export default function AnalyticsScreen() {
             data={getBookingsChartData()}
             width={width - 48}
             height={220}
+            yAxisLabel=""
+            yAxisSuffix=""
             chartConfig={chartConfig}
             style={styles.chart}
           />
