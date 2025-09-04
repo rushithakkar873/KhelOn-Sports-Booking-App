@@ -450,6 +450,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  safeArea: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -458,184 +464,228 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
   },
-  headerTitle: {
-    fontSize: 28,
+  greeting: {
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#000000',
+    color: '#212529',
+    marginBottom: 4,
   },
-  filterButton: {
+  subtitle: {
+    fontSize: 16,
+    color: '#9ca3af',
+  },
+  calendarButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#212529',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  section: {
+    marginBottom: 24,
   },
   tabsContainer: {
-    marginBottom: 20,
+    paddingLeft: 24,
   },
-  tabsContent: {
-    paddingHorizontal: 24,
-  },
-  tabChip: {
-    paddingHorizontal: 16,
+  tab: {
+    paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#f5f6f7',
     marginRight: 12,
   },
-  tabChipActive: {
-    backgroundColor: '#000000',
+  firstTab: {
+    marginLeft: 0,
   },
-  tabChipText: {
+  tabActive: {
+    backgroundColor: '#212529',
+  },
+  tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#9ca3af',
   },
-  tabChipTextActive: {
+  tabTextActive: {
     color: '#ffffff',
   },
-  bookingsList: {
-    flex: 1,
-    paddingHorizontal: 24,
-  },
   bookingCard: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  bookingHeader: {
-    flexDirection: 'row',
+  bookingImage: {
+    height: 200,
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
   },
-  venueInfo: {
-    flexDirection: 'row',
-    flex: 1,
+  bookingImageStyle: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
-  sportIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+  bookingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
-  venueDetails: {
-    flex: 1,
-  },
-  venueName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000000',
-    marginBottom: 4,
-  },
-  venueLocation: {
-    fontSize: 14,
-    color: '#6b7280',
+  bookingContent: {
+    padding: 20,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginBottom: 16,
   },
   statusText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  bookingDetails: {
-    marginBottom: 12,
+  bookingInfo: {
+    flex: 1,
   },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  venueName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 6,
   },
-  detailText: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginLeft: 8,
-  },
-  paymentStatus: {
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
   },
-  paymentInfo: {
+  locationText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 4,
+  },
+  bookingMeta: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    gap: 20,
+  },
+  metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  paymentLabel: {
+  metaText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginLeft: 6,
+    fontWeight: '500',
   },
-  paymentStatusText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  bookingActions: {
+  priceRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  actionButton: {
+  price: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  paymentBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: '#f3f4f6',
-    marginRight: 8,
-    marginBottom: 8,
+    borderRadius: 16,
   },
-  actionButtonText: {
-    fontSize: 12,
+  paymentText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    padding: 20,
+    gap: 12,
+  },
+  primaryAction: {
+    flex: 1,
+    backgroundColor: '#212529',
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  primaryActionText: {
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: '600',
-    color: '#6b7280',
   },
-  payButton: {
-    backgroundColor: '#000000',
+  secondaryAction: {
+    flex: 1,
+    backgroundColor: '#f5f6f7',
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
-  payButtonText: {
-    color: '#ffffff',
-  },
-  cancelButton: {
-    backgroundColor: '#fee2e2',
-  },
-  cancelButtonText: {
-    color: '#ef4444',
-  },
-  rebookButton: {
-    backgroundColor: '#000000',
-  },
-  rebookButtonText: {
-    color: '#ffffff',
+  secondaryActionText: {
+    color: '#9ca3af',
+    fontSize: 16,
+    fontWeight: '600',
   },
   emptyState: {
-    alignItems: 'center',
+    marginHorizontal: 24,
+    borderRadius: 24,
+    overflow: 'hidden',
+    height: 300,
+  },
+  emptyStateImage: {
+    flex: 1,
     justifyContent: 'center',
-    paddingVertical: 60,
+    alignItems: 'center',
+  },
+  emptyStateImageStyle: {
+    borderRadius: 24,
+  },
+  emptyStateOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 24,
+  },
+  emptyStateContent: {
+    alignItems: 'center',
+    padding: 32,
   },
   emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     marginBottom: 24,
   },
-  browseVenuesButton: {
-    backgroundColor: '#000000',
+  browseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 25,
   },
-  browseVenuesButtonText: {
-    fontSize: 14,
+  browseButtonText: {
+    fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#212529',
+    marginRight: 8,
   },
 });
