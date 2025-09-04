@@ -254,168 +254,194 @@ export default function BookingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Bookings</Text>
-        <TouchableOpacity 
-          style={styles.filterButton}
-          onPress={() => Alert.alert('Filter', 'Filter options coming soon!')}
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+          style={styles.scrollView}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
         >
-          <Ionicons name="options-outline" size={20} color="#000000" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Tabs */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        style={styles.tabsContainer}
-        contentContainerStyle={styles.tabsContent}
-      >
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[
-              styles.tabChip,
-              selectedTab === tab && styles.tabChipActive
-            ]}
-            onPress={() => setSelectedTab(tab)}
-          >
-            <Text style={[
-              styles.tabChipText,
-              selectedTab === tab && styles.tabChipTextActive
-            ]}>
-              {tab}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Bookings List */}
-      <ScrollView 
-        style={styles.bookingsList}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
-        {filteredBookings.map((booking) => (
-          <View key={booking.id} style={styles.bookingCard}>
-            <View style={styles.bookingHeader}>
-              <View style={styles.venueInfo}>
-                <View style={styles.sportIcon}>
-                  <Ionicons name={getSportIcon(booking.sport) as any} size={20} color="#000000" />
-                </View>
-                <View style={styles.venueDetails}>
-                  <Text style={styles.venueName}>{booking.venueName}</Text>
-                  <Text style={styles.venueLocation}>{booking.location}</Text>
-                </View>
-              </View>
-              <View style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusBgColor(booking.status) }
-              ]}>
-                <Text style={[
-                  styles.statusText,
-                  { color: getStatusColor(booking.status) }
-                ]}>
-                  {booking.status.toUpperCase()}
-                </Text>
-              </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.greeting}>My Bookings</Text>
+              <Text style={styles.subtitle}>Track your reservations</Text>
             </View>
-
-            <View style={styles.bookingDetails}>
-              <View style={styles.detailRow}>
-                <Ionicons name="calendar-outline" size={16} color="#6b7280" />
-                <Text style={styles.detailText}>
-                  {new Date(booking.date).toLocaleDateString('en-IN', { 
-                    weekday: 'short', 
-                    day: '2-digit', 
-                    month: 'short' 
-                  })}
-                </Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Ionicons name="time-outline" size={16} color="#6b7280" />
-                <Text style={styles.detailText}>{booking.time}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Ionicons name="cash-outline" size={16} color="#6b7280" />
-                <Text style={styles.detailText}>₹{booking.amount}</Text>
-              </View>
-            </View>
-
-            <View style={styles.paymentStatus}>
-              <View style={styles.paymentInfo}>
-                <Text style={styles.paymentLabel}>Payment: </Text>
-                <Text style={[
-                  styles.paymentStatusText,
-                  { color: booking.paymentStatus === 'paid' ? '#10b981' : booking.paymentStatus === 'failed' ? '#ef4444' : '#f59e0b' }
-                ]}>
-                  {booking.paymentStatus.toUpperCase()}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.bookingActions}>
-              <TouchableOpacity 
-                style={styles.actionButton}
-                onPress={() => handleBookingAction(booking, 'details')}
-              >
-                <Text style={styles.actionButtonText}>Details</Text>
-              </TouchableOpacity>
-
-              {booking.status === 'pending' && booking.paymentStatus === 'pending' && (
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.payButton]}
-                  onPress={() => handleBookingAction(booking, 'pay')}
-                >
-                  <Text style={[styles.actionButtonText, styles.payButtonText]}>Pay Now</Text>
-                </TouchableOpacity>
-              )}
-
-              {(booking.status === 'confirmed' || booking.status === 'pending') && (
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.cancelButton]}
-                  onPress={() => handleBookingAction(booking, 'cancel')}
-                >
-                  <Text style={[styles.actionButtonText, styles.cancelButtonText]}>Cancel</Text>
-                </TouchableOpacity>
-              )}
-
-              {booking.status === 'completed' && (
-                <TouchableOpacity 
-                  style={[styles.actionButton, styles.rebookButton]}
-                  onPress={() => handleBookingAction(booking, 'rebook')}
-                >
-                  <Text style={[styles.actionButtonText, styles.rebookButtonText]}>Book Again</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        ))}
-
-        {filteredBookings.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons name="calendar-outline" size={48} color="#9ca3af" />
-            <Text style={styles.emptyStateTitle}>No bookings found</Text>
-            <Text style={styles.emptyStateText}>
-              {selectedTab === 'All' 
-                ? "You haven't made any bookings yet"
-                : `No ${selectedTab.toLowerCase()} bookings`
-              }
-            </Text>
             <TouchableOpacity 
-              style={styles.browseVenuesButton}
-              onPress={() => router.push('/main/venues')}
+              style={styles.calendarButton}
+              onPress={() => Alert.alert('Calendar', 'Calendar view coming soon!')}
             >
-              <Text style={styles.browseVenuesButtonText}>Browse Venues</Text>
+              <Ionicons name="calendar-outline" size={20} color="#ffffff" />
             </TouchableOpacity>
           </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+
+          {/* Status Tabs */}
+          <View style={styles.section}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer}>
+              {tabs.map((tab, index) => (
+                <TouchableOpacity
+                  key={tab}
+                  style={[
+                    styles.tab,
+                    selectedTab === tab && styles.tabActive,
+                    index === 0 && styles.firstTab
+                  ]}
+                  onPress={() => setSelectedTab(tab)}
+                >
+                  <Text style={[
+                    styles.tabText,
+                    selectedTab === tab && styles.tabTextActive
+                  ]}>
+                    {tab}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Bookings List */}
+          <View style={styles.section}>
+            {filteredBookings.map((booking, index) => (
+              <TouchableOpacity
+                key={booking.id}
+                style={styles.bookingCard}
+                onPress={() => handleBookingAction(booking, 'details')}
+              >
+                <ImageBackground
+                  source={{ uri: booking.image }}
+                  style={styles.bookingImage}
+                  imageStyle={styles.bookingImageStyle}
+                >
+                  <View style={styles.bookingOverlay} />
+                  <View style={styles.bookingContent}>
+                    {/* Status Badge */}
+                    <View style={[
+                      styles.statusBadge,
+                      { backgroundColor: getStatusBgColor(booking.status) }
+                    ]}>
+                      <Text style={[
+                        styles.statusText,
+                        { color: getStatusColor(booking.status) }
+                      ]}>
+                        {booking.status.toUpperCase()}
+                      </Text>
+                    </View>
+
+                    {/* Booking Info */}
+                    <View style={styles.bookingInfo}>
+                      <Text style={styles.venueName}>{booking.venueName}</Text>
+                      <View style={styles.locationRow}>
+                        <Ionicons name="location" size={12} color="rgba(255,255,255,0.8)" />
+                        <Text style={styles.locationText}>{booking.location}</Text>
+                      </View>
+                      
+                      <View style={styles.bookingMeta}>
+                        <View style={styles.metaItem}>
+                          <Ionicons name="calendar" size={14} color="rgba(255,255,255,0.9)" />
+                          <Text style={styles.metaText}>
+                            {new Date(booking.date).toLocaleDateString('en-IN', { 
+                              weekday: 'short', 
+                              day: '2-digit', 
+                              month: 'short' 
+                            })}
+                          </Text>
+                        </View>
+                        <View style={styles.metaItem}>
+                          <Ionicons name="time" size={14} color="rgba(255,255,255,0.9)" />
+                          <Text style={styles.metaText}>{booking.time}</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.priceRow}>
+                        <Text style={styles.price}>₹{booking.amount}</Text>
+                        <View style={[
+                          styles.paymentBadge,
+                          { backgroundColor: booking.paymentStatus === 'paid' ? 'rgba(16, 185, 129, 0.2)' : 
+                            booking.paymentStatus === 'failed' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)' }
+                        ]}>
+                          <Text style={[
+                            styles.paymentText,
+                            { color: booking.paymentStatus === 'paid' ? '#10b981' : 
+                              booking.paymentStatus === 'failed' ? '#ef4444' : '#f59e0b' }
+                          ]}>
+                            {booking.paymentStatus.toUpperCase()}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </ImageBackground>
+
+                {/* Action Buttons */}
+                <View style={styles.actionContainer}>
+                  {booking.status === 'pending' && booking.paymentStatus === 'pending' && (
+                    <TouchableOpacity 
+                      style={styles.primaryAction}
+                      onPress={() => handleBookingAction(booking, 'pay')}
+                    >
+                      <Text style={styles.primaryActionText}>Pay Now</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {(booking.status === 'confirmed' || booking.status === 'pending') && (
+                    <TouchableOpacity 
+                      style={styles.secondaryAction}
+                      onPress={() => handleBookingAction(booking, 'cancel')}
+                    >
+                      <Text style={styles.secondaryActionText}>Cancel</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  {booking.status === 'completed' && (
+                    <TouchableOpacity 
+                      style={styles.primaryAction}
+                      onPress={() => handleBookingAction(booking, 'rebook')}
+                    >
+                      <Text style={styles.primaryActionText}>Book Again</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+
+            {filteredBookings.length === 0 && (
+              <View style={styles.emptyState}>
+                <ImageBackground
+                  source={{ uri: 'https://images.unsplash.com/photo-1435527173128-983b87201f4d' }}
+                  style={styles.emptyStateImage}
+                  imageStyle={styles.emptyStateImageStyle}
+                >
+                  <View style={styles.emptyStateOverlay} />
+                  <View style={styles.emptyStateContent}>
+                    <Ionicons name="calendar-outline" size={48} color="#ffffff" />
+                    <Text style={styles.emptyStateTitle}>No bookings found</Text>
+                    <Text style={styles.emptyStateText}>
+                      {selectedTab === 'All' 
+                        ? "You haven't made any bookings yet"
+                        : `No ${selectedTab.toLowerCase()} bookings`
+                      }
+                    </Text>
+                    <TouchableOpacity 
+                      style={styles.browseButton}
+                      onPress={() => router.push('/main/venues')}
+                    >
+                      <Text style={styles.browseButtonText}>Browse Venues</Text>
+                      <Ionicons name="arrow-forward" size={16} color="#212529" />
+                    </TouchableOpacity>
+                  </View>
+                </ImageBackground>
+              </View>
+            )}
+          </View>
+
+          {/* Add some bottom padding */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
