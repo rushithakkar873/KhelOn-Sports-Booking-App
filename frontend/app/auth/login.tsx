@@ -383,36 +383,6 @@ const styles = StyleSheet.create({
     color: '#212529',
     fontWeight: '500',
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#f5f6f7',
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  venueOwnerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f5f6f7',
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginBottom: 24,
-  },
-  venueOwnerButtonText: {
-    color: '#212529',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
