@@ -434,6 +434,18 @@ const styles = StyleSheet.create({
   form: {
     marginBottom: 32,
   },
+  sectionDivider: {
+    marginVertical: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000000',
+    marginBottom: 16,
+  },
   inputGroup: {
     marginBottom: 20,
   },
