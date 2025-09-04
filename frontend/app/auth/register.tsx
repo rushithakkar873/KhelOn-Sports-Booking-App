@@ -21,6 +21,9 @@ export default function RegisterScreen() {
     password: '',
     confirmPassword: '',
     role: 'player' as 'player' | 'venue_owner',
+    businessName: '',
+    businessAddress: '',
+    gstNumber: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
