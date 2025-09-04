@@ -47,7 +47,7 @@ export default function BookingsScreen() {
   }, [selectedTab, bookings]);
 
   const loadBookings = async () => {
-    // Mock data - replace with API call
+    // Mock data with professional images
     const mockBookings: Booking[] = [
       {
         id: '1',
@@ -60,6 +60,7 @@ export default function BookingsScreen() {
         status: 'confirmed',
         paymentStatus: 'paid',
         location: 'Andheri, Mumbai',
+        image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9',
       },
       {
         id: '2',
@@ -72,6 +73,7 @@ export default function BookingsScreen() {
         status: 'pending',
         paymentStatus: 'pending',
         location: 'Koramangala, Bangalore',
+        image: 'https://images.pexels.com/photos/8533631/pexels-photo-8533631.jpeg',
       },
       {
         id: '3',
@@ -84,6 +86,7 @@ export default function BookingsScreen() {
         status: 'completed',
         paymentStatus: 'paid',
         location: 'Connaught Place, Delhi',
+        image: 'https://images.unsplash.com/photo-1724500760032-b2eb510e59c4',
       },
       {
         id: '4',
@@ -96,6 +99,7 @@ export default function BookingsScreen() {
         status: 'cancelled',
         paymentStatus: 'failed',
         location: 'Banjara Hills, Hyderabad',
+        image: 'https://images.pexels.com/photos/3067481/pexels-photo-3067481.jpeg',
       },
       {
         id: '5',
@@ -108,6 +112,7 @@ export default function BookingsScreen() {
         status: 'confirmed',
         paymentStatus: 'paid',
         location: 'Electronic City, Bangalore',
+        image: 'https://images.unsplash.com/photo-1676315636766-7b129985c537',
       },
     ];
 
