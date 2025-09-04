@@ -146,19 +146,22 @@ export default function VenueOwnerDashboard() {
   const chartConfig = {
     backgroundGradientFrom: '#ffffff',
     backgroundGradientTo: '#ffffff',
-    color: (opacity = 1) => `rgba(37, 99, 235, ${opacity})`,
-    strokeWidth: 2,
-    barPercentage: 0.5,
+    color: (opacity = 1) => `rgba(33, 37, 41, ${opacity})`,
+    strokeWidth: 3,
+    barPercentage: 0.6,
     useShadowColorFromDataset: false,
+    decimalPlaces: 0,
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading dashboard...</Text>
-        </View>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading dashboard...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
 
@@ -371,7 +374,10 @@ export default function VenueOwnerDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#ffffff',
+  },
+  safeArea: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -380,101 +386,145 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#9ca3af',
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
-    backgroundColor: '#ffffff',
+    paddingTop: 20,
+    paddingBottom: 16,
   },
   welcomeText: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 16,
+    color: '#9ca3af',
     marginBottom: 4,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#212529',
   },
   notificationButton: {
-    padding: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#212529',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  kpiContainer: {
+  section: {
     paddingHorizontal: 24,
     marginBottom: 24,
   },
-  kpiRow: {
+  heroCard: {
+    height: 200,
+    borderRadius: 24,
+    overflow: 'hidden',
+    justifyContent: 'center',
+  },
+  heroImageStyle: {
+    borderRadius: 24,
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 24,
+  },
+  heroContent: {
+    padding: 24,
+    alignItems: 'center',
+  },
+  heroTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 24,
+  },
+  heroStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  heroStat: {
+    alignItems: 'center',
+  },
+  heroStatValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  heroStatLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+  },
+  kpiContainer: {
+    flexDirection: 'row',
+    gap: 16,
   },
   kpiCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: '#f5f6f7',
+    borderRadius: 20,
     padding: 20,
-    marginHorizontal: 6,
     alignItems: 'center',
   },
-  venuesCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#2563eb',
-  },
-  bookingsCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#059669',
-  },
-  revenueCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#dc2626',
-  },
-  occupancyCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#7c3aed',
-  },
   kpiIcon: {
-    marginBottom: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   kpiValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#212529',
     marginBottom: 4,
   },
   kpiLabel: {
-    fontSize: 12,
-    color: '#6b7280',
+    fontSize: 14,
+    color: '#9ca3af',
     textAlign: 'center',
+    marginBottom: 8,
   },
-  chartContainer: {
-    backgroundColor: '#ffffff',
-    marginHorizontal: 24,
-    marginBottom: 24,
-    borderRadius: 16,
-    padding: 16,
-  },
-  chartTitle: {
-    fontSize: 18,
+  kpiChange: {
+    fontSize: 12,
+    color: '#10b981',
     fontWeight: '600',
-    color: '#1f2937',
+  },
+  chartCard: {
+    backgroundColor: '#f5f6f7',
+    borderRadius: 24,
+    padding: 20,
+  },
+  chartHeader: {
     marginBottom: 16,
   },
-  chart: {
-    borderRadius: 8,
+  chartTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#212529',
+    marginBottom: 4,
   },
-  section: {
-    backgroundColor: '#ffffff',
-    marginHorizontal: 24,
-    marginBottom: 24,
+  chartSubtitle: {
+    fontSize: 14,
+    color: '#9ca3af',
+  },
+  chart: {
     borderRadius: 16,
+  },
+  bookingsCard: {
+    backgroundColor: '#f5f6f7',
+    borderRadius: 24,
     padding: 20,
   },
   sectionHeader: {
@@ -484,22 +534,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#212529',
   },
   sectionLink: {
     fontSize: 14,
-    color: '#2563eb',
+    color: '#212529',
     fontWeight: '600',
   },
   bookingCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#e5e7eb',
+  },
+  lastBookingCard: {
+    borderBottomWidth: 0,
   },
   bookingInfo: {
     flex: 1,
@@ -507,12 +560,12 @@ const styles = StyleSheet.create({
   bookingVenue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#212529',
     marginBottom: 2,
   },
   bookingPlayer: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#9ca3af',
     marginBottom: 2,
   },
   bookingDate: {
@@ -523,45 +576,69 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   amountText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#212529',
     marginBottom: 4,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 12,
   },
   confirmedBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: 'rgba(33, 37, 41, 0.1)',
   },
   completedBadge: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
   },
   statusText: {
     fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   confirmedText: {
-    color: '#2563eb',
+    color: '#212529',
   },
   completedText: {
-    color: '#059669',
+    color: '#10b981',
+  },
+  emptyBookings: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  emptyBookingsText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    marginTop: 8,
+  },
+  actionsCard: {
+    backgroundColor: '#f5f6f7',
+    borderRadius: 24,
+    padding: 20,
   },
   quickActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginTop: 16,
   },
   actionButton: {
     alignItems: 'center',
-    padding: 16,
+    flex: 1,
+  },
+  actionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   actionText: {
     fontSize: 12,
-    color: '#2563eb',
+    color: '#212529',
     fontWeight: '600',
-    marginTop: 8,
+    textAlign: 'center',
   },
 });
