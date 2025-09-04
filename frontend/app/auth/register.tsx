@@ -282,6 +282,57 @@ export default function RegisterScreen() {
             </View>
           </View>
 
+          {/* Business Information - Only show for venue owners */}
+          {formData.role === 'venue_owner' && (
+            <>
+              <View style={styles.sectionDivider}>
+                <Text style={styles.sectionTitle}>Business Information</Text>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Business Name</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="storefront-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter business name (optional)"
+                    value={formData.businessName}
+                    onChangeText={(value) => updateField('businessName', value)}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Business Address</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="location-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter business address (optional)"
+                    value={formData.businessAddress}
+                    onChangeText={(value) => updateField('businessAddress', value)}
+                    multiline
+                    numberOfLines={2}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>GST Number</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="document-text-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter GST number (optional)"
+                    value={formData.gstNumber}
+                    onChangeText={(value) => updateField('gstNumber', value)}
+                    autoCapitalize="characters"
+                  />
+                </View>
+              </View>
+            </>
+          )}
+
           <TouchableOpacity
             style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
             onPress={handleRegister}
