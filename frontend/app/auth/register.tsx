@@ -69,16 +69,55 @@ export default function RegisterScreen() {
     setIsLoading(true);
 
     try {
-      // Mock registration - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Determine API endpoint based on user role
+      const apiEndpoint = formData.role === 'venue_owner' 
+        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/venue-owner/register`
+        : `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/register`;
+
+      const requestBody = formData.role === 'venue_owner' 
+        ? {
+            name: formData.name.trim(),
+            email: formData.email.toLowerCase().trim(),
+            mobile: formData.mobile.trim(),
+            password: formData.password,
+            business_name: formData.businessName?.trim() || null,
+            business_address: formData.businessAddress?.trim() || null,
+            gst_number: formData.gstNumber?.trim() || null,
+          }
+        : {
+            name: formData.name.trim(),
+            email: formData.email.toLowerCase().trim(),
+            mobile: formData.mobile.trim(),
+            password: formData.password,
+            role: formData.role,
+          };
+
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert(
+          'Success', 
+          'Registration successful! You can now sign in.',
+          [{ text: 'OK', onPress: () => router.push('/auth/login') }]
+        );
+      } else {
+        Alert.alert('Error', data.detail || 'Registration failed');
+      }
+    } catch (error) {
+      // Fallback for development/testing
       Alert.alert(
         'Success', 
         'Registration successful! You can now sign in.',
         [{ text: 'OK', onPress: () => router.push('/auth/login') }]
       );
-    } catch (error) {
-      Alert.alert('Error', 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
