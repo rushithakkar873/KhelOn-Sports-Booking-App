@@ -22,7 +22,7 @@ interface Venue {
   location: string;
   price: number;
   rating: number;
-  image?: string;
+  image: string;
   facilities: string[];
   availableSlots: string[];
 }
