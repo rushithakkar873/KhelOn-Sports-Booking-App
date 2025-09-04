@@ -47,7 +47,7 @@ export default function VenuesScreen() {
   }, [searchQuery, selectedSport, venues]);
 
   const loadVenues = async () => {
-    // Mock data - replace with API call
+    // Mock data with professional venue images
     const mockVenues: Venue[] = [
       {
         id: '1',
@@ -56,6 +56,7 @@ export default function VenuesScreen() {
         location: 'Koramangala, Bangalore',
         price: 800,
         rating: 4.5,
+        image: 'https://images.pexels.com/photos/8533631/pexels-photo-8533631.jpeg',
         facilities: ['AC', 'Parking', 'Equipment Rental', 'Changing Room'],
         availableSlots: ['6:00 AM', '7:00 AM', '8:00 PM', '9:00 PM'],
       },
@@ -66,6 +67,7 @@ export default function VenuesScreen() {
         location: 'Andheri, Mumbai',
         price: 1200,
         rating: 4.8,
+        image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9',
         facilities: ['Floodlights', 'Parking', 'Pavilion', 'Scoreboard'],
         availableSlots: ['9:00 AM', '2:00 PM', '6:00 PM'],
       },
@@ -76,6 +78,7 @@ export default function VenuesScreen() {
         location: 'Connaught Place, Delhi',
         price: 1000,
         rating: 4.3,
+        image: 'https://images.unsplash.com/photo-1724500760032-b2eb510e59c4',
         facilities: ['Artificial Turf', 'Floodlights', 'Changing Room'],
         availableSlots: ['7:00 AM', '8:00 AM', '7:00 PM', '8:00 PM'],
       },
@@ -86,6 +89,7 @@ export default function VenuesScreen() {
         location: 'Banjara Hills, Hyderabad',
         price: 600,
         rating: 4.2,
+        image: 'https://images.pexels.com/photos/3067481/pexels-photo-3067481.jpeg',
         facilities: ['Hard Court', 'Equipment Rental', 'Coaching'],
         availableSlots: ['6:00 AM', '7:00 AM', '6:00 PM', '7:00 PM'],
       },
@@ -96,6 +100,7 @@ export default function VenuesScreen() {
         location: 'Electronic City, Bangalore',
         price: 500,
         rating: 4.0,
+        image: 'https://images.pexels.com/photos/7648145/pexels-photo-7648145.jpeg',
         facilities: ['Indoor Court', 'AC', 'Sound System'],
         availableSlots: ['8:00 AM', '9:00 AM', '8:00 PM', '9:00 PM'],
       },
