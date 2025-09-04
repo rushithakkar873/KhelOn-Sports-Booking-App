@@ -251,7 +251,7 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   key={tournament.id}
                   style={styles.tournamentCard}
-                  onPress={() => router.push(`/tournaments/${tournament.id}`)}
+                  onPress={() => router.push('/main/tournaments')}
                 >
                   <ImageBackground
                     source={{ 
