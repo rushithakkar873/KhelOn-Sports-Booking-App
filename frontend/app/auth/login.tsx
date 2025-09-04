@@ -19,6 +19,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [userRole, setUserRole] = useState<'player' | 'venue_owner'>('player');
   
   const router = useRouter();
 
