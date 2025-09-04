@@ -60,7 +60,7 @@ export default function BookingsScreen() {
 
   const loadBookings = async () => {
     try {
-      // Mock data - replace with actual API call
+      // Mock data with professional images
       const mockBookings: Booking[] = [
         {
           id: '1',
@@ -75,7 +75,8 @@ export default function BookingsScreen() {
           totalAmount: 2400,
           status: 'confirmed',
           paymentStatus: 'paid',
-          createdAt: '2025-01-10T14:30:00Z'
+          createdAt: '2025-01-10T14:30:00Z',
+          image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9',
         },
         {
           id: '2',
@@ -90,7 +91,8 @@ export default function BookingsScreen() {
           totalAmount: 900,
           status: 'pending',
           paymentStatus: 'pending',
-          createdAt: '2025-01-11T10:15:00Z'
+          createdAt: '2025-01-11T10:15:00Z',
+          image: 'https://images.unsplash.com/photo-1724500760032-b2eb510e59c4',
         },
         {
           id: '3',
@@ -105,7 +107,8 @@ export default function BookingsScreen() {
           totalAmount: 2200,
           status: 'completed',
           paymentStatus: 'paid',
-          createdAt: '2025-01-09T16:45:00Z'
+          createdAt: '2025-01-09T16:45:00Z',
+          image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9',
         },
         {
           id: '4',
@@ -120,7 +123,8 @@ export default function BookingsScreen() {
           totalAmount: 600,
           status: 'cancelled',
           paymentStatus: 'refunded',
-          createdAt: '2025-01-08T11:20:00Z'
+          createdAt: '2025-01-08T11:20:00Z',
+          image: 'https://images.pexels.com/photos/8533631/pexels-photo-8533631.jpeg',
         },
         {
           id: '5',
@@ -135,7 +139,8 @@ export default function BookingsScreen() {
           totalAmount: 900,
           status: 'confirmed',
           paymentStatus: 'paid',
-          createdAt: '2025-01-12T09:30:00Z'
+          createdAt: '2025-01-12T09:30:00Z',
+          image: 'https://images.unsplash.com/photo-1724500760032-b2eb510e59c4',
         },
       ];
 
