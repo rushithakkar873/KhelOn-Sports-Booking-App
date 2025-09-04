@@ -290,7 +290,7 @@ export default function VenueOwnerDashboard() {
           <View style={styles.quickActions}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/venue-owner/venues/create')}
+              onPress={() => Alert.alert('Coming Soon', 'Venue creation feature will be added soon!')}
             >
               <Ionicons name="add-circle-outline" size={24} color="#2563eb" />
               <Text style={styles.actionText}>Add Venue</Text>
