@@ -111,8 +111,8 @@ export default function HomeScreen() {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // Navigate to search results
-      router.push(`/search?query=${encodeURIComponent(searchQuery)}`);
+      // Navigate to venues with search query
+      router.push('/main/venues');
     }
   };
 
