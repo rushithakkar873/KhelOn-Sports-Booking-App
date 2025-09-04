@@ -176,95 +176,118 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  safeArea: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 20,
+    marginBottom: 40,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  logoContainer: {
+  profileButton: {
     alignItems: 'center',
-    marginBottom: 48,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000000',
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleContainer: {
+    marginBottom: 40,
+  },
+  greeting: {
+    fontSize: 48,
+    fontWeight: '300',
+    color: '#ffffff',
     marginBottom: 8,
-    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
-  form: {
-    marginBottom: 32,
-  },
-  inputGroup: {
+  formContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 24,
     marginBottom: 24,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 8,
+  form: {
+    flex: 1,
+  },
+  inputGroup: {
+    marginBottom: 20,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f5f6f7',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 56,
   },
   inputIcon: {
-    marginLeft: 16,
     marginRight: 12,
   },
   input: {
     flex: 1,
-    paddingVertical: 16,
-    paddingRight: 16,
     fontSize: 16,
-    color: '#000000',
+    color: '#212529',
   },
   eyeIcon: {
-    padding: 16,
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 32,
-  },
-  forgotPasswordText: {
-    fontSize: 14,
-    color: '#000000',
-    fontWeight: '600',
+    padding: 8,
   },
   loginButton: {
-    backgroundColor: '#000000',
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: '#212529',
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: 'center',
-    marginBottom: 24,
-  },
-  loginButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    marginTop: 8,
+    marginBottom: 20,
   },
   loginButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: '#212529',
+    fontWeight: '500',
   },
   divider: {
     flexDirection: 'row',
@@ -274,7 +297,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#f5f6f7',
   },
   dividerText: {
     marginHorizontal: 16,
@@ -285,14 +308,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    backgroundColor: '#f5f6f7',
     paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: '#f9fafb',
+    borderRadius: 16,
+    marginBottom: 24,
   },
   venueOwnerButtonText: {
-    color: '#000000',
+    color: '#212529',
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -301,6 +323,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 16,
   },
   footerText: {
     fontSize: 14,
@@ -308,7 +331,7 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     fontSize: 14,
-    color: '#000000',
+    color: '#212529',
     fontWeight: '600',
   },
 });
