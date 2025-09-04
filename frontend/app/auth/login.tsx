@@ -308,6 +308,37 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
   },
+  roleSelection: {
+    marginBottom: 24,
+  },
+  roleButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  roleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f5f6f7',
+    backgroundColor: '#f5f6f7',
+  },
+  roleButtonActive: {
+    backgroundColor: '#212529',
+    borderColor: '#212529',
+  },
+  roleButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginLeft: 6,
+  },
+  roleButtonTextActive: {
+    color: '#ffffff',
+  },
   inputGroup: {
     marginBottom: 20,
   },
