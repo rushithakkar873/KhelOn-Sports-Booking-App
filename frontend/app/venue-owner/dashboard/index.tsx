@@ -163,161 +163,208 @@ export default function VenueOwnerDashboard() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.welcomeText}>Welcome back!</Text>
-            <Text style={styles.headerTitle}>Dashboard Overview</Text>
-          </View>
-          <TouchableOpacity style={styles.notificationButton}>
-            <Ionicons name="notifications-outline" size={24} color="#374151" />
-          </TouchableOpacity>
-        </View>
-
-        {/* KPI Cards */}
-        <View style={styles.kpiContainer}>
-          <View style={styles.kpiRow}>
-            <View style={[styles.kpiCard, styles.venuesCard]}>
-              <View style={styles.kpiIcon}>
-                <Ionicons name="business" size={24} color="#2563eb" />
-              </View>
-              <Text style={styles.kpiValue}>{dashboardData.totalVenues}</Text>
-              <Text style={styles.kpiLabel}>Total Venues</Text>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.welcomeText}>Welcome back!</Text>
+              <Text style={styles.headerTitle}>Dashboard Overview</Text>
             </View>
-            
-            <View style={[styles.kpiCard, styles.bookingsCard]}>
-              <View style={styles.kpiIcon}>
-                <Ionicons name="calendar" size={24} color="#059669" />
-              </View>
-              <Text style={styles.kpiValue}>{dashboardData.totalBookings}</Text>
-              <Text style={styles.kpiLabel}>Total Bookings</Text>
-            </View>
-          </View>
-
-          <View style={styles.kpiRow}>
-            <View style={[styles.kpiCard, styles.revenueCard]}>
-              <View style={styles.kpiIcon}>
-                <Ionicons name="cash" size={24} color="#dc2626" />
-              </View>
-              <Text style={styles.kpiValue}>{formatCurrency(dashboardData.totalRevenue)}</Text>
-              <Text style={styles.kpiLabel}>Total Revenue</Text>
-            </View>
-            
-            <View style={[styles.kpiCard, styles.occupancyCard]}>
-              <View style={styles.kpiIcon}>
-                <Ionicons name="stats-chart" size={24} color="#7c3aed" />
-              </View>
-              <Text style={styles.kpiValue}>{dashboardData.occupancyRate}%</Text>
-              <Text style={styles.kpiLabel}>Occupancy Rate</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Revenue Trend Chart */}
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Revenue Trend (Last 7 Days)</Text>
-          {Object.keys(dashboardData.revenueTrend).length > 0 && (
-            <LineChart
-              data={getRevenueChartData()}
-              width={width - 48}
-              height={200}
-              chartConfig={chartConfig}
-              bezier
-              style={styles.chart}
-            />
-          )}
-        </View>
-
-        {/* Top Sports Chart */}
-        {dashboardData.topSports.length > 0 && (
-          <View style={styles.chartContainer}>
-            <Text style={styles.chartTitle}>Popular Sports</Text>
-            <BarChart
-              data={getSportsChartData()}
-              width={width - 48}
-              height={200}
-              yAxisLabel=""
-              yAxisSuffix=""
-              chartConfig={chartConfig}
-              style={styles.chart}
-            />
-          </View>
-        )}
-
-        {/* Recent Bookings */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Bookings</Text>
-            <TouchableOpacity onPress={() => router.push('/venue-owner/dashboard/bookings')}>
-              <Text style={styles.sectionLink}>View All</Text>
+            <TouchableOpacity style={styles.notificationButton}>
+              <Ionicons name="notifications-outline" size={20} color="#ffffff" />
             </TouchableOpacity>
           </View>
-          
-          {dashboardData.recentBookings.map((booking) => (
-            <View key={booking.id} style={styles.bookingCard}>
-              <View style={styles.bookingInfo}>
-                <Text style={styles.bookingVenue}>{booking.venueName}</Text>
-                <Text style={styles.bookingPlayer}>{booking.playerName}</Text>
-                <Text style={styles.bookingDate}>
-                  {booking.bookingDate} at {booking.startTime}
-                </Text>
-              </View>
-              <View style={styles.bookingAmount}>
-                <Text style={styles.amountText}>{formatCurrency(booking.totalAmount)}</Text>
-                <View style={[
-                  styles.statusBadge,
-                  booking.status === 'confirmed' ? styles.confirmedBadge : styles.completedBadge
-                ]}>
-                  <Text style={[
-                    styles.statusText,
-                    booking.status === 'confirmed' ? styles.confirmedText : styles.completedText
-                  ]}>
-                    {booking.status}
-                  </Text>
+
+          {/* Hero Stats Card */}
+          <View style={styles.section}>
+            <ImageBackground
+              source={{ uri: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9' }}
+              style={styles.heroCard}
+              imageStyle={styles.heroImageStyle}
+            >
+              <View style={styles.heroOverlay} />
+              <View style={styles.heroContent}>
+                <Text style={styles.heroTitle}>Business Overview</Text>
+                <View style={styles.heroStats}>
+                  <View style={styles.heroStat}>
+                    <Text style={styles.heroStatValue}>{dashboardData.totalVenues}</Text>
+                    <Text style={styles.heroStatLabel}>Active Venues</Text>
+                  </View>
+                  <View style={styles.heroStat}>
+                    <Text style={styles.heroStatValue}>{dashboardData.totalBookings}</Text>
+                    <Text style={styles.heroStatLabel}>This Month</Text>
+                  </View>
+                  <View style={styles.heroStat}>
+                    <Text style={styles.heroStatValue}>{formatCurrency(dashboardData.totalRevenue)}</Text>
+                    <Text style={styles.heroStatLabel}>Revenue</Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))}
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActions}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => Alert.alert('Coming Soon', 'Venue creation feature will be added soon!')}
-            >
-              <Ionicons name="add-circle-outline" size={24} color="#2563eb" />
-              <Text style={styles.actionText}>Add Venue</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push('/venue-owner/dashboard/bookings')}
-            >
-              <Ionicons name="calendar-outline" size={24} color="#2563eb" />
-              <Text style={styles.actionText}>View Bookings</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push('/venue-owner/dashboard/analytics')}
-            >
-              <Ionicons name="analytics-outline" size={24} color="#2563eb" />
-              <Text style={styles.actionText}>Analytics</Text>
-            </TouchableOpacity>
+            </ImageBackground>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+
+          {/* KPI Cards */}
+          <View style={styles.section}>
+            <View style={styles.kpiContainer}>
+              <View style={styles.kpiCard}>
+                <View style={styles.kpiIcon}>
+                  <Ionicons name="trending-up" size={24} color="#212529" />
+                </View>
+                <Text style={styles.kpiValue}>{dashboardData.occupancyRate}%</Text>
+                <Text style={styles.kpiLabel}>Occupancy Rate</Text>
+                <Text style={styles.kpiChange}>+5.2% from last month</Text>
+              </View>
+              
+              <View style={styles.kpiCard}>
+                <View style={styles.kpiIcon}>
+                  <Ionicons name="calendar" size={24} color="#212529" />
+                </View>
+                <Text style={styles.kpiValue}>{dashboardData.recentBookings.length}</Text>
+                <Text style={styles.kpiLabel}>Recent Bookings</Text>
+                <Text style={styles.kpiChange}>Last 24 hours</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Revenue Trend Chart */}
+          <View style={styles.section}>
+            <View style={styles.chartCard}>
+              <View style={styles.chartHeader}>
+                <Text style={styles.chartTitle}>Revenue Trend</Text>
+                <Text style={styles.chartSubtitle}>Last 7 days performance</Text>
+              </View>
+              {Object.keys(dashboardData.revenueTrend).length > 0 && (
+                <LineChart
+                  data={getRevenueChartData()}
+                  width={width - 48}
+                  height={200}
+                  chartConfig={chartConfig}
+                  bezier
+                  style={styles.chart}
+                  decorator={() => null}
+                />
+              )}
+            </View>
+          </View>
+
+          {/* Sports Performance */}
+          {dashboardData.topSports.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.chartCard}>
+                <View style={styles.chartHeader}>
+                  <Text style={styles.chartTitle}>Popular Sports</Text>
+                  <Text style={styles.chartSubtitle}>Booking distribution</Text>
+                </View>
+                <BarChart
+                  data={getSportsChartData()}
+                  width={width - 48}
+                  height={180}
+                  yAxisLabel=""
+                  yAxisSuffix=""
+                  chartConfig={chartConfig}
+                  style={styles.chart}
+                />
+              </View>
+            </View>
+          )}
+
+          {/* Recent Bookings */}
+          <View style={styles.section}>
+            <View style={styles.bookingsCard}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Recent Bookings</Text>
+                <TouchableOpacity onPress={() => router.push('/venue-owner/dashboard/bookings')}>
+                  <Text style={styles.sectionLink}>View All</Text>
+                </TouchableOpacity>
+              </View>
+              
+              {dashboardData.recentBookings.map((booking, index) => (
+                <View key={booking.id} style={[styles.bookingCard, index === dashboardData.recentBookings.length - 1 && styles.lastBookingCard]}>
+                  <View style={styles.bookingInfo}>
+                    <Text style={styles.bookingVenue}>{booking.venueName}</Text>
+                    <Text style={styles.bookingPlayer}>{booking.playerName}</Text>
+                    <Text style={styles.bookingDate}>
+                      {booking.bookingDate} • {booking.startTime}
+                    </Text>
+                  </View>
+                  <View style={styles.bookingAmount}>
+                    <Text style={styles.amountText}>{formatCurrency(booking.totalAmount)}</Text>
+                    <View style={[
+                      styles.statusBadge,
+                      booking.status === 'confirmed' ? styles.confirmedBadge : styles.completedBadge
+                    ]}>
+                      <Text style={[
+                        styles.statusText,
+                        booking.status === 'confirmed' ? styles.confirmedText : styles.completedText
+                      ]}>
+                        {booking.status.toUpperCase()}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))}
+
+              {dashboardData.recentBookings.length === 0 && (
+                <View style={styles.emptyBookings}>
+                  <Ionicons name="calendar-outline" size={32} color="#9ca3af" />
+                  <Text style={styles.emptyBookingsText}>No recent bookings</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Quick Actions */}
+          <View style={styles.section}>
+            <View style={styles.actionsCard}>
+              <Text style={styles.sectionTitle}>Quick Actions</Text>
+              <View style={styles.quickActions}>
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => Alert.alert('Coming Soon', 'Venue creation feature will be added soon!')}
+                >
+                  <View style={styles.actionIcon}>
+                    <Ionicons name="add-circle-outline" size={24} color="#212529" />
+                  </View>
+                  <Text style={styles.actionText}>Add Venue</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => router.push('/venue-owner/dashboard/bookings')}
+                >
+                  <View style={styles.actionIcon}>
+                    <Ionicons name="calendar-outline" size={24} color="#212529" />
+                  </View>
+                  <Text style={styles.actionText}>Manage Bookings</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => router.push('/venue-owner/dashboard/analytics')}
+                >
+                  <View style={styles.actionIcon}>
+                    <Ionicons name="analytics-outline" size={24} color="#212529" />
+                  </View>
+                  <Text style={styles.actionText}>View Analytics</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* Add some bottom padding */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
