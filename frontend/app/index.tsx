@@ -1,8 +1,9 @@
 import React from 'react';
-import { Text, View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, TouchableOpacity, ImageBackground, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { BlurView } from 'expo-blur';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -11,75 +12,62 @@ export default function WelcomeScreen() {
     router.push('/auth/login');
   };
 
-  const features = [
-    {
-      icon: 'location-outline' as const,
-      title: 'Find Venues',
-      description: 'Discover nearby sports venues and book slots instantly'
-    },
-    {
-      icon: 'trophy-outline' as const,
-      title: 'Join Tournaments',
-      description: 'Participate in local tournaments and competitions'
-    },
-    {
-      icon: 'people-outline' as const,
-      title: 'Connect Players',
-      description: 'Meet and play with fellow sports enthusiasts'
-    },
-    {
-      icon: 'card-outline' as const,
-      title: 'Secure Payments',
-      description: 'Safe and secure payment processing for bookings'
-    }
-  ];
-
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Ionicons name="basketball-outline" size={48} color="#FF6B35" />
-            <Text style={styles.logoText}>Playon</Text>
-          </View>
-          <Text style={styles.subtitle}>
-            Your Ultimate Sports Booking & Tournament Management Platform
-          </Text>
-        </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <ImageBackground
+        source={{ uri: 'https://images.unsplash.com/photo-1636772359335-eed83f7675a8' }}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay} />
+        <SafeAreaView style={styles.safeArea}>
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.greeting}>Hello!</Text>
+              <Text style={styles.subtitle}>Welcome to PlayOn</Text>
+              <Text style={styles.description}>
+                Book sports venues, join tournaments, and connect with players in your area
+              </Text>
+            </View>
 
-        {/* Features */}
-        <View style={styles.featuresContainer}>
-          <Text style={styles.featuresTitle}>What You Can Do</Text>
-          {features.map((feature, index) => (
-            <View key={index} style={styles.featureCard}>
-              <View style={styles.featureIcon}>
-                <Ionicons name={feature.icon} size={24} color="#FF6B35" />
+            {/* Features Cards */}
+            <View style={styles.featuresContainer}>
+              <View style={styles.featureCard}>
+                <View style={styles.featureIconContainer}>
+                  <Ionicons name="location" size={24} color="#ffffff" />
+                </View>
+                <Text style={styles.featureTitle}>Find Venues</Text>
+                <Text style={styles.featureDescription}>Discover and book nearby sports venues</Text>
               </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureDescription}>{feature.description}</Text>
+
+              <View style={styles.featureCard}>
+                <View style={styles.featureIconContainer}>
+                  <Ionicons name="trophy" size={24} color="#ffffff" />
+                </View>
+                <Text style={styles.featureTitle}>Join Tournaments</Text>
+                <Text style={styles.featureDescription}>Compete in local tournaments</Text>
               </View>
             </View>
-          ))}
-        </View>
 
-        {/* Call to Action */}
-        <View style={styles.ctaContainer}>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleGetStarted}>
-            <Text style={styles.primaryButtonText}>Get Started</Text>
-            <Ionicons name="arrow-forward" size={20} color="white" />
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.secondaryButton}
-            onPress={() => router.push('/auth/register')}
-          >
-            <Text style={styles.secondaryButtonText}>Create Account</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            {/* Call to Action */}
+            <View style={styles.ctaContainer}>
+              <TouchableOpacity style={styles.primaryButton} onPress={handleGetStarted}>
+                <Text style={styles.primaryButtonText}>Get Started</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={() => router.push('/auth/register')}
+              >
+                <Text style={styles.secondaryButtonText}>Create Account</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 }
 
