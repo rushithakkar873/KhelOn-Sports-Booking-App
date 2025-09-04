@@ -154,177 +154,164 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity 
-            style={styles.editButton}
-            onPress={handleEditProfile}
-          >
-            <Ionicons name="create-outline" size={20} color="#000000" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.profileHeader}>
-            <View style={styles.avatar}>
-              <Ionicons name="person" size={40} color="#6b7280" />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+          style={styles.scrollView}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.greeting}>Profile</Text>
+              <Text style={styles.subtitle}>Manage your account</Text>
             </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{profile.name}</Text>
-              <Text style={styles.profileEmail}>{profile.email}</Text>
-              <Text style={styles.profileMobile}>{profile.mobile}</Text>
-              <Text style={styles.joinDate}>
-                Joined {new Date(profile.joinedDate).toLocaleDateString('en-IN', { 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}
-              </Text>
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={handleEditProfile}
+            >
+              <Ionicons name="create-outline" size={20} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Profile Header Card */}
+          <View style={styles.section}>
+            <View style={styles.profileHeaderCard}>
+              <ImageBackground
+                source={{ uri: 'https://images.unsplash.com/photo-1676315636766-7b129985c537' }}
+                style={styles.profileBackground}
+                imageStyle={styles.profileBackgroundStyle}
+              >
+                <View style={styles.profileOverlay} />
+                <View style={styles.profileContent}>
+                  <View style={styles.avatarContainer}>
+                    <View style={styles.avatar}>
+                      <Ionicons name="person" size={32} color="#ffffff" />
+                    </View>
+                  </View>
+                  <Text style={styles.profileName}>{profile.name}</Text>
+                  <Text style={styles.profileEmail}>{profile.email}</Text>
+                  <Text style={styles.joinDate}>
+                    Member since {new Date(profile.joinedDate).toLocaleDateString('en-IN', { 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                  </Text>
+                  
+                  {/* Sports Interests */}
+                  <View style={styles.sportsContainer}>
+                    {profile.sportsInterests.map((sport, index) => (
+                      <View key={index} style={styles.sportTag}>
+                        <Text style={styles.sportTagText}>{sport}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </ImageBackground>
             </View>
           </View>
 
-          {/* Sports Interests */}
-          <View style={styles.sportsSection}>
-            <Text style={styles.sportsTitle}>Sports Interests</Text>
-            <View style={styles.sportsContainer}>
-              {profile.sportsInterests.map((sport, index) => (
-                <View key={index} style={styles.sportTag}>
-                  <Text style={styles.sportTagText}>{sport}</Text>
+          {/* Stats Cards */}
+          <View style={styles.section}>
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <View style={styles.statIcon}>
+                  <Ionicons name="calendar" size={20} color="#212529" />
+                </View>
+                <Text style={styles.statValue}>{profile.totalBookings}</Text>
+                <Text style={styles.statLabel}>Total Bookings</Text>
+              </View>
+              <View style={styles.statCard}>
+                <View style={styles.statIcon}>
+                  <Ionicons name="cash" size={20} color="#212529" />
+                </View>
+                <Text style={styles.statValue}>₹{(profile.totalSpent / 1000).toFixed(0)}k</Text>
+                <Text style={styles.statLabel}>Total Spent</Text>
+              </View>
+              <View style={styles.statCard}>
+                <View style={styles.statIcon}>
+                  <Ionicons name="heart" size={20} color="#212529" />
+                </View>
+                <Text style={styles.statValue}>{profile.favoriteVenues}</Text>
+                <Text style={styles.statLabel}>Favorites</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Notification Settings Card */}
+          <View style={styles.section}>
+            <View style={styles.settingsCard}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="notifications" size={20} color="#212529" />
+                <Text style={styles.cardTitle}>Notifications</Text>
+              </View>
+              
+              {Object.entries(notificationSettings).map(([key, value]) => (
+                <View key={key} style={styles.settingItem}>
+                  <View style={styles.settingInfo}>
+                    <Text style={styles.settingLabel}>
+                      {key === 'bookingReminders' && 'Booking Reminders'}
+                      {key === 'newVenues' && 'New Venues'}
+                      {key === 'tournaments' && 'Tournaments'}
+                      {key === 'promotions' && 'Promotions'}
+                      {key === 'emailNotifications' && 'Email Notifications'}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={value}
+                    onValueChange={() => handleNotificationToggle(key as keyof NotificationSettings)}
+                    trackColor={{ false: '#f5f6f7', true: '#e5e7eb' }}
+                    thumbColor={value ? '#212529' : '#9ca3af'}
+                  />
                 </View>
               ))}
             </View>
           </View>
-        </View>
 
-        {/* Stats Cards */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{profile.totalBookings}</Text>
-            <Text style={styles.statLabel}>Total Bookings</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>₹{profile.totalSpent.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>Total Spent</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{profile.favoriteVenues}</Text>
-            <Text style={styles.statLabel}>Favorite Venues</Text>
-          </View>
-        </View>
-
-        {/* Notification Settings */}
-        <View style={styles.settingsCard}>
-          <Text style={styles.settingsTitle}>Notification Settings</Text>
-          
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>Booking Reminders</Text>
-              <Text style={styles.settingDescription}>Get reminded about upcoming bookings</Text>
+          {/* Menu Items */}
+          <View style={styles.section}>
+            <View style={styles.menuCard}>
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.menuItem, index === menuItems.length - 1 && styles.lastMenuItem]}
+                  onPress={item.onPress}
+                >
+                  <View style={styles.menuItemLeft}>
+                    <View style={styles.menuItemIcon}>
+                      <Ionicons name={item.icon as any} size={20} color="#9ca3af" />
+                    </View>
+                    <View style={styles.menuItemText}>
+                      <Text style={styles.menuItemTitle}>{item.title}</Text>
+                      <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color="#e5e7eb" />
+                </TouchableOpacity>
+              ))}
             </View>
-            <Switch
-              value={notificationSettings.bookingReminders}
-              onValueChange={() => handleNotificationToggle('bookingReminders')}
-              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
-              thumbColor={notificationSettings.bookingReminders ? '#000000' : '#9ca3af'}
-            />
           </View>
 
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>New Venues</Text>
-              <Text style={styles.settingDescription}>Notify about new venues in your area</Text>
-            </View>
-            <Switch
-              value={notificationSettings.newVenues}
-              onValueChange={() => handleNotificationToggle('newVenues')}
-              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
-              thumbColor={notificationSettings.newVenues ? '#000000' : '#9ca3af'}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>Tournaments</Text>
-              <Text style={styles.settingDescription}>Updates about tournaments</Text>
-            </View>
-            <Switch
-              value={notificationSettings.tournaments}
-              onValueChange={() => handleNotificationToggle('tournaments')}
-              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
-              thumbColor={notificationSettings.tournaments ? '#000000' : '#9ca3af'}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>Promotions</Text>
-              <Text style={styles.settingDescription}>Special offers and discounts</Text>
-            </View>
-            <Switch
-              value={notificationSettings.promotions}
-              onValueChange={() => handleNotificationToggle('promotions')}
-              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
-              thumbColor={notificationSettings.promotions ? '#000000' : '#9ca3af'}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>Email Notifications</Text>
-              <Text style={styles.settingDescription}>Receive notifications via email</Text>
-            </View>
-            <Switch
-              value={notificationSettings.emailNotifications}
-              onValueChange={() => handleNotificationToggle('emailNotifications')}
-              trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
-              thumbColor={notificationSettings.emailNotifications ? '#000000' : '#9ca3af'}
-            />
-          </View>
-        </View>
-
-        {/* Menu Items */}
-        <View style={styles.menuSection}>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.menuItem}
-              onPress={item.onPress}
+          {/* Logout Button */}
+          <View style={styles.section}>
+            <TouchableOpacity 
+              style={styles.logoutButton}
+              onPress={handleLogout}
             >
-              <View style={styles.menuItemLeft}>
-                <View style={styles.menuItemIcon}>
-                  <Ionicons name={item.icon as any} size={20} color="#6b7280" />
-                </View>
-                <View style={styles.menuItemText}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+              <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+              <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
-          ))}
-        </View>
+          </View>
 
-        {/* Logout Button */}
-        <View style={styles.logoutSection}>
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-            <Text style={styles.logoutButtonText}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Add some bottom padding */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
