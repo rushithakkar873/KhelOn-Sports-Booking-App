@@ -139,138 +139,155 @@ export default function VenuesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Find Venues</Text>
-        <TouchableOpacity 
-          style={styles.mapButton}
-          onPress={() => Alert.alert('Map View', 'Map view coming soon!')}
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+          style={styles.scrollView}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
         >
-          <Ionicons name="map-outline" size={20} color="#000000" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search-outline" size={20} color="#9ca3af" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search venues, location, sport..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-      </View>
-
-      {/* Sports Filter */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        style={styles.filtersContainer}
-        contentContainerStyle={styles.filtersContent}
-      >
-        {sports.map((sport) => (
-          <TouchableOpacity
-            key={sport}
-            style={[
-              styles.filterChip,
-              selectedSport === sport && styles.filterChipActive
-            ]}
-            onPress={() => setSelectedSport(sport)}
-          >
-            <Text style={[
-              styles.filterChipText,
-              selectedSport === sport && styles.filterChipTextActive
-            ]}>
-              {sport}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Venues List */}
-      <ScrollView 
-        style={styles.venuesList}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
-        {filteredVenues.map((venue) => (
-          <TouchableOpacity
-            key={venue.id}
-            style={styles.venueCard}
-            onPress={() => handleVenuePress(venue)}
-          >
-            <View style={styles.venueImageContainer}>
-              <View style={styles.venueImagePlaceholder}>
-                <Ionicons name="location" size={32} color="#000000" />
-              </View>
-              <View style={styles.ratingBadge}>
-                <Ionicons name="star" size={12} color="#fbbf24" />
-                <Text style={styles.ratingText}>{venue.rating}</Text>
-              </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.greeting}>Hello, Player</Text>
+              <Text style={styles.subtitle}>Find your next venue</Text>
             </View>
-
-            <View style={styles.venueContent}>
-              <View style={styles.venueHeader}>
-                <Text style={styles.venueName}>{venue.name}</Text>
-                <Text style={styles.venuePrice}>₹{venue.price}/hr</Text>
-              </View>
-
-              <View style={styles.venueLocation}>
-                <Ionicons name="location-outline" size={14} color="#9ca3af" />
-                <Text style={styles.venueLocationText}>{venue.location}</Text>
-              </View>
-
-              <View style={styles.venueSport}>
-                <Text style={styles.venueSportText}>{venue.sport}</Text>
-              </View>
-
-              <View style={styles.venueFacilities}>
-                {venue.facilities.slice(0, 3).map((facility, index) => (
-                  <View key={index} style={styles.facilityTag}>
-                    <Text style={styles.facilityTagText}>{facility}</Text>
-                  </View>
-                ))}
-                {venue.facilities.length > 3 && (
-                  <Text style={styles.moreFacilities}>+{venue.facilities.length - 3} more</Text>
-                )}
-              </View>
-
-              <View style={styles.venueSlots}>
-                <Text style={styles.slotsLabel}>Available today:</Text>
-                <View style={styles.slotsContainer}>
-                  {venue.availableSlots.slice(0, 2).map((slot, index) => (
-                    <Text key={index} style={styles.slotTime}>{slot}</Text>
-                  ))}
-                  {venue.availableSlots.length > 2 && (
-                    <Text style={styles.moreSlots}>+{venue.availableSlots.length - 2}</Text>
-                  )}
-                </View>
-              </View>
-
-              <TouchableOpacity style={styles.bookButton}>
-                <Text style={styles.bookButtonText}>Book Now</Text>
-                <Ionicons name="arrow-forward" size={16} color="#ffffff" />
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        ))}
-
-        {filteredVenues.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={48} color="#9ca3af" />
-            <Text style={styles.emptyStateTitle}>No venues found</Text>
-            <Text style={styles.emptyStateText}>
-              Try adjusting your search or filters
-            </Text>
+            <TouchableOpacity 
+              style={styles.mapButton}
+              onPress={() => Alert.alert('Map View', 'Map view coming soon!')}
+            >
+              <Ionicons name="map-outline" size={20} color="#ffffff" />
+            </TouchableOpacity>
           </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Ionicons name="search-outline" size={20} color="#9ca3af" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search"
+                placeholderTextColor="#9ca3af"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
+            <TouchableOpacity style={styles.filterButton}>
+              <Ionicons name="options-outline" size={20} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Sports Filter */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Select your sport</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsContainer}>
+              {sports.map((sport, index) => (
+                <TouchableOpacity
+                  key={sport}
+                  style={[
+                    styles.chip,
+                    selectedSport === sport && styles.chipSelected
+                  ]}
+                  onPress={() => setSelectedSport(sport)}
+                >
+                  <Text style={[
+                    styles.chipText,
+                    selectedSport === sport && styles.chipTextSelected
+                  ]}>
+                    {sport}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Venues List */}
+          <View style={styles.section}>
+            {filteredVenues.map((venue, index) => (
+              <TouchableOpacity
+                key={venue.id}
+                style={[styles.venueCard, index === 0 && styles.featuredVenueCard]}
+                onPress={() => handleVenuePress(venue)}
+              >
+                <ImageBackground
+                  source={{ uri: venue.image }}
+                  style={index === 0 ? styles.featuredVenueImage : styles.venueImage}
+                  imageStyle={styles.venueImageStyle}
+                >
+                  <View style={styles.venueOverlay} />
+                  <View style={styles.venueContent}>
+                    <TouchableOpacity style={styles.favoriteButton}>
+                      <Ionicons name="heart-outline" size={20} color="#ffffff" />
+                    </TouchableOpacity>
+                    
+                    {index === 0 ? (
+                      <View style={styles.featuredVenueInfo}>
+                        <Text style={styles.featuredVenueName}>{venue.name}</Text>
+                        <View style={styles.featuredVenueLocation}>
+                          <Ionicons name="location" size={12} color="rgba(255,255,255,0.8)" />
+                          <Text style={styles.featuredVenueLocationText}>{venue.location}</Text>
+                        </View>
+                        <View style={styles.featuredVenueRating}>
+                          <Ionicons name="star" size={14} color="#fbbf24" />
+                          <Text style={styles.featuredVenueRatingText}>{venue.rating}</Text>
+                          <Text style={styles.featuredVenueReviews}>143 reviews</Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <View style={styles.regularVenueInfo}>
+                        <Text style={styles.regularVenueName}>{venue.name}</Text>
+                        <Text style={styles.regularVenueLocation}>{venue.location}</Text>
+                        <View style={styles.regularVenueRating}>
+                          <Ionicons name="star" size={12} color="#fbbf24" />
+                          <Text style={styles.regularVenueRatingText}>{venue.rating}</Text>
+                        </View>
+                      </View>
+                    )}
+                    
+                    {index === 0 && (
+                      <TouchableOpacity style={styles.seeMoreButton}>
+                        <Text style={styles.seeMoreText}>See more</Text>
+                        <View style={styles.seeMoreArrow}>
+                          <Ionicons name="chevron-forward" size={16} color="#212529" />
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </ImageBackground>
+                
+                {index !== 0 && (
+                  <View style={styles.venueDetailsCard}>
+                    <Text style={styles.venuePrice}>₹{venue.price}/hr</Text>
+                    <Text style={styles.venueSport}>{venue.sport}</Text>
+                    <View style={styles.venueFacilities}>
+                      {venue.facilities.slice(0, 2).map((facility, fIndex) => (
+                        <Text key={fIndex} style={styles.facilityText}>{facility}</Text>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+
+            {filteredVenues.length === 0 && (
+              <View style={styles.emptyState}>
+                <Ionicons name="search-outline" size={48} color="#9ca3af" />
+                <Text style={styles.emptyStateTitle}>No venues found</Text>
+                <Text style={styles.emptyStateText}>
+                  Try adjusting your search or filters
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Add some bottom padding */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
