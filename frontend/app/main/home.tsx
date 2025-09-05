@@ -290,38 +290,7 @@ export default function HomeScreen() {
         </ScrollView>
       </SafeAreaView>
 
-      {/* Bottom Navigation Overlay */}
-      <View style={styles.bottomNavContainer}>
-        <View style={styles.bottomNav}>
-          <TouchableOpacity style={[styles.navItem, styles.navItemActive]}>
-            <Ionicons name="home" size={20} color="#ffffff" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.navItem}
-            onPress={() => router.push('/main/venues')}
-          >
-            <Ionicons name="location-outline" size={20} color="#ffffff" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.navItem}
-            onPress={() => router.push('/main/tournaments')}
-          >
-            <Ionicons name="trophy-outline" size={20} color="#ffffff" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.navItem}
-            onPress={() => router.push('/main/bookings')}
-          >
-            <Ionicons name="calendar-outline" size={20} color="#ffffff" />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.navItem}
-            onPress={() => router.push('/main/profile')}
-          >
-            <Ionicons name="person-outline" size={20} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <BottomNavigation currentRoute="home" />
     </View>
   );
 }
