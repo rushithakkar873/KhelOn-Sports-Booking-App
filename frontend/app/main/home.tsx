@@ -594,5 +594,9 @@ const styles = StyleSheet.create({
   },
   navItem: {
     padding: 8,
+    opacity: 0.6,
+  },
+  navItemActive: {
+    opacity: 1,
   },
 });
