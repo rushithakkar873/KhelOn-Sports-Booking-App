@@ -6,10 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  Dimensions,
   Modal,
+  Dimensions,
   StatusBar,
-  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,94 +21,83 @@ interface AnalyticsData {
   totalBookings: number;
   occupancyRate: number;
   averageBookingValue: number;
-  revenueTrend: { [key: string]: number };
-  bookingsTrend: { [key: string]: number };
-  sportDistribution: { sport: string; bookings: number; revenue: number }[];
+  revenueGrowth: number;
+  bookingsTrend: { month: string; bookings: number; revenue: number }[];
+  sportDistribution: { sport: string; bookings: number; revenue: number; color: string }[];
+  venuePerformance: { venueName: string; bookings: number; revenue: number; occupancy: number }[];
   peakHours: { hour: string; bookings: number }[];
   monthlyComparison: { month: string; revenue: number; bookings: number }[];
-  venuePerformance: { venueName: string; bookings: number; revenue: number; occupancy: number }[];
 }
 
 export default function AnalyticsScreen() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [selectedTimeRange, setSelectedTimeRange] = useState('30');
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState('revenue');
 
   const timeRanges = [
-    { key: '7d', label: '7 Days' },
-    { key: '30d', label: '30 Days' },
-    { key: '90d', label: '3 Months' },
-    { key: '1y', label: '1 Year' },
+    { key: '7', label: '7 Days' },
+    { key: '30', label: '30 Days' },
+    { key: '90', label: '3 Months' },
+    { key: '365', label: '1 Year' },
   ];
 
   const metrics = [
-    { key: 'revenue', label: 'Revenue', icon: 'cash-outline' },
-    { key: 'bookings', label: 'Bookings', icon: 'calendar-outline' },
-    { key: 'occupancy', label: 'Occupancy', icon: 'stats-chart-outline' },
+    { key: 'revenue', label: 'Revenue Focus', icon: 'cash' },
+    { key: 'bookings', label: 'Bookings Focus', icon: 'calendar' },
+    { key: 'occupancy', label: 'Occupancy Focus', icon: 'trending-up' },
   ];
 
   useEffect(() => {
-    loadAnalyticsData();
-  }, [selectedTimeRange]);
+    loadAnalytics();
+  }, [selectedTimeRange, selectedMetric]);
 
-  const loadAnalyticsData = async () => {
+  const loadAnalytics = async () => {
     try {
-      // Mock data - replace with actual API call
+      // Mock analytics data
       const mockData: AnalyticsData = {
-        totalRevenue: 85000,
-        totalBookings: 67,
-        occupancyRate: 72.5,
-        averageBookingValue: 1268,
-        revenueTrend: {
-          '2025-01-09': 3200,
-          '2025-01-10': 2400,
-          '2025-01-11': 4100,
-          '2025-01-12': 3800,
-          '2025-01-13': 2200,
-          '2025-01-14': 5400,
-          '2025-01-15': 3600,
-        },
-        bookingsTrend: {
-          '2025-01-09': 4,
-          '2025-01-10': 3,
-          '2025-01-11': 5,
-          '2025-01-12': 4,
-          '2025-01-13': 2,
-          '2025-01-14': 6,
-          '2025-01-15': 4,
-        },
+        totalRevenue: 245800,
+        totalBookings: 189,
+        occupancyRate: 68,
+        averageBookingValue: 1301,
+        revenueGrowth: 12.5,
+        bookingsTrend: [
+          { month: 'Oct', bookings: 45, revenue: 58000 },
+          { month: 'Nov', bookings: 62, revenue: 78000 },
+          { month: 'Dec', bookings: 58, revenue: 72000 },
+          { month: 'Jan', bookings: 67, revenue: 85000 },
+        ],
         sportDistribution: [
-          { sport: 'Cricket', bookings: 35, revenue: 45000 },
-          { sport: 'Football', bookings: 22, revenue: 25000 },
-          { sport: 'Badminton', bookings: 10, revenue: 15000 },
-        ],
-        peakHours: [
-          { hour: '18:00', bookings: 12 },
-          { hour: '19:00', bookings: 10 },
-          { hour: '17:00', bookings: 8 },
-          { hour: '20:00', bookings: 7 },
-          { hour: '16:00', bookings: 5 },
-          { hour: '07:00', bookings: 4 },
-        ],
-        monthlyComparison: [
-          { month: 'Oct', revenue: 75000, bookings: 58 },
-          { month: 'Nov', revenue: 82000, bookings: 64 },
-          { month: 'Dec', revenue: 91000, bookings: 71 },
-          { month: 'Jan', revenue: 85000, bookings: 67 },
+          { sport: 'Cricket', bookings: 98, revenue: 142000, color: '#3b82f6' },
+          { sport: 'Football', bookings: 67, revenue: 78000, color: '#10b981' },
+          { sport: 'Badminton', bookings: 34, revenue: 25800, color: '#f59e0b' },
         ],
         venuePerformance: [
-          { venueName: 'Elite Cricket Ground', bookings: 35, revenue: 45000, occupancy: 85.2 },
-          { venueName: 'Champions Football Turf', bookings: 22, revenue: 25000, occupancy: 65.8 },
-          { venueName: 'Badminton Arena Pro', bookings: 10, revenue: 15000, occupancy: 55.5 },
-        ]
+          { venueName: 'Elite Cricket Ground', bookings: 98, revenue: 142000, occupancy: 78 },
+          { venueName: 'Champions Football Turf', bookings: 67, revenue: 78000, occupancy: 65 },
+          { venueName: 'Badminton Arena Pro', bookings: 34, revenue: 25800, occupancy: 52 },
+        ],
+        peakHours: [
+          { hour: '6AM', bookings: 8 },
+          { hour: '8AM', bookings: 15 },
+          { hour: '10AM', bookings: 12 },
+          { hour: '4PM', bookings: 18 },
+          { hour: '6PM', bookings: 25 },
+          { hour: '8PM', bookings: 20 },
+        ],
+        monthlyComparison: [
+          { month: 'Oct', revenue: 58000, bookings: 45 },
+          { month: 'Nov', revenue: 78000, bookings: 62 },
+          { month: 'Dec', revenue: 72000, bookings: 58 },
+          { month: 'Jan', revenue: 85000, bookings: 67 },
+        ],
       };
 
       setAnalyticsData(mockData);
     } catch (error) {
-      console.error('Error loading analytics data:', error);
+      console.error('Error loading analytics:', error);
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +105,7 @@ export default function AnalyticsScreen() {
 
   const onRefresh = async () => {
     setIsRefreshing(true);
-    await loadAnalyticsData();
+    await loadAnalytics();
     setIsRefreshing(false);
   };
 
@@ -125,50 +113,62 @@ export default function AnalyticsScreen() {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
+  const chartConfig = {
+    backgroundColor: '#ffffff',
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(33, 37, 41, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(107, 114, 128, ${opacity})`,
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: '4',
+      strokeWidth: '2',
+      stroke: '#212529',
+    },
+    propsForBackgroundLines: {
+      strokeDasharray: '',
+      stroke: '#f1f5f9',
+      strokeWidth: 1,
+    },
+  };
+
   const getRevenueChartData = () => {
     if (!analyticsData) return { labels: [], datasets: [{ data: [] }] };
     
-    const dates = Object.keys(analyticsData.revenueTrend);
-    const revenues = dates.map(date => analyticsData.revenueTrend[date]);
-    
     return {
-      labels: dates.map(date => {
-        const d = new Date(date);
-        return `${d.getDate()}/${d.getMonth() + 1}`;
-      }),
-      datasets: [{
-        data: revenues,
-        strokeWidth: 3,
-      }]
+      labels: analyticsData.bookingsTrend.map(item => item.month),
+      datasets: [
+        {
+          data: analyticsData.bookingsTrend.map(item => item.revenue / 1000),
+          strokeWidth: 3,
+        },
+      ],
     };
   };
 
   const getBookingsChartData = () => {
     if (!analyticsData) return { labels: [], datasets: [{ data: [] }] };
     
-    const dates = Object.keys(analyticsData.bookingsTrend);
-    const bookings = dates.map(date => analyticsData.bookingsTrend[date]);
-    
     return {
-      labels: dates.map(date => {
-        const d = new Date(date);
-        return `${d.getDate()}/${d.getMonth() + 1}`;
-      }),
-      datasets: [{
-        data: bookings,
-      }]
+      labels: analyticsData.bookingsTrend.map(item => item.month),
+      datasets: [
+        {
+          data: analyticsData.bookingsTrend.map(item => item.bookings),
+        },
+      ],
     };
   };
 
   const getSportsDistributionData = () => {
     if (!analyticsData) return [];
     
-    const colors = ['#2563eb', '#059669', '#f59e0b', '#dc2626', '#7c3aed'];
-    
-    return analyticsData.sportDistribution.map((item, index) => ({
-      name: item.sport,
-      population: item.bookings,
-      color: colors[index % colors.length],
+    return analyticsData.sportDistribution.map((sport, index) => ({
+      name: sport.sport,
+      population: sport.bookings,
+      color: sport.color,
       legendFontColor: '#6b7280',
       legendFontSize: 12,
     }));
@@ -179,302 +179,337 @@ export default function AnalyticsScreen() {
     
     return {
       labels: analyticsData.peakHours.map(item => item.hour),
-      datasets: [{
-        data: analyticsData.peakHours.map(item => item.bookings)
-      }]
+      datasets: [
+        {
+          data: analyticsData.peakHours.map(item => item.bookings),
+        },
+      ],
     };
   };
 
-  const chartConfig = {
-    backgroundGradientFrom: '#ffffff',
-    backgroundGradientTo: '#ffffff',
-    color: (opacity = 1) => `rgba(37, 99, 235, ${opacity})`,
-    strokeWidth: 2,
-    barPercentage: 0.6,
-    useShadowColorFromDataset: false,
-    decimalPlaces: 0,
-  };
-
-  if (isLoading) {
+  if (isLoading || !analyticsData) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading analytics...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!analyticsData) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Failed to load analytics data</Text>
-        </View>
-      </SafeAreaView>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading analytics...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>Analytics</Text>
-            <Text style={styles.headerSubtitle}>Business insights & performance</Text>
-          </View>
-          <TouchableOpacity 
-            style={styles.filtersButton}
-            onPress={() => setShowFiltersModal(true)}
-          >
-            <Ionicons name="options-outline" size={20} color="#2563eb" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Time Range Selector */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          style={styles.timeRangeContainer}
-          contentContainerStyle={styles.timeRangeContent}
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
         >
-          {timeRanges.map((range) => (
-            <TouchableOpacity
-              key={range.key}
-              style={[
-                styles.timeRangeButton,
-                selectedTimeRange === range.key && styles.timeRangeButtonActive
-              ]}
-              onPress={() => setSelectedTimeRange(range.key)}
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <Text style={styles.greeting}>Analytics</Text>
+              <Text style={styles.subtitle}>Performance insights</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.filtersButton}
+              onPress={() => setShowFiltersModal(true)}
             >
-              <Text style={[
-                styles.timeRangeButtonText,
-                selectedTimeRange === range.key && styles.timeRangeButtonTextActive
-              ]}>
-                {range.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Key Metrics */}
-        <View style={styles.metricsContainer}>
-          <View style={styles.metricsRow}>
-            <View style={styles.metricCard}>
-              <View style={styles.metricIcon}>
-                <Ionicons name="cash" size={24} color="#059669" />
-              </View>
-              <Text style={styles.metricValue}>{formatCurrency(analyticsData.totalRevenue)}</Text>
-              <Text style={styles.metricLabel}>Total Revenue</Text>
-              <Text style={styles.metricChange}>+12.5% vs last period</Text>
-            </View>
-            
-            <View style={styles.metricCard}>
-              <View style={styles.metricIcon}>
-                <Ionicons name="calendar" size={24} color="#2563eb" />
-              </View>
-              <Text style={styles.metricValue}>{analyticsData.totalBookings}</Text>
-              <Text style={styles.metricLabel}>Total Bookings</Text>
-              <Text style={styles.metricChange}>+8.3% vs last period</Text>
-            </View>
-          </View>
-
-          <View style={styles.metricsRow}>
-            <View style={styles.metricCard}>
-              <View style={styles.metricIcon}>
-                <Ionicons name="trending-up" size={24} color="#7c3aed" />
-              </View>
-              <Text style={styles.metricValue}>{analyticsData.occupancyRate}%</Text>
-              <Text style={styles.metricLabel}>Occupancy Rate</Text>
-              <Text style={styles.metricChange}>+5.2% vs last period</Text>
-            </View>
-            
-            <View style={styles.metricCard}>
-              <View style={styles.metricIcon}>
-                <Ionicons name="calculator" size={24} color="#f59e0b" />
-              </View>
-              <Text style={styles.metricValue}>{formatCurrency(analyticsData.averageBookingValue)}</Text>
-              <Text style={styles.metricLabel}>Avg Booking Value</Text>
-              <Text style={styles.metricChange}>+3.7% vs last period</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Revenue Trend Chart */}
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Revenue Trend</Text>
-          <LineChart
-            data={getRevenueChartData()}
-            width={width - 48}
-            height={220}
-            chartConfig={chartConfig}
-            bezier
-            style={styles.chart}
-            decorator={() => null}
-          />
-        </View>
-
-        {/* Bookings Trend Chart */}
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Bookings Trend</Text>
-          <BarChart
-            data={getBookingsChartData()}
-            width={width - 48}
-            height={220}
-            yAxisLabel=""
-            yAxisSuffix=""
-            chartConfig={chartConfig}
-            style={styles.chart}
-          />
-        </View>
-
-        {/* Sports Distribution */}
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Sports Distribution</Text>
-          <PieChart
-            data={getSportsDistributionData()}
-            width={width - 48}
-            height={200}
-            chartConfig={chartConfig}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            center={[10, 0]}
-          />
-          <View style={styles.sportsStats}>
-            {analyticsData.sportDistribution.map((sport, index) => (
-              <View key={sport.sport} style={styles.sportStat}>
-                <Text style={styles.sportName}>{sport.sport}</Text>
-                <Text style={styles.sportBookings}>{sport.bookings} bookings</Text>
-                <Text style={styles.sportRevenue}>{formatCurrency(sport.revenue)}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Peak Hours */}
-        <View style={styles.chartContainer}>
-          <Text style={styles.chartTitle}>Peak Booking Hours</Text>
-          <BarChart
-            data={getPeakHoursData()}
-            width={width - 48}
-            height={200}
-            yAxisLabel=""
-            yAxisSuffix=""
-            chartConfig={chartConfig}
-            style={styles.chart}
-          />
-        </View>
-
-        {/* Venue Performance */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Venue Performance</Text>
-          {analyticsData.venuePerformance.map((venue) => (
-            <View key={venue.venueName} style={styles.venuePerformanceCard}>
-              <View style={styles.venueInfo}>
-                <Text style={styles.venueName}>{venue.venueName}</Text>
-                <Text style={styles.venueStats}>
-                  {venue.bookings} bookings • {formatCurrency(venue.revenue)}
-                </Text>
-              </View>
-              <View style={styles.venueOccupancy}>
-                <Text style={styles.occupancyValue}>{venue.occupancy}%</Text>
-                <View style={styles.occupancyBar}>
-                  <View 
-                    style={[
-                      styles.occupancyFill,
-                      { width: `${venue.occupancy}%` }
-                    ]}
-                  />
-                </View>
-              </View>
-            </View>
-          ))}
-        </View>
-
-        {/* Monthly Comparison */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Monthly Comparison</Text>
-          <View style={styles.comparisonContainer}>
-            {analyticsData.monthlyComparison.map((month) => (
-              <View key={month.month} style={styles.comparisonCard}>
-                <Text style={styles.comparisonMonth}>{month.month}</Text>
-                <Text style={styles.comparisonRevenue}>{formatCurrency(month.revenue)}</Text>
-                <Text style={styles.comparisonBookings}>{month.bookings} bookings</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </ScrollView>
-
-      {/* Filters Modal */}
-      <Modal
-        visible={showFiltersModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowFiltersModal(false)}>
-              <Text style={styles.modalCancel}>Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Analytics Filters</Text>
-            <TouchableOpacity onPress={() => setShowFiltersModal(false)}>
-              <Text style={styles.modalSave}>Apply</Text>
+              <Ionicons name="options" size={20} color="#212529" />
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.modalContent}>
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Time Range</Text>
-              {timeRanges.map((range) => (
+
+          {/* Time Range Selector */}
+          <View style={styles.timeRangeSection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.timeRangeContainer}>
+              {timeRanges.map((range, index) => (
                 <TouchableOpacity
                   key={range.key}
-                  style={styles.filterOption}
+                  style={[
+                    styles.timeRangeButton,
+                    selectedTimeRange === range.key && styles.timeRangeButtonActive,
+                    index === 0 && styles.firstTimeRange
+                  ]}
                   onPress={() => setSelectedTimeRange(range.key)}
                 >
-                  <Text style={styles.filterOptionText}>{range.label}</Text>
-                  {selectedTimeRange === range.key && (
-                    <Ionicons name="checkmark" size={20} color="#2563eb" />
-                  )}
+                  <Text style={[
+                    styles.timeRangeButtonText,
+                    selectedTimeRange === range.key && styles.timeRangeButtonTextActive
+                  ]}>
+                    {range.label}
+                  </Text>
                 </TouchableOpacity>
               ))}
+            </ScrollView>
+          </View>
+
+          {/* Key Metrics */}
+          <View style={styles.metricsSection}>
+            <View style={styles.metricsGrid}>
+              <View style={styles.metricCard}>
+                <View style={styles.metricHeader}>
+                  <View style={styles.metricIcon}>
+                    <Ionicons name="cash" size={24} color="#10b981" />
+                  </View>
+                  <View style={styles.metricGrowth}>
+                    <Ionicons name="trending-up" size={16} color="#10b981" />
+                    <Text style={styles.metricGrowthText}>+{analyticsData.revenueGrowth}%</Text>
+                  </View>
+                </View>
+                <Text style={styles.metricValue}>{formatCurrency(analyticsData.totalRevenue)}</Text>
+                <Text style={styles.metricLabel}>Total Revenue</Text>
+              </View>
+
+              <View style={styles.metricCard}>
+                <View style={styles.metricHeader}>
+                  <View style={styles.metricIcon}>
+                    <Ionicons name="calendar" size={24} color="#3b82f6" />
+                  </View>
+                  <View style={styles.metricGrowth}>
+                    <Ionicons name="trending-up" size={16} color="#10b981" />
+                    <Text style={styles.metricGrowthText}>+8.3%</Text>
+                  </View>
+                </View>
+                <Text style={styles.metricValue}>{analyticsData.totalBookings}</Text>
+                <Text style={styles.metricLabel}>Total Bookings</Text>
+              </View>
             </View>
 
-            <View style={styles.filterSection}>
-              <Text style={styles.filterTitle}>Primary Metric</Text>
-              {metrics.map((metric) => (
-                <TouchableOpacity
-                  key={metric.key}
-                  style={styles.filterOption}
-                  onPress={() => setSelectedMetric(metric.key)}
-                >
-                  <View style={styles.filterOptionContent}>
-                    <Ionicons name={metric.icon as any} size={20} color="#6b7280" />
-                    <Text style={styles.filterOptionText}>{metric.label}</Text>
+            <View style={styles.metricsGrid}>
+              <View style={styles.metricCard}>
+                <View style={styles.metricHeader}>
+                  <View style={styles.metricIcon}>
+                    <Ionicons name="trending-up" size={24} color="#f59e0b" />
                   </View>
-                  {selectedMetric === metric.key && (
-                    <Ionicons name="checkmark" size={20} color="#2563eb" />
-                  )}
-                </TouchableOpacity>
+                  <View style={styles.metricGrowth}>
+                    <Ionicons name="trending-up" size={16} color="#10b981" />
+                    <Text style={styles.metricGrowthText}>+5.2%</Text>
+                  </View>
+                </View>
+                <Text style={styles.metricValue}>{analyticsData.occupancyRate}%</Text>
+                <Text style={styles.metricLabel}>Occupancy Rate</Text>
+              </View>
+              
+              <View style={styles.metricCard}>
+                <View style={styles.metricHeader}>
+                  <View style={styles.metricIcon}>
+                    <Ionicons name="calculator" size={24} color="#8b5cf6" />
+                  </View>
+                  <View style={styles.metricGrowth}>
+                    <Ionicons name="trending-up" size={16} color="#10b981" />
+                    <Text style={styles.metricGrowthText}>+3.7%</Text>
+                  </View>
+                </View>
+                <Text style={styles.metricValue}>{formatCurrency(analyticsData.averageBookingValue)}</Text>
+                <Text style={styles.metricLabel}>Avg Booking Value</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Revenue Trend Chart */}
+          <View style={styles.chartSection}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.chartTitle}>Revenue Trend</Text>
+              <Text style={styles.chartSubtitle}>in thousands (₹K)</Text>
+            </View>
+            <LineChart
+              data={getRevenueChartData()}
+              width={width - 48}
+              height={220}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chart}
+              decorator={() => null}
+            />
+          </View>
+
+          {/* Bookings Chart */}
+          <View style={styles.chartSection}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.chartTitle}>Bookings Trend</Text>
+              <Text style={styles.chartSubtitle}>number of bookings</Text>
+            </View>
+            <BarChart
+              data={getBookingsChartData()}
+              width={width - 48}
+              height={220}
+              yAxisLabel=""
+              yAxisSuffix=""
+              chartConfig={chartConfig}
+              style={styles.chart}
+            />
+          </View>
+
+          {/* Sports Distribution */}
+          <View style={styles.chartSection}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.chartTitle}>Sports Distribution</Text>
+              <Text style={styles.chartSubtitle}>by booking volume</Text>
+            </View>
+            <PieChart
+              data={getSportsDistributionData()}
+              width={width - 48}
+              height={200}
+              chartConfig={chartConfig}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              center={[10, 0]}
+            />
+            <View style={styles.sportsStats}>
+              {analyticsData.sportDistribution.map((sport, index) => (
+                <View key={sport.sport} style={styles.sportStat}>
+                  <View style={[styles.sportIndicator, { backgroundColor: sport.color }]} />
+                  <View style={styles.sportInfo}>
+                    <Text style={styles.sportName}>{sport.sport}</Text>
+                    <Text style={styles.sportMetrics}>{sport.bookings} bookings</Text>
+                    <Text style={styles.sportRevenue}>{formatCurrency(sport.revenue)}</Text>
+                  </View>
+                </View>
               ))}
             </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
-    </SafeAreaView>
+          </View>
+
+          {/* Peak Hours */}
+          <View style={styles.chartSection}>
+            <View style={styles.chartHeader}>
+              <Text style={styles.chartTitle}>Peak Booking Hours</Text>
+              <Text style={styles.chartSubtitle}>daily distribution</Text>
+            </View>
+            <BarChart
+              data={getPeakHoursData()}
+              width={width - 48}
+              height={200}
+              yAxisLabel=""
+              yAxisSuffix=""
+              chartConfig={chartConfig}
+              style={styles.chart}
+            />
+          </View>
+
+          {/* Venue Performance */}
+          <View style={styles.performanceSection}>
+            <Text style={styles.sectionTitle}>Venue Performance</Text>
+            {analyticsData.venuePerformance.map((venue, index) => (
+              <View key={venue.venueName} style={styles.venuePerformanceCard}>
+                <View style={styles.venueInfo}>
+                  <Text style={styles.venueName}>{venue.venueName}</Text>
+                  <View style={styles.venueMetrics}>
+                    <Text style={styles.venueBookings}>{venue.bookings} bookings</Text>
+                    <Text style={styles.venueRevenue}>{formatCurrency(venue.revenue)}</Text>
+                  </View>
+                </View>
+                <View style={styles.occupancyContainer}>
+                  <Text style={styles.occupancyValue}>{venue.occupancy}%</Text>
+                  <View style={styles.occupancyBarContainer}>
+                    <View style={styles.occupancyBar}>
+                      <View 
+                        style={[
+                          styles.occupancyFill,
+                          { 
+                            width: `${venue.occupancy}%`,
+                            backgroundColor: venue.occupancy >= 70 ? '#10b981' : venue.occupancy >= 50 ? '#f59e0b' : '#ef4444'
+                          }
+                        ]}
+                      />
+                    </View>
+                  </View>
+                  <Text style={styles.occupancyLabel}>Occupancy</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Monthly Comparison */}
+          <View style={styles.comparisonSection}>
+            <Text style={styles.sectionTitle}>Monthly Comparison</Text>
+            <View style={styles.comparisonGrid}>
+              {analyticsData.monthlyComparison.map((month) => (
+                <View key={month.month} style={styles.comparisonCard}>
+                  <Text style={styles.comparisonMonth}>{month.month}</Text>
+                  <Text style={styles.comparisonRevenue}>{formatCurrency(month.revenue)}</Text>
+                  <Text style={styles.comparisonBookings}>{month.bookings} bookings</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Add some bottom padding */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+
+        {/* Filters Modal */}
+        <Modal
+          visible={showFiltersModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowFiltersModal(false)}>
+                <Text style={styles.modalCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Analytics Filters</Text>
+              <TouchableOpacity onPress={() => setShowFiltersModal(false)}>
+                <Text style={styles.modalSave}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.filterSection}>
+                <Text style={styles.filterTitle}>Time Range</Text>
+                {timeRanges.map((range) => (
+                  <TouchableOpacity
+                    key={range.key}
+                    style={styles.filterOption}
+                    onPress={() => setSelectedTimeRange(range.key)}
+                  >
+                    <Text style={styles.filterOptionText}>{range.label}</Text>
+                    {selectedTimeRange === range.key && (
+                      <Ionicons name="checkmark" size={20} color="#212529" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={styles.filterSection}>
+                <Text style={styles.filterTitle}>Primary Metric</Text>
+                {metrics.map((metric) => (
+                  <TouchableOpacity
+                    key={metric.key}
+                    style={styles.filterOption}
+                    onPress={() => setSelectedMetric(metric.key)}
+                  >
+                    <View style={styles.filterOptionContent}>
+                      <Ionicons name={metric.icon as any} size={20} color="#6b7280" />
+                      <Text style={styles.filterOptionText}>{metric.label}</Text>
+                    </View>
+                    {selectedMetric === metric.key && (
+                      <Ionicons name="checkmark" size={20} color="#212529" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f5f6f7',
+  },
+  safeArea: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -485,166 +520,210 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#dc2626',
-  },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingTop: 20,
+    paddingBottom: 32,
     backgroundColor: '#ffffff',
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
+  headerContent: {
+    flex: 1,
   },
-  headerSubtitle: {
-    fontSize: 14,
+  greeting: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#212529',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 16,
     color: '#6b7280',
-    marginTop: 4,
+    fontWeight: '500',
   },
   filtersButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f1f5f9',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  timeRangeSection: {
+    paddingVertical: 24,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
   timeRangeContainer: {
-    marginBottom: 24,
-  },
-  timeRangeContent: {
     paddingHorizontal: 24,
+    gap: 12,
   },
   timeRangeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 12,
-    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   timeRangeButtonActive: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#212529',
+    borderColor: '#212529',
+  },
+  firstTimeRange: {
+    marginLeft: 0,
   },
   timeRangeButtonText: {
     fontSize: 14,
     color: '#6b7280',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   timeRangeButtonTextActive: {
     color: '#ffffff',
   },
-  metricsContainer: {
+  metricsSection: {
     paddingHorizontal: 24,
-    marginBottom: 24,
+    paddingVertical: 32,
+    gap: 16,
   },
-  metricsRow: {
+  metricsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+    gap: 16,
   },
   metricCard: {
     flex: 1,
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
-    marginHorizontal: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  metricHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  metricIcon: {},
+  metricGrowth: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  metricIcon: {
-    marginBottom: 12,
+  metricGrowthText: {
+    fontSize: 12,
+    color: '#10b981',
+    fontWeight: '600',
+    marginLeft: 4,
   },
   metricValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#212529',
     marginBottom: 4,
   },
   metricLabel: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6b7280',
-    textAlign: 'center',
-    marginBottom: 8,
+    fontWeight: '500',
   },
-  metricChange: {
-    fontSize: 10,
-    color: '#059669',
-    fontWeight: '600',
-  },
-  chartContainer: {
+  chartSection: {
     backgroundColor: '#ffffff',
     marginHorizontal: 24,
     marginBottom: 24,
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  chartHeader: {
+    marginBottom: 20,
   },
   chartTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 16,
-  },
-  chart: {
-    borderRadius: 8,
-  },
-  sportsStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 16,
-  },
-  sportStat: {
-    alignItems: 'center',
-  },
-  sportName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2937',
+    color: '#212529',
     marginBottom: 4,
   },
-  sportBookings: {
-    fontSize: 12,
+  chartSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  chart: {
+    borderRadius: 16,
+  },
+  sportsStats: {
+    marginTop: 20,
+    gap: 16,
+  },
+  sportStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sportIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 12,
+  },
+  sportInfo: {
+    flex: 1,
+  },
+  sportName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 2,
+  },
+  sportMetrics: {
+    fontSize: 13,
     color: '#6b7280',
     marginBottom: 2,
   },
   sportRevenue: {
-    fontSize: 12,
-    color: '#059669',
+    fontSize: 14,
+    color: '#10b981',
     fontWeight: '600',
   },
-  section: {
+  performanceSection: {
     backgroundColor: '#ffffff',
     marginHorizontal: 24,
     marginBottom: 24,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 16,
+    color: '#212529',
+    marginBottom: 20,
   },
   venuePerformanceCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#f1f5f9',
   },
   venueInfo: {
     flex: 1,
@@ -652,60 +731,92 @@ const styles = StyleSheet.create({
   venueName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
+    color: '#212529',
+    marginBottom: 6,
   },
-  venueStats: {
-    fontSize: 12,
+  venueMetrics: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  venueBookings: {
+    fontSize: 13,
     color: '#6b7280',
+    fontWeight: '500',
   },
-  venueOccupancy: {
+  venueRevenue: {
+    fontSize: 13,
+    color: '#10b981',
+    fontWeight: '600',
+  },
+  occupancyContainer: {
     alignItems: 'flex-end',
-    width: 80,
+    width: 100,
   },
   occupancyValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#212529',
+    marginBottom: 4,
+  },
+  occupancyBarContainer: {
+    width: 80,
     marginBottom: 4,
   },
   occupancyBar: {
-    width: 60,
-    height: 4,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 2,
+    width: '100%',
+    height: 6,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 3,
   },
   occupancyFill: {
     height: '100%',
-    backgroundColor: '#2563eb',
-    borderRadius: 2,
+    borderRadius: 3,
   },
-  comparisonContainer: {
+  occupancyLabel: {
+    fontSize: 11,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  comparisonSection: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  comparisonGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 12,
   },
   comparisonCard: {
     flex: 1,
     alignItems: 'center',
-    padding: 12,
-    marginHorizontal: 2,
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
+    backgroundColor: '#f8fafc',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 16,
   },
   comparisonMonth: {
     fontSize: 12,
     color: '#6b7280',
-    marginBottom: 4,
+    fontWeight: '600',
+    marginBottom: 6,
   },
   comparisonRevenue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 2,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#212529',
+    marginBottom: 4,
   },
   comparisonBookings: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6b7280',
+    fontWeight: '500',
   },
   modalContainer: {
     flex: 1,
@@ -723,15 +834,16 @@ const styles = StyleSheet.create({
   modalCancel: {
     fontSize: 16,
     color: '#6b7280',
+    fontWeight: '500',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#212529',
   },
   modalSave: {
     fontSize: 16,
-    color: '#2563eb',
+    color: '#212529',
     fontWeight: '600',
   },
   modalContent: {
@@ -744,16 +856,16 @@ const styles = StyleSheet.create({
   filterTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#212529',
     marginBottom: 16,
   },
   filterOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#f1f5f9',
   },
   filterOptionContent: {
     flexDirection: 'row',
@@ -761,7 +873,8 @@ const styles = StyleSheet.create({
   },
   filterOptionText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: '#212529',
     marginLeft: 12,
+    fontWeight: '500',
   },
 });
