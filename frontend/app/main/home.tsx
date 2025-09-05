@@ -545,28 +545,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9ca3af',
   },
-  bottomNavContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    paddingBottom: 34,
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    backgroundColor: '#212529',
-    borderRadius: 25,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  navItem: {
-    padding: 8,
-    opacity: 0.6,
-  },
-  navItemActive: {
-    opacity: 1,
-  },
+
 });
