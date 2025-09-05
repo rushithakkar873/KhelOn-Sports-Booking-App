@@ -188,7 +188,7 @@ export default function VenuesScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <View>
+            <View style={styles.headerContent}>
               <Text style={styles.greeting}>My Venues</Text>
               <Text style={styles.subtitle}>{venues.length} venues registered</Text>
             </View>
@@ -196,112 +196,124 @@ export default function VenuesScreen() {
               style={styles.addButton}
               onPress={() => setShowAddModal(true)}
             >
-              <Ionicons name="add" size={20} color="#ffffff" />
+              <Ionicons name="add" size={24} color="#ffffff" />
             </TouchableOpacity>
           </View>
 
-          {/* Stats Cards */}
-          <View style={styles.section}>
-            <View style={styles.statsContainer}>
+          {/* Overview Stats */}
+          <View style={styles.statsSection}>
+            <View style={styles.statsGrid}>
               <View style={styles.statCard}>
-                <View style={styles.statIcon}>
-                  <Ionicons name="checkmark-circle" size={20} color="#212529" />
+                <View style={styles.statIconContainer}>
+                  <Ionicons name="checkmark-circle" size={24} color="#10b981" />
                 </View>
-                <Text style={styles.statValue}>{venues.filter(v => v.isActive).length}</Text>
-                <Text style={styles.statLabel}>Active Venues</Text>
+                <View style={styles.statInfo}>
+                  <Text style={styles.statValue}>{venues.filter(v => v.isActive).length}</Text>
+                  <Text style={styles.statLabel}>Active</Text>
+                </View>
               </View>
+              
               <View style={styles.statCard}>
-                <View style={styles.statIcon}>
-                  <Ionicons name="calendar" size={20} color="#212529" />
+                <View style={styles.statIconContainer}>
+                  <Ionicons name="calendar" size={24} color="#3b82f6" />
                 </View>
-                <Text style={styles.statValue}>{venues.reduce((sum, v) => sum + v.totalBookings, 0)}</Text>
-                <Text style={styles.statLabel}>Total Bookings</Text>
+                <View style={styles.statInfo}>
+                  <Text style={styles.statValue}>{venues.reduce((sum, v) => sum + v.totalBookings, 0)}</Text>
+                  <Text style={styles.statLabel}>Bookings</Text>
+                </View>
               </View>
+              
               <View style={styles.statCard}>
-                <View style={styles.statIcon}>
-                  <Ionicons name="star" size={20} color="#212529" />
+                <View style={styles.statIconContainer}>
+                  <Ionicons name="star" size={24} color="#f59e0b" />
                 </View>
-                <Text style={styles.statValue}>
-                  {venues.length > 0 ? (venues.reduce((sum, v) => sum + v.rating, 0) / venues.length).toFixed(1) : '0.0'}
-                </Text>
-                <Text style={styles.statLabel}>Avg Rating</Text>
+                <View style={styles.statInfo}>
+                  <Text style={styles.statValue}>
+                    {venues.length > 0 ? (venues.reduce((sum, v) => sum + v.rating, 0) / venues.length).toFixed(1) : '0.0'}
+                  </Text>
+                  <Text style={styles.statLabel}>Rating</Text>
+                </View>
               </View>
             </View>
           </View>
 
-          {/* Venues List */}
-          <View style={styles.section}>
+          {/* Venues Grid */}
+          <View style={styles.venuesSection}>
+            <Text style={styles.sectionTitle}>All Venues</Text>
+            
             {venues.map((venue, index) => (
               <TouchableOpacity
                 key={venue.id}
-                style={[styles.venueCard, index === 0 && styles.featuredVenueCard]}
+                style={styles.venueCard}
                 onPress={() => handleVenueDetails(venue)}
+                activeOpacity={0.8}
               >
                 <ImageBackground
                   source={{ uri: venue.image }}
-                  style={index === 0 ? styles.featuredVenueImage : styles.venueImage}
-                  imageStyle={styles.venueImageStyle}
+                  style={styles.venueImageBackground}
+                  imageStyle={styles.venueImage}
                 >
                   <View style={styles.venueOverlay} />
+                  
+                  {/* Status Badge */}
+                  <View style={styles.statusBadgeContainer}>
+                    <View style={[
+                      styles.statusBadge,
+                      { backgroundColor: venue.isActive ? '#10b981' : '#6b7280' }
+                    ]}>
+                      <Text style={styles.statusText}>
+                        {venue.isActive ? 'ACTIVE' : 'INACTIVE'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Venue Content */}
                   <View style={styles.venueContent}>
-                    {/* Status Toggle */}
                     <View style={styles.venueHeader}>
-                      <View style={[
-                        styles.statusIndicator,
-                        { backgroundColor: venue.isActive ? 'rgba(16, 185, 129, 0.9)' : 'rgba(156, 163, 175, 0.9)' }
-                      ]}>
-                        <Text style={styles.statusText}>
-                          {venue.isActive ? 'ACTIVE' : 'INACTIVE'}
-                        </Text>
+                      <View style={styles.venueInfo}>
+                        <Text style={styles.venueName}>{venue.name}</Text>
+                        <View style={styles.venueLocationRow}>
+                          <Ionicons name="location" size={16} color="rgba(255,255,255,0.8)" />
+                          <Text style={styles.venueLocation}>{venue.location}</Text>
+                        </View>
                       </View>
+                      
                       <Switch
                         value={venue.isActive}
                         onValueChange={() => toggleVenueStatus(venue.id)}
-                        trackColor={{ false: 'rgba(255,255,255,0.3)', true: 'rgba(255,255,255,0.3)' }}
-                        thumbColor={venue.isActive ? '#10b981' : '#9ca3af'}
+                        trackColor={{ false: 'rgba(255,255,255,0.2)', true: 'rgba(16, 185, 129, 0.3)' }}
+                        thumbColor={venue.isActive ? '#10b981' : '#ffffff'}
+                        style={styles.statusSwitch}
                       />
                     </View>
 
-                    {/* Venue Info */}
-                    <View style={index === 0 ? styles.featuredVenueInfo : styles.regularVenueInfo}>
-                      <Text style={index === 0 ? styles.featuredVenueName : styles.regularVenueName}>
-                        {venue.name}
-                      </Text>
-                      <View style={styles.venueLocation}>
-                        <Ionicons name="location" size={12} color="rgba(255,255,255,0.8)" />
-                        <Text style={styles.venueLocationText}>{venue.location}</Text>
+                    <View style={styles.venueStats}>
+                      <View style={styles.venueStatItem}>
+                        <Ionicons name="star" size={16} color="#fbbf24" />
+                        <Text style={styles.venueStatText}>{venue.rating}</Text>
                       </View>
-                      
-                      <View style={styles.venueMeta}>
-                        <View style={styles.venueRating}>
-                          <Ionicons name="star" size={14} color="#fbbf24" />
-                          <Text style={styles.venueRatingText}>{venue.rating}</Text>
-                        </View>
-                        <Text style={styles.venueSports}>{venue.sports.join(', ')}</Text>
+                      <View style={styles.venueStatItem}>
+                        <Ionicons name="calendar" size={16} color="rgba(255,255,255,0.8)" />
+                        <Text style={styles.venueStatText}>{venue.totalBookings} bookings</Text>
                       </View>
-
-                      <View style={styles.venueStats}>
-                        <View style={styles.venueStat}>
-                          <Text style={styles.venueStatValue}>{formatCurrency(venue.pricePerHour)}/hr</Text>
-                        </View>
-                        <View style={styles.venueStat}>
-                          <Text style={styles.venueStatValue}>{venue.totalBookings} bookings</Text>
-                        </View>
+                      <View style={styles.venueStatItem}>
+                        <Ionicons name="cash" size={16} color="rgba(255,255,255,0.8)" />
+                        <Text style={styles.venueStatText}>{formatCurrency(venue.pricePerHour)}/hr</Text>
                       </View>
                     </View>
                   </View>
                 </ImageBackground>
 
-                {/* Facilities */}
-                <View style={styles.venueFacilities}>
-                  {venue.facilities.slice(0, 3).map((facility, fIndex) => (
+                {/* Facilities Tags */}
+                <View style={styles.facilitiesContainer}>
+                  {venue.facilities.slice(0, 4).map((facility, fIndex) => (
                     <View key={fIndex} style={styles.facilityTag}>
                       <Text style={styles.facilityText}>{facility}</Text>
                     </View>
                   ))}
-                  {venue.facilities.length > 3 && (
+                  {venue.facilities.length > 4 && (
                     <View style={styles.facilityTag}>
-                      <Text style={styles.facilityText}>+{venue.facilities.length - 3} more</Text>
+                      <Text style={styles.facilityText}>+{venue.facilities.length - 4}</Text>
                     </View>
                   )}
                 </View>
@@ -310,25 +322,16 @@ export default function VenuesScreen() {
 
             {venues.length === 0 && (
               <View style={styles.emptyState}>
-                <ImageBackground
-                  source={{ uri: 'https://images.unsplash.com/photo-1435527173128-983b87201f4d' }}
-                  style={styles.emptyStateImage}
-                  imageStyle={styles.emptyStateImageStyle}
+                <Ionicons name="business-outline" size={64} color="#9ca3af" />
+                <Text style={styles.emptyStateTitle}>No venues yet</Text>
+                <Text style={styles.emptyStateText}>Add your first venue to start managing bookings</Text>
+                <TouchableOpacity 
+                  style={styles.emptyStateButton}
+                  onPress={() => setShowAddModal(true)}
                 >
-                  <View style={styles.emptyStateOverlay} />
-                  <View style={styles.emptyStateContent}>
-                    <Ionicons name="business-outline" size={48} color="#ffffff" />
-                    <Text style={styles.emptyStateTitle}>No venues yet</Text>
-                    <Text style={styles.emptyStateText}>Add your first venue to start managing bookings</Text>
-                    <TouchableOpacity 
-                      style={styles.emptyStateButton}
-                      onPress={() => setShowAddModal(true)}
-                    >
-                      <Text style={styles.emptyStateButtonText}>Add Venue</Text>
-                      <Ionicons name="arrow-forward" size={16} color="#212529" />
-                    </TouchableOpacity>
-                  </View>
-                </ImageBackground>
+                  <Text style={styles.emptyStateButtonText}>Add Venue</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#ffffff" />
+                </TouchableOpacity>
               </View>
             )}
           </View>
@@ -408,8 +411,8 @@ export default function VenuesScreen() {
                       <Switch
                         value={slot.isAvailable}
                         onValueChange={() => toggleSlotAvailability(selectedVenue.id, slot.id)}
-                        trackColor={{ false: '#e5e7eb', true: '#e5e7eb' }}
-                        thumbColor={slot.isAvailable ? '#212529' : '#9ca3af'}
+                        trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
+                        thumbColor={slot.isAvailable ? '#3b82f6' : '#9ca3af'}
                       />
                     </View>
                   ))}
@@ -437,7 +440,7 @@ export default function VenuesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f6f7',
   },
   safeArea: {
     flex: 1,
@@ -460,232 +463,217 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 20,
-    paddingBottom: 16,
+    paddingBottom: 32,
+    backgroundColor: '#ffffff',
+  },
+  headerContent: {
+    flex: 1,
   },
   greeting: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: '#212529',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#9ca3af',
+    color: '#6b7280',
+    fontWeight: '500',
   },
   addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#212529',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  section: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#f5f6f7',
-    borderRadius: 20,
-    padding: 16,
-    alignItems: 'center',
-  },
-  statIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#212529',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#9ca3af',
-    textAlign: 'center',
-  },
-  venueCard: {
-    marginBottom: 24,
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
+    shadowColor: '#212529',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 8,
   },
-  featuredVenueCard: {
-    marginBottom: 32,
+  statsSection: {
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
-  featuredVenueImage: {
-    height: 280,
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+  },
+  statIconContainer: {
+    marginRight: 12,
+  },
+  statInfo: {
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#212529',
+    lineHeight: 24,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: '#6b7280',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  venuesSection: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 20,
+  },
+  venueCard: {
+    marginBottom: 24,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+    overflow: 'hidden',
+  },
+  venueImageBackground: {
+    height: 200,
+    justifyContent: 'space-between',
   },
   venueImage: {
-    height: 200,
-  },
-  venueImageStyle: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   venueOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
-  venueContent: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'space-between',
+  statusBadgeContainer: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
   },
-  venueHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusIndicator: {
+  statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 12,
   },
   statusText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     color: '#ffffff',
     letterSpacing: 0.5,
   },
-  featuredVenueInfo: {
-    marginTop: 120,
+  venueContent: {
+    padding: 20,
   },
-  regularVenueInfo: {
-    marginTop: 80,
-  },
-  featuredVenueName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 8,
-  },
-  regularVenueName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 6,
-  },
-  venueLocation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  venueLocationText: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginLeft: 4,
-  },
-  venueMeta: {
+  venueHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
-  venueRating: {
+  venueInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  venueName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 6,
+    lineHeight: 24,
+  },
+  venueLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  venueRatingText: {
+  venueLocation: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginLeft: 4,
-  },
-  venueSports: {
-    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '600',
+    marginLeft: 4,
+    fontWeight: '500',
+  },
+  statusSwitch: {
+    transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
   },
   venueStats: {
     flexDirection: 'row',
     gap: 20,
   },
-  venueStat: {},
-  venueStatValue: {
-    fontSize: 14,
+  venueStatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  venueStatText: {
+    fontSize: 13,
     fontWeight: '600',
     color: 'rgba(255, 255, 255, 0.9)',
+    marginLeft: 4,
   },
-  venueFacilities: {
+  facilitiesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
     padding: 16,
     backgroundColor: '#ffffff',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   facilityTag: {
-    backgroundColor: '#f5f6f7',
+    backgroundColor: '#f8fafc',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   facilityText: {
     fontSize: 11,
-    color: '#212529',
-    fontWeight: '500',
+    color: '#475569',
+    fontWeight: '600',
   },
   emptyState: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    height: 300,
-  },
-  emptyStateImage: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  emptyStateImageStyle: {
-    borderRadius: 24,
-  },
-  emptyStateOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 24,
-  },
-  emptyStateContent: {
-    alignItems: 'center',
-    padding: 32,
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
   emptyStateTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#374151',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    lineHeight: 22,
   },
   emptyStateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#212529',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
@@ -693,7 +681,7 @@ const styles = StyleSheet.create({
   emptyStateButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#212529',
+    color: '#ffffff',
     marginRight: 8,
   },
   modalContainer: {
@@ -711,7 +699,8 @@ const styles = StyleSheet.create({
   },
   modalCancel: {
     fontSize: 16,
-    color: '#9ca3af',
+    color: '#6b7280',
+    fontWeight: '500',
   },
   modalTitle: {
     fontSize: 18,
@@ -729,16 +718,16 @@ const styles = StyleSheet.create({
   },
   modalNote: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#6b7280',
     textAlign: 'center',
     fontStyle: 'italic',
   },
   detailsSection: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   detailsTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#212529',
     marginBottom: 16,
   },
@@ -748,8 +737,9 @@ const styles = StyleSheet.create({
   },
   detailsLabel: {
     fontSize: 14,
-    color: '#9ca3af',
-    width: 80,
+    color: '#6b7280',
+    width: 100,
+    fontWeight: '500',
   },
   detailsValue: {
     fontSize: 14,
@@ -761,22 +751,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f6f7',
+    borderBottomColor: '#f1f5f9',
   },
   slotInfo: {
     flex: 1,
   },
   slotTime: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#212529',
   },
   slotPrice: {
-    fontSize: 12,
-    color: '#9ca3af',
+    fontSize: 14,
+    color: '#6b7280',
     marginTop: 2,
+    fontWeight: '500',
   },
   facilitiesGrid: {
     flexDirection: 'row',
@@ -784,14 +775,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   facilityChip: {
-    backgroundColor: '#f5f6f7',
+    backgroundColor: '#f8fafc',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   facilityChipText: {
     fontSize: 12,
-    color: '#212529',
+    color: '#475569',
     fontWeight: '600',
   },
 });
