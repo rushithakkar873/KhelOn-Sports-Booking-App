@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import BottomNavigation from '../../components/BottomNavigation';
 
 interface Venue {
   id: string;
@@ -286,6 +287,8 @@ export default function VenuesScreen() {
           {/* Add some bottom padding */}
           <View style={{ height: 100 }} />
         </ScrollView>
+        
+        <BottomNavigation currentRoute="venues" />
       </SafeAreaView>
     </View>
   );
