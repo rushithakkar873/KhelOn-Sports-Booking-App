@@ -42,16 +42,15 @@ export default function BookingsScreen() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   
   const router = useRouter();
 
   const statusFilters = [
-    { key: 'all', label: 'All Bookings', count: 0 },
-    { key: 'pending', label: 'Pending', count: 0 },
-    { key: 'confirmed', label: 'Confirmed', count: 0 },
-    { key: 'completed', label: 'Completed', count: 0 },
-    { key: 'cancelled', label: 'Cancelled', count: 0 },
+    { key: 'all', label: 'All', count: 0, color: '#6b7280' },
+    { key: 'pending', label: 'Pending', count: 0, color: '#f59e0b' },
+    { key: 'confirmed', label: 'Confirmed', count: 0, color: '#3b82f6' },
+    { key: 'completed', label: 'Completed', count: 0, color: '#10b981' },
+    { key: 'cancelled', label: 'Cancelled', count: 0, color: '#ef4444' },
   ];
 
   useEffect(() => {
@@ -220,37 +219,35 @@ export default function BookingsScreen() {
     });
   };
 
-  const formatTime = (timeString: string) => {
-    return timeString;
-  };
-
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '#f59e0b';
-      case 'confirmed':
-        return '#212529';
-      case 'completed':
-        return '#10b981';
-      case 'cancelled':
-        return '#ef4444';
-      default:
-        return '#9ca3af';
-    }
+    const filter = statusFilters.find(f => f.key === status);
+    return filter?.color || '#6b7280';
   };
 
   const getStatusBgColor = (status: string) => {
     switch (status) {
+      case 'pending': return 'rgba(245, 158, 11, 0.1)';
+      case 'confirmed': return 'rgba(59, 130, 246, 0.1)';
+      case 'completed': return 'rgba(16, 185, 129, 0.1)';
+      case 'cancelled': return 'rgba(239, 68, 68, 0.1)';
+      default: return 'rgba(107, 114, 128, 0.1)';
+    }
+  };
+
+  const getBookingActions = (booking: Booking) => {
+    switch (booking.status) {
       case 'pending':
-        return 'rgba(245, 158, 11, 0.1)';
+        return [
+          { key: 'confirm', label: 'Confirm', color: '#3b82f6', icon: 'checkmark-circle' },
+          { key: 'cancel', label: 'Cancel', color: '#ef4444', icon: 'close-circle' },
+        ];
       case 'confirmed':
-        return 'rgba(33, 37, 41, 0.1)';
-      case 'completed':
-        return 'rgba(16, 185, 129, 0.1)';
-      case 'cancelled':
-        return 'rgba(239, 68, 68, 0.1)';
+        return [
+          { key: 'complete', label: 'Complete', color: '#10b981', icon: 'checkmark-done' },
+          { key: 'cancel', label: 'Cancel', color: '#ef4444', icon: 'close-circle' },
+        ];
       default:
-        return 'rgba(156, 163, 175, 0.1)';
+        return [];
     }
   };
 
@@ -282,154 +279,135 @@ export default function BookingsScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <View>
+            <View style={styles.headerContent}>
               <Text style={styles.greeting}>Bookings</Text>
               <Text style={styles.subtitle}>{bookings.length} total bookings</Text>
             </View>
-            <View style={styles.headerActions}>
-              <TouchableOpacity 
-                style={[styles.viewModeButton, viewMode === 'list' && styles.viewModeButtonActive]}
-                onPress={() => setViewMode('list')}
-              >
-                <Ionicons name="list" size={16} color={viewMode === 'list' ? '#ffffff' : '#9ca3af'} />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.viewModeButton, viewMode === 'calendar' && styles.viewModeButtonActive]}
-                onPress={() => setViewMode('calendar')}
-              >
-                <Ionicons name="calendar" size={16} color={viewMode === 'calendar' ? '#ffffff' : '#9ca3af'} />
-              </TouchableOpacity>
-            </View>
           </View>
 
-          {/* Status Filters */}
-          <View style={styles.section}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
+          {/* Quick Stats */}
+          <View style={styles.statsSection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsContainer}>
               {statusFilters.map((filter, index) => (
                 <TouchableOpacity
                   key={filter.key}
                   style={[
-                    styles.filterButton,
-                    selectedStatus === filter.key && styles.filterButtonActive,
-                    index === 0 && styles.firstFilter
+                    styles.statCard,
+                    selectedStatus === filter.key && styles.statCardActive,
+                    index === 0 && styles.firstStat
                   ]}
                   onPress={() => setSelectedStatus(filter.key)}
                 >
-                  <Text style={[
-                    styles.filterButtonText,
-                    selectedStatus === filter.key && styles.filterButtonTextActive
-                  ]}>
-                    {filter.label} ({filter.count})
-                  </Text>
+                  <View style={styles.statContent}>
+                    <Text style={[
+                      styles.statCount,
+                      { color: selectedStatus === filter.key ? '#ffffff' : filter.color }
+                    ]}>
+                      {filter.count}
+                    </Text>
+                    <Text style={[
+                      styles.statLabel,
+                      { color: selectedStatus === filter.key ? 'rgba(255,255,255,0.8)' : '#6b7280' }
+                    ]}>
+                      {filter.label}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
           {/* Bookings List */}
-          <View style={styles.section}>
+          <View style={styles.bookingsSection}>
             {filteredBookings.map((booking, index) => (
               <TouchableOpacity
                 key={booking.id}
                 style={styles.bookingCard}
                 onPress={() => handleBookingAction(booking, 'details')}
+                activeOpacity={0.8}
               >
                 <ImageBackground
                   source={{ uri: booking.image }}
-                  style={styles.bookingImage}
-                  imageStyle={styles.bookingImageStyle}
+                  style={styles.bookingImageBackground}
+                  imageStyle={styles.bookingImage}
                 >
                   <View style={styles.bookingOverlay} />
-                  <View style={styles.bookingContent}>
-                    {/* Status Badge */}
+                  
+                  {/* Status Badge */}
+                  <View style={styles.statusBadgeContainer}>
                     <View style={[
                       styles.statusBadge,
-                      { backgroundColor: getStatusBgColor(booking.status) }
+                      { backgroundColor: getStatusBgColor(booking.status), borderColor: getStatusColor(booking.status) }
                     ]}>
-                      <Text style={[
-                        styles.statusText,
-                        { color: getStatusColor(booking.status) }
-                      ]}>
+                      <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
                         {booking.status.toUpperCase()}
                       </Text>
                     </View>
+                  </View>
 
-                    {/* Booking Info */}
+                  {/* Booking Header */}
+                  <View style={styles.bookingHeader}>
                     <View style={styles.bookingInfo}>
                       <Text style={styles.venueName}>{booking.venueName}</Text>
                       <Text style={styles.playerName}>{booking.playerName}</Text>
-                      <Text style={styles.sportName}>{booking.sport}</Text>
-                      
-                      <View style={styles.bookingMeta}>
-                        <View style={styles.metaItem}>
-                          <Ionicons name="calendar" size={12} color="rgba(255,255,255,0.8)" />
-                          <Text style={styles.metaText}>
-                            {formatDate(booking.bookingDate)}
-                          </Text>
-                        </View>
-                        <View style={styles.metaItem}>
-                          <Ionicons name="time" size={12} color="rgba(255,255,255,0.8)" />
-                          <Text style={styles.metaText}>
-                            {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
-                          </Text>
-                        </View>
-                      </View>
-
-                      <View style={styles.priceRow}>
-                        <Text style={styles.price}>{formatCurrency(booking.totalAmount)}</Text>
-                        <View style={[
-                          styles.paymentBadge,
-                          { backgroundColor: booking.paymentStatus === 'paid' ? 'rgba(16, 185, 129, 0.2)' : 
-                            booking.paymentStatus === 'refunded' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)' }
-                        ]}>
-                          <Text style={[
-                            styles.paymentText,
-                            { color: booking.paymentStatus === 'paid' ? '#10b981' : 
-                              booking.paymentStatus === 'refunded' ? '#ef4444' : '#f59e0b' }
-                          ]}>
-                            {booking.paymentStatus.toUpperCase()}
-                          </Text>
-                        </View>
-                      </View>
+                    </View>
+                    
+                    <View style={styles.bookingAmount}>
+                      <Text style={styles.amountText}>{formatCurrency(booking.totalAmount)}</Text>
                     </View>
                   </View>
                 </ImageBackground>
 
-                {/* Action Buttons */}
-                <View style={styles.actionContainer}>
-                  {booking.status === 'pending' && (
-                    <>
-                      <TouchableOpacity 
-                        style={styles.primaryAction}
-                        onPress={() => handleBookingAction(booking, 'confirm')}
-                      >
-                        <Text style={styles.primaryActionText}>Confirm</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={styles.secondaryAction}
-                        onPress={() => handleBookingAction(booking, 'cancel')}
-                      >
-                        <Text style={styles.secondaryActionText}>Cancel</Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
+                {/* Booking Details */}
+                <View style={styles.bookingDetails}>
+                  <View style={styles.bookingMeta}>
+                    <View style={styles.metaItem}>
+                      <Ionicons name="calendar" size={16} color="#6b7280" />
+                      <Text style={styles.metaText}>{formatDate(booking.bookingDate)}</Text>
+                    </View>
+                    <View style={styles.metaItem}>
+                      <Ionicons name="time" size={16} color="#6b7280" />
+                      <Text style={styles.metaText}>{booking.startTime} - {booking.endTime}</Text>
+                    </View>
+                    <View style={styles.metaItem}>
+                      <Ionicons name="basketball" size={16} color="#6b7280" />
+                      <Text style={styles.metaText}>{booking.sport}</Text>
+                    </View>
+                  </View>
 
-                  {booking.status === 'confirmed' && (
-                    <TouchableOpacity 
-                      style={styles.primaryAction}
-                      onPress={() => handleBookingAction(booking, 'complete')}
-                    >
-                      <Text style={styles.primaryActionText}>Mark Complete</Text>
-                    </TouchableOpacity>
-                  )}
+                  {/* Payment Status */}
+                  <View style={styles.paymentRow}>
+                    <View style={styles.paymentStatus}>
+                      <Ionicons 
+                        name={booking.paymentStatus === 'paid' ? 'checkmark-circle' : 'time'} 
+                        size={16} 
+                        color={booking.paymentStatus === 'paid' ? '#10b981' : '#f59e0b'} 
+                      />
+                      <Text style={[
+                        styles.paymentText,
+                        { color: booking.paymentStatus === 'paid' ? '#10b981' : '#f59e0b' }
+                      ]}>
+                        {booking.paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}
+                      </Text>
+                    </View>
+                  </View>
 
-                  {booking.status === 'completed' && (
-                    <TouchableOpacity 
-                      style={styles.secondaryAction}
-                      onPress={() => handleBookingAction(booking, 'details')}
-                    >
-                      <Text style={styles.secondaryActionText}>View Details</Text>
-                    </TouchableOpacity>
+                  {/* Action Buttons */}
+                  {getBookingActions(booking).length > 0 && (
+                    <View style={styles.actionsContainer}>
+                      {getBookingActions(booking).map((action) => (
+                        <TouchableOpacity
+                          key={action.key}
+                          style={[styles.actionButton, { borderColor: action.color }]}
+                          onPress={() => handleBookingAction(booking, action.key)}
+                        >
+                          <Ionicons name={action.icon as any} size={16} color={action.color} />
+                          <Text style={[styles.actionText, { color: action.color }]}>
+                            {action.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
                   )}
                 </View>
               </TouchableOpacity>
@@ -437,23 +415,14 @@ export default function BookingsScreen() {
 
             {filteredBookings.length === 0 && (
               <View style={styles.emptyState}>
-                <ImageBackground
-                  source={{ uri: 'https://images.unsplash.com/photo-1633526543814-9718c8922b7a' }}
-                  style={styles.emptyStateImage}
-                  imageStyle={styles.emptyStateImageStyle}
-                >
-                  <View style={styles.emptyStateOverlay} />
-                  <View style={styles.emptyStateContent}>
-                    <Ionicons name="calendar-outline" size={48} color="#ffffff" />
-                    <Text style={styles.emptyStateTitle}>No bookings found</Text>
-                    <Text style={styles.emptyStateText}>
-                      {selectedStatus === 'all' 
-                        ? 'You don\'t have any bookings yet'
-                        : `No ${selectedStatus} bookings at the moment`
-                      }
-                    </Text>
-                  </View>
-                </ImageBackground>
+                <Ionicons name="calendar-outline" size={64} color="#9ca3af" />
+                <Text style={styles.emptyStateTitle}>No bookings found</Text>
+                <Text style={styles.emptyStateText}>
+                  {selectedStatus === 'all' 
+                    ? 'You haven\'t received any bookings yet'
+                    : `No ${selectedStatus} bookings found`
+                  }
+                </Text>
               </View>
             )}
           </View>
@@ -475,50 +444,40 @@ export default function BookingsScreen() {
               </TouchableOpacity>
               <Text style={styles.modalTitle}>Booking Details</Text>
               <TouchableOpacity>
-                <Text style={styles.modalAction}>Action</Text>
+                <Text style={styles.modalSave}>Actions</Text>
               </TouchableOpacity>
             </View>
             {selectedBooking && (
               <ScrollView style={styles.modalContent}>
                 <View style={styles.detailsSection}>
-                  <Text style={styles.detailsTitle}>Venue Information</Text>
+                  <Text style={styles.detailsTitle}>Booking Information</Text>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Venue:</Text>
                     <Text style={styles.detailsValue}>{selectedBooking.venueName}</Text>
                   </View>
                   <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Sport:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.sport}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.detailsSection}>
-                  <Text style={styles.detailsTitle}>Player Information</Text>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Name:</Text>
+                    <Text style={styles.detailsLabel}>Player:</Text>
                     <Text style={styles.detailsValue}>{selectedBooking.playerName}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Phone:</Text>
                     <Text style={styles.detailsValue}>{selectedBooking.playerPhone}</Text>
                   </View>
-                </View>
-
-                <View style={styles.detailsSection}>
-                  <Text style={styles.detailsTitle}>Booking Details</Text>
+                  <View style={styles.detailsRow}>
+                    <Text style={styles.detailsLabel}>Sport:</Text>
+                    <Text style={styles.detailsValue}>{selectedBooking.sport}</Text>
+                  </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Date:</Text>
                     <Text style={styles.detailsValue}>{formatDate(selectedBooking.bookingDate)}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Time:</Text>
-                    <Text style={styles.detailsValue}>
-                      {formatTime(selectedBooking.startTime)} - {formatTime(selectedBooking.endTime)}
-                    </Text>
+                    <Text style={styles.detailsValue}>{selectedBooking.startTime} - {selectedBooking.endTime}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Duration:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.duration} hour(s)</Text>
+                    <Text style={styles.detailsValue}>{selectedBooking.duration} hours</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Amount:</Text>
@@ -526,21 +485,18 @@ export default function BookingsScreen() {
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Status:</Text>
-                    <View style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusBgColor(selectedBooking.status) }
-                    ]}>
-                      <Text style={[
-                        styles.statusText,
-                        { color: getStatusColor(selectedBooking.status) }
-                      ]}>
-                        {selectedBooking.status.toUpperCase()}
-                      </Text>
-                    </View>
+                    <Text style={[styles.detailsValue, { color: getStatusColor(selectedBooking.status) }]}>
+                      {selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)}
+                    </Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Payment:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.paymentStatus}</Text>
+                    <Text style={[
+                      styles.detailsValue, 
+                      { color: selectedBooking.paymentStatus === 'paid' ? '#10b981' : '#f59e0b' }
+                    ]}>
+                      {selectedBooking.paymentStatus.charAt(0).toUpperCase() + selectedBooking.paymentStatus.slice(1)}
+                    </Text>
                   </View>
                 </View>
               </ScrollView>
@@ -555,7 +511,7 @@ export default function BookingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f6f7',
   },
   safeArea: {
     flex: 1,
@@ -578,225 +534,201 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 20,
-    paddingBottom: 16,
+    paddingBottom: 32,
+    backgroundColor: '#ffffff',
+  },
+  headerContent: {
+    flex: 1,
   },
   greeting: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: '#212529',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
-    color: '#9ca3af',
+    color: '#6b7280',
+    fontWeight: '500',
   },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 8,
+  statsSection: {
+    paddingVertical: 24,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
-  viewModeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f5f6f7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewModeButtonActive: {
-    backgroundColor: '#212529',
-  },
-  section: {
+  statsContainer: {
     paddingHorizontal: 24,
-    marginBottom: 24,
+    gap: 12,
   },
-  filtersContainer: {
-    paddingLeft: 0,
+  statCard: {
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    minWidth: 80,
   },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 12,
-    backgroundColor: '#f5f6f7',
+  statCardActive: {
+    backgroundColor: '#212529',
+    borderColor: '#212529',
   },
-  firstFilter: {
+  firstStat: {
     marginLeft: 0,
   },
-  filterButtonActive: {
-    backgroundColor: '#212529',
+  statContent: {
+    alignItems: 'center',
   },
-  filterButtonText: {
-    fontSize: 14,
-    color: '#9ca3af',
+  statCount: {
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 24,
+  },
+  statLabel: {
+    fontSize: 12,
     fontWeight: '600',
+    marginTop: 4,
   },
-  filterButtonTextActive: {
-    color: '#ffffff',
+  bookingsSection: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
   },
   bookingCard: {
     marginBottom: 24,
-    borderRadius: 24,
-    overflow: 'hidden',
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+    overflow: 'hidden',
   },
-  bookingImage: {
-    height: 200,
+  bookingImageBackground: {
+    height: 120,
     justifyContent: 'space-between',
   },
-  bookingImageStyle: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+  bookingImage: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   bookingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
-  bookingContent: {
-    padding: 20,
+  statusBadgeContainer: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
   },
   statusBadge: {
-    alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
-    marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   statusText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  bookingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    padding: 20,
   },
   bookingInfo: {
     flex: 1,
   },
   venueName: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#ffffff',
     marginBottom: 4,
   },
   playerName: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 2,
-  },
-  sportName: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 16,
-    fontWeight: '600',
+    fontWeight: '500',
+  },
+  bookingAmount: {
+    alignItems: 'flex-end',
+  },
+  amountText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  bookingDetails: {
+    padding: 20,
   },
   bookingMeta: {
     flexDirection: 'row',
-    marginBottom: 16,
+    flexWrap: 'wrap',
     gap: 16,
+    marginBottom: 16,
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   metaText: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginLeft: 4,
+    fontSize: 13,
+    color: '#6b7280',
     fontWeight: '500',
+    marginLeft: 6,
   },
-  priceRow: {
+  paymentRow: {
+    marginBottom: 16,
+  },
+  paymentStatus: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  price: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  paymentBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
   },
   paymentText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
   },
-  actionContainer: {
+  actionsContainer: {
     flexDirection: 'row',
-    padding: 20,
     gap: 12,
-    backgroundColor: '#ffffff',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
   },
-  primaryAction: {
-    flex: 1,
-    backgroundColor: '#212529',
-    paddingVertical: 14,
-    borderRadius: 16,
+  actionButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  primaryActionText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryAction: {
-    flex: 1,
-    backgroundColor: '#f5f6f7',
-    paddingVertical: 14,
-    borderRadius: 16,
-    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
   },
-  secondaryActionText: {
-    color: '#9ca3af',
-    fontSize: 16,
+  actionText: {
+    fontSize: 13,
     fontWeight: '600',
+    marginLeft: 6,
   },
   emptyState: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    height: 300,
-  },
-  emptyStateImage: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  emptyStateImageStyle: {
-    borderRadius: 24,
-  },
-  emptyStateOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 24,
-  },
-  emptyStateContent: {
-    alignItems: 'center',
-    padding: 32,
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
   emptyStateTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#374151',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#6b7280',
     textAlign: 'center',
+    lineHeight: 22,
   },
   modalContainer: {
     flex: 1,
@@ -813,14 +745,15 @@ const styles = StyleSheet.create({
   },
   modalCancel: {
     fontSize: 16,
-    color: '#9ca3af',
+    color: '#6b7280',
+    fontWeight: '500',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#212529',
   },
-  modalAction: {
+  modalSave: {
     fontSize: 16,
     color: '#212529',
     fontWeight: '600',
@@ -830,23 +763,25 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   detailsSection: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   detailsTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#212529',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   detailsRow: {
     flexDirection: 'row',
-    paddingVertical: 8,
-    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
   detailsLabel: {
     fontSize: 14,
-    color: '#9ca3af',
-    width: 80,
+    color: '#6b7280',
+    width: 100,
+    fontWeight: '500',
   },
   detailsValue: {
     fontSize: 14,
