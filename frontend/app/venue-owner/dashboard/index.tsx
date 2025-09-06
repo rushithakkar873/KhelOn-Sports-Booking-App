@@ -16,6 +16,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LineChart, BarChart } from 'react-native-chart-kit';
 import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
+import VenueOwnerService from '../../../services/venueOwnerService';
+import AuthService from '../../../services/authService';
 
 const { width } = Dimensions.get('window');
 const chartWidth = width - 80; // Reduced width for mobile
