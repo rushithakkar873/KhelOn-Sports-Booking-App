@@ -15,8 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LineChart, BarChart } from 'react-native-chart-kit';
+import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
 
 const { width } = Dimensions.get('window');
+const chartWidth = width - 80; // Reduced width for mobile
 
 interface DashboardData {
   totalVenues: number;
@@ -115,6 +117,12 @@ export default function VenueOwnerDashboard() {
   };
 
   const formatCurrency = (amount: number) => {
+    if (amount >= 100000) {
+      return `₹${(amount / 100000).toFixed(1)}L`;
+    }
+    if (amount >= 1000) {
+      return `₹${(amount / 1000).toFixed(1)}K`;
+    }
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
@@ -151,11 +159,15 @@ export default function VenueOwnerDashboard() {
     barPercentage: 0.6,
     useShadowColorFromDataset: false,
     decimalPlaces: 0,
+    propsForLabels: {
+      fontSize: 10,
+    },
   };
 
   if (isLoading) {
     return (
       <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading dashboard...</Text>
@@ -167,7 +179,7 @@ export default function VenueOwnerDashboard() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -178,12 +190,12 @@ export default function VenueOwnerDashboard() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <View>
+            <View style={styles.headerContent}>
               <Text style={styles.welcomeText}>Welcome back!</Text>
-              <Text style={styles.headerTitle}>Dashboard Overview</Text>
+              <Text style={styles.headerTitle}>Dashboard</Text>
             </View>
             <TouchableOpacity style={styles.notificationButton}>
-              <Ionicons name="notifications-outline" size={20} color="#ffffff" />
+              <Ionicons name="notifications-outline" size={20} color="#212529" />
             </TouchableOpacity>
           </View>
 
@@ -220,20 +232,20 @@ export default function VenueOwnerDashboard() {
             <View style={styles.kpiContainer}>
               <View style={styles.kpiCard}>
                 <View style={styles.kpiIcon}>
-                  <Ionicons name="trending-up" size={24} color="#212529" />
+                  <Ionicons name="trending-up" size={20} color="#10b981" />
                 </View>
                 <Text style={styles.kpiValue}>{dashboardData.occupancyRate}%</Text>
                 <Text style={styles.kpiLabel}>Occupancy Rate</Text>
-                <Text style={styles.kpiChange}>+5.2% from last month</Text>
+                <Text style={styles.kpiChange}>+5.2%</Text>
               </View>
               
               <View style={styles.kpiCard}>
                 <View style={styles.kpiIcon}>
-                  <Ionicons name="calendar" size={24} color="#212529" />
+                  <Ionicons name="calendar" size={20} color="#3b82f6" />
                 </View>
                 <Text style={styles.kpiValue}>{dashboardData.recentBookings.length}</Text>
                 <Text style={styles.kpiLabel}>Recent Bookings</Text>
-                <Text style={styles.kpiChange}>Last 24 hours</Text>
+                <Text style={styles.kpiChange}>Last 24h</Text>
               </View>
             </View>
           </View>
@@ -243,18 +255,20 @@ export default function VenueOwnerDashboard() {
             <View style={styles.chartCard}>
               <View style={styles.chartHeader}>
                 <Text style={styles.chartTitle}>Revenue Trend</Text>
-                <Text style={styles.chartSubtitle}>Last 7 days performance</Text>
+                <Text style={styles.chartSubtitle}>Last 7 days</Text>
               </View>
               {Object.keys(dashboardData.revenueTrend).length > 0 && (
-                <LineChart
-                  data={getRevenueChartData()}
-                  width={width - 48}
-                  height={200}
-                  chartConfig={chartConfig}
-                  bezier
-                  style={styles.chart}
-                  decorator={() => null}
-                />
+                <View style={styles.chartContainer}>
+                  <LineChart
+                    data={getRevenueChartData()}
+                    width={chartWidth}
+                    height={180}
+                    chartConfig={chartConfig}
+                    bezier
+                    style={styles.chart}
+                    decorator={() => null}
+                  />
+                </View>
               )}
             </View>
           </View>
@@ -267,15 +281,17 @@ export default function VenueOwnerDashboard() {
                   <Text style={styles.chartTitle}>Popular Sports</Text>
                   <Text style={styles.chartSubtitle}>Booking distribution</Text>
                 </View>
-                <BarChart
-                  data={getSportsChartData()}
-                  width={width - 48}
-                  height={180}
-                  yAxisLabel=""
-                  yAxisSuffix=""
-                  chartConfig={chartConfig}
-                  style={styles.chart}
-                />
+                <View style={styles.chartContainer}>
+                  <BarChart
+                    data={getSportsChartData()}
+                    width={chartWidth}
+                    height={160}
+                    yAxisLabel=""
+                    yAxisSuffix=""
+                    chartConfig={chartConfig}
+                    style={styles.chart}
+                  />
+                </View>
               </View>
             </View>
           )}
@@ -293,10 +309,10 @@ export default function VenueOwnerDashboard() {
               {dashboardData.recentBookings.map((booking, index) => (
                 <View key={booking.id} style={[styles.bookingCard, index === dashboardData.recentBookings.length - 1 && styles.lastBookingCard]}>
                   <View style={styles.bookingInfo}>
-                    <Text style={styles.bookingVenue}>{booking.venueName}</Text>
-                    <Text style={styles.bookingPlayer}>{booking.playerName}</Text>
+                    <Text style={styles.bookingVenue} numberOfLines={1}>{booking.venueName}</Text>
+                    <Text style={styles.bookingPlayer} numberOfLines={1}>{booking.playerName}</Text>
                     <Text style={styles.bookingDate}>
-                      {booking.bookingDate} • {booking.startTime}
+                      {new Date(booking.bookingDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })} • {booking.startTime}
                     </Text>
                   </View>
                   <View style={styles.bookingAmount}>
@@ -332,10 +348,10 @@ export default function VenueOwnerDashboard() {
               <View style={styles.quickActions}>
                 <TouchableOpacity 
                   style={styles.actionButton}
-                  onPress={() => Alert.alert('Coming Soon', 'Venue creation feature will be added soon!')}
+                  onPress={() => router.push('/venue-owner/dashboard/venues')}
                 >
                   <View style={styles.actionIcon}>
-                    <Ionicons name="add-circle-outline" size={24} color="#212529" />
+                    <Ionicons name="add-circle-outline" size={20} color="#212529" />
                   </View>
                   <Text style={styles.actionText}>Add Venue</Text>
                 </TouchableOpacity>
@@ -345,7 +361,7 @@ export default function VenueOwnerDashboard() {
                   onPress={() => router.push('/venue-owner/dashboard/bookings')}
                 >
                   <View style={styles.actionIcon}>
-                    <Ionicons name="calendar-outline" size={24} color="#212529" />
+                    <Ionicons name="calendar-outline" size={20} color="#212529" />
                   </View>
                   <Text style={styles.actionText}>Manage Bookings</Text>
                 </TouchableOpacity>
@@ -355,9 +371,9 @@ export default function VenueOwnerDashboard() {
                   onPress={() => router.push('/venue-owner/dashboard/analytics')}
                 >
                   <View style={styles.actionIcon}>
-                    <Ionicons name="analytics-outline" size={24} color="#212529" />
+                    <Ionicons name="analytics-outline" size={20} color="#212529" />
                   </View>
-                  <Text style={styles.actionText}>View Analytics</Text>
+                  <Text style={styles.actionText}>Analytics</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -366,6 +382,8 @@ export default function VenueOwnerDashboard() {
           {/* Add some bottom padding */}
           <View style={{ height: 100 }} />
         </ScrollView>
+        
+        <VenueOwnerBottomNavigation currentRoute="overview" />
       </SafeAreaView>
     </View>
   );
@@ -374,7 +392,7 @@ export default function VenueOwnerDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f6f7',
   },
   safeArea: {
     flex: 1,
@@ -397,53 +415,63 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 20,
-    paddingBottom: 16,
+    paddingBottom: 32,
+    backgroundColor: '#f5f6f7',
+  },
+  headerContent: {
+    flex: 1,
   },
   welcomeText: {
     fontSize: 16,
-    color: '#9ca3af',
+    color: '#6b7280',
     marginBottom: 4,
+    fontWeight: '500',
   },
   headerTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: '#212529',
   },
   notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#212529',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   section: {
     paddingHorizontal: 24,
     marginBottom: 24,
   },
   heroCard: {
-    height: 200,
-    borderRadius: 24,
+    height: 180,
+    borderRadius: 20,
     overflow: 'hidden',
     justifyContent: 'center',
   },
   heroImageStyle: {
-    borderRadius: 24,
+    borderRadius: 20,
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 24,
+    borderRadius: 20,
   },
   heroContent: {
-    padding: 24,
+    padding: 20,
     alignItems: 'center',
   },
   heroTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#ffffff',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   heroStats: {
     flexDirection: 'row',
@@ -452,17 +480,19 @@ const styles = StyleSheet.create({
   },
   heroStat: {
     alignItems: 'center',
+    flex: 1,
   },
   heroStatValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#ffffff',
     marginBottom: 4,
   },
   heroStatLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
+    fontWeight: '500',
   },
   kpiContainer: {
     flexDirection: 'row',
@@ -470,62 +500,82 @@ const styles = StyleSheet.create({
   },
   kpiCard: {
     flex: 1,
-    backgroundColor: '#f5f6f7',
-    borderRadius: 20,
-    padding: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   kpiIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#ffffff',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   kpiValue: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
     color: '#212529',
     marginBottom: 4,
   },
   kpiLabel: {
-    fontSize: 14,
-    color: '#9ca3af',
+    fontSize: 12,
+    color: '#6b7280',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
+    fontWeight: '500',
   },
   kpiChange: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#10b981',
     fontWeight: '600',
   },
   chartCard: {
-    backgroundColor: '#f5f6f7',
-    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   chartHeader: {
     marginBottom: 16,
   },
   chartTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
     color: '#212529',
     marginBottom: 4,
   },
   chartSubtitle: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  chartContainer: {
+    alignItems: 'center',
   },
   chart: {
     borderRadius: 16,
   },
   bookingsCard: {
-    backgroundColor: '#f5f6f7',
-    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -534,8 +584,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
     color: '#212529',
   },
   sectionLink: {
@@ -549,45 +599,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#f1f5f9',
   },
   lastBookingCard: {
     borderBottomWidth: 0,
   },
   bookingInfo: {
     flex: 1,
+    marginRight: 16,
   },
   bookingVenue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#212529',
     marginBottom: 2,
   },
   bookingPlayer: {
-    fontSize: 14,
-    color: '#9ca3af',
+    fontSize: 13,
+    color: '#6b7280',
     marginBottom: 2,
   },
   bookingDate: {
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#6b7280',
+    fontWeight: '500',
   },
   bookingAmount: {
     alignItems: 'flex-end',
   },
   amountText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#212529',
     marginBottom: 4,
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   confirmedBadge: {
-    backgroundColor: 'rgba(33, 37, 41, 0.1)',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
   },
   completedBadge: {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -598,7 +650,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   confirmedText: {
-    color: '#212529',
+    color: '#3b82f6',
   },
   completedText: {
     color: '#10b981',
@@ -609,13 +661,19 @@ const styles = StyleSheet.create({
   },
   emptyBookingsText: {
     fontSize: 14,
-    color: '#9ca3af',
+    color: '#6b7280',
     marginTop: 8,
+    fontWeight: '500',
   },
   actionsCard: {
-    backgroundColor: '#f5f6f7',
-    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   quickActions: {
     flexDirection: 'row',
@@ -627,16 +685,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#ffffff',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   actionText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#212529',
     fontWeight: '600',
     textAlign: 'center',
