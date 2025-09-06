@@ -373,7 +373,7 @@ export default function BookingsScreen() {
                   <View style={styles.bookingMeta}>
                     <View style={styles.metaItem}>
                       <Ionicons name="calendar" size={16} color="#6b7280" />
-                      <Text style={styles.metaText}>{formatDate(booking.bookingDate)}</Text>
+                      <Text style={styles.metaText}>{formatDate(booking.booking_date)}</Text>
                     </View>
                     <View style={styles.metaItem}>
                       <Ionicons name="time" size={16} color="#6b7280" />
