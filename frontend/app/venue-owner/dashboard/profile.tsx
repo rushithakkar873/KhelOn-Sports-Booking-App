@@ -139,7 +139,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: () => {
             // Clear token and navigate to login
-            router.replace('/venue-owner/login');
+            router.replace('/auth/login');
           }
         }
       ]
