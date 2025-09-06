@@ -74,31 +74,53 @@ export default function ProfileScreen() {
 
   const loadProfile = async () => {
     try {
-      // Mock data - replace with actual API call
-      const mockProfile: VenueOwnerProfile = {
-        id: '1',
-        name: 'Rajesh Kumar',
-        email: 'rajesh@example.com',
-        mobile: '+91 9876543210',
-        businessName: 'Elite Sports Complex',
-        businessAddress: '123 Sports Street, Andheri, Mumbai - 400058',
-        gstNumber: '27ABCDE1234F1Z5',
-        joinedDate: '2024-08-15',
-        isVerified: true,
-        totalVenues: 3,
-        totalBookings: 189,
-        totalRevenue: 245800,
+      // Check if user is authenticated and is venue owner
+      if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
+        Alert.alert('Authentication Error', 'Please log in as a venue owner', [
+          { text: 'OK', onPress: () => router.replace('/auth/login') }
+        ]);
+        return;
+      }
+
+      // Get current user profile
+      const user = await authService.getProfile();
+      if (!user) {
+        throw new Error('Failed to load profile');
+      }
+
+      // Transform user data to profile format
+      const profileData: VenueOwnerProfile = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+        business_name: user.business_name,
+        business_address: user.business_address,
+        gst_number: user.gst_number,
+        created_at: user.created_at,
+        is_verified: user.is_verified,
+        total_venues: user.total_venues,
+        total_revenue: user.total_revenue,
       };
 
-      setProfile(mockProfile);
+      setProfile(profileData);
       setEditForm({
-        name: mockProfile.name,
-        businessName: mockProfile.businessName,
-        businessAddress: mockProfile.businessAddress,
-        gstNumber: mockProfile.gstNumber,
+        name: profileData.name,
+        businessName: profileData.business_name || '',
+        businessAddress: profileData.business_address || '',
+        gstNumber: profileData.gst_number || '',
       });
     } catch (error) {
       console.error('Error loading profile:', error);
+      
+      Alert.alert(
+        'Error', 
+        'Failed to load profile data. Please check your connection and try again.',
+        [
+          { text: 'Retry', onPress: () => loadProfile() },
+          { text: 'Cancel' }
+        ]
+      );
     } finally {
       setIsLoading(false);
     }
