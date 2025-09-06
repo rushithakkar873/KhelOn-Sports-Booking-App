@@ -377,7 +377,7 @@ export default function BookingsScreen() {
                     </View>
                     <View style={styles.metaItem}>
                       <Ionicons name="time" size={16} color="#6b7280" />
-                      <Text style={styles.metaText}>{booking.startTime} - {booking.endTime}</Text>
+                      <Text style={styles.metaText}>{booking.start_time} - {booking.end_time}</Text>
                     </View>
                     <View style={styles.metaItem}>
                       <Ionicons name="basketball" size={16} color="#6b7280" />
