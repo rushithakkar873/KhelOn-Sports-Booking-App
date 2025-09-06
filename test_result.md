@@ -339,7 +339,7 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Completed Phase 1 implementation: Created beautiful mobile app with all core screens (auth, home, venues, tournaments, bookings, profile) and comprehensive backend API with JWT authentication, venue management, booking system, and tournament management. Frontend is working perfectly with mock data. Now need to test backend API endpoints before integration. Ready for backend testing."
+    message: "UNIFIED AUTH SYSTEM IMPLEMENTED: Successfully refactored backend to use unified authentication system with mobile OTP verification. ✅ Single user table supporting both players and venue owners, ✅ Mobile-based authentication (+91XXXXXXXXXX format), ✅ Mock SMS OTP service for development, ✅ JWT token-based authorization, ✅ Role-based access control, ✅ New endpoints: /auth/send-otp, /auth/verify-otp, /auth/register, /auth/login, /auth/profile. Ready for frontend integration with venue owner priority."
   - agent: "testing"
     message: "BACKEND TESTING COMPLETED SUCCESSFULLY: All 4 high-priority backend tasks are now fully tested and working. ✅ User Authentication API (JWT, registration, login, protected endpoints), ✅ Venue Management API (CRUD, filtering, role-based access), ✅ Booking System API (creation, conflict detection, history), ✅ Tournament Management API (creation, listing, filtering). Created comprehensive backend_test.py with 8 test suites covering 100+ test scenarios. All endpoints responding correctly at https://sportshub-11.preview.emergentagent.com/api. Database persistence verified. Ready for frontend-backend integration."
   - agent: "testing"
