@@ -642,9 +642,9 @@ export default function VenuesScreen() {
                       <Text style={styles.facilityText}>{facility}</Text>
                     </View>
                   ))}
-                  {venue.facilities.length > 4 && (
+                  {venue.amenities.length > 4 && (
                     <View style={styles.facilityTag}>
-                      <Text style={styles.facilityText}>+{venue.facilities.length - 4}</Text>
+                      <Text style={styles.facilityText}>+{venue.amenities.length - 4}</Text>
                     </View>
                   )}
                 </View>
