@@ -25,29 +25,6 @@ import AuthService from '../../../services/authService';
 
 const { width } = Dimensions.get('window');
 
-interface TimeSlot {
-  id: string;
-  startTime: string;
-  endTime: string;
-  price: number;
-  isAvailable: boolean;
-}
-
-interface Venue {
-  id: string;
-  name: string;
-  sports: string[];
-  location: string;
-  pricePerHour: number;
-  facilities: string[];
-  description: string;
-  isActive: boolean;
-  totalBookings: number;
-  rating: number;
-  timeSlots: TimeSlot[];
-  image: string;
-}
-
 interface VenueForm {
   name: string;
   sports: string[];
