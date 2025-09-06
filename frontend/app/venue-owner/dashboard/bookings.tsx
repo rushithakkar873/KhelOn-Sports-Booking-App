@@ -358,8 +358,8 @@ export default function BookingsScreen() {
                   {/* Booking Header */}
                   <View style={styles.bookingHeader}>
                     <View style={styles.bookingInfo}>
-                      <Text style={styles.venueName} numberOfLines={1}>{booking.venueName}</Text>
-                      <Text style={styles.playerName} numberOfLines={1}>{booking.playerName}</Text>
+                      <Text style={styles.venueName} numberOfLines={1}>{booking.venue_name}</Text>
+                      <Text style={styles.playerName} numberOfLines={1}>{booking.user_name}</Text>
                     </View>
                     
                     <View style={styles.bookingAmount}>
