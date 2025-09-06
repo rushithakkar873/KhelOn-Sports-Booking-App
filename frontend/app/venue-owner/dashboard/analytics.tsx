@@ -228,12 +228,8 @@ export default function AnalyticsScreen() {
                   <View style={styles.metricIcon}>
                     <Ionicons name="cash" size={24} color="#10b981" />
                   </View>
-                  <View style={styles.metricGrowth}>
-                    <Ionicons name="trending-up" size={16} color="#10b981" />
-                    <Text style={styles.metricGrowthText}>+{analyticsData.revenueGrowth}%</Text>
-                  </View>
                 </View>
-                <Text style={styles.metricValue}>{formatCurrency(analyticsData.totalRevenue)}</Text>
+                <Text style={styles.metricValue}>{formatCurrency(analyticsData.total_revenue)}</Text>
                 <Text style={styles.metricLabel}>Total Revenue</Text>
               </View>
 
@@ -242,12 +238,8 @@ export default function AnalyticsScreen() {
                   <View style={styles.metricIcon}>
                     <Ionicons name="calendar" size={24} color="#3b82f6" />
                   </View>
-                  <View style={styles.metricGrowth}>
-                    <Ionicons name="trending-up" size={16} color="#10b981" />
-                    <Text style={styles.metricGrowthText}>+8.3%</Text>
-                  </View>
                 </View>
-                <Text style={styles.metricValue}>{analyticsData.totalBookings}</Text>
+                <Text style={styles.metricValue}>{analyticsData.total_bookings}</Text>
                 <Text style={styles.metricLabel}>Total Bookings</Text>
               </View>
             </View>
@@ -258,27 +250,19 @@ export default function AnalyticsScreen() {
                   <View style={styles.metricIcon}>
                     <Ionicons name="trending-up" size={24} color="#f59e0b" />
                   </View>
-                  <View style={styles.metricGrowth}>
-                    <Ionicons name="trending-up" size={16} color="#10b981" />
-                    <Text style={styles.metricGrowthText}>+5.2%</Text>
-                  </View>
                 </View>
-                <Text style={styles.metricValue}>{analyticsData.occupancyRate}%</Text>
+                <Text style={styles.metricValue}>{analyticsData.occupancy_rate}%</Text>
                 <Text style={styles.metricLabel}>Occupancy Rate</Text>
               </View>
               
               <View style={styles.metricCard}>
                 <View style={styles.metricHeader}>
                   <View style={styles.metricIcon}>
-                    <Ionicons name="calculator" size={24} color="#8b5cf6" />
-                  </View>
-                  <View style={styles.metricGrowth}>
-                    <Ionicons name="trending-up" size={16} color="#10b981" />
-                    <Text style={styles.metricGrowthText}>+3.7%</Text>
+                    <Ionicons name="storefront" size={24} color="#8b5cf6" />
                   </View>
                 </View>
-                <Text style={styles.metricValue}>{formatCurrency(analyticsData.averageBookingValue)}</Text>
-                <Text style={styles.metricLabel}>Avg Booking Value</Text>
+                <Text style={styles.metricValue}>{analyticsData.total_venues}</Text>
+                <Text style={styles.metricLabel}>Total Venues</Text>
               </View>
             </View>
           </View>
