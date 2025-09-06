@@ -606,7 +606,7 @@ export default function VenuesScreen() {
                         <Text style={styles.venueName} numberOfLines={1}>{venue.name}</Text>
                         <View style={styles.venueLocationRow}>
                           <Ionicons name="location" size={14} color="rgba(255,255,255,0.8)" />
-                          <Text style={styles.venueLocation} numberOfLines={1}>{venue.location}</Text>
+                          <Text style={styles.venueLocation} numberOfLines={1}>{venue.address}</Text>
                         </View>
                         <View style={styles.venueStats}>
                           <View style={styles.venueStatItem}>
@@ -615,20 +615,20 @@ export default function VenuesScreen() {
                           </View>
                           <View style={styles.venueStatItem}>
                             <Ionicons name="calendar" size={14} color="rgba(255,255,255,0.8)" />
-                            <Text style={styles.venueStatText}>{venue.totalBookings}</Text>
+                            <Text style={styles.venueStatText}>{venue.total_bookings}</Text>
                           </View>
                           <View style={styles.venueStatItem}>
                             <Ionicons name="cash" size={14} color="rgba(255,255,255,0.8)" />
-                            <Text style={styles.venueStatText}>{formatCurrency(venue.pricePerHour)}/hr</Text>
+                            <Text style={styles.venueStatText}>{formatCurrency(venue.base_price_per_hour)}/hr</Text>
                           </View>
                         </View>
                       </View>
                       
                       <Switch
-                        value={venue.isActive}
+                        value={venue.is_active}
                         onValueChange={() => toggleVenueStatus(venue.id)}
                         trackColor={{ false: 'rgba(255,255,255,0.2)', true: 'rgba(16, 185, 129, 0.3)' }}
-                        thumbColor={venue.isActive ? '#10b981' : '#ffffff'}
+                        thumbColor={venue.is_active ? '#10b981' : '#ffffff'}
                         style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                       />
                     </View>
