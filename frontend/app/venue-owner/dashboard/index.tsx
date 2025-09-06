@@ -48,6 +48,8 @@ export default function VenueOwnerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();
+  const venueOwnerService = VenueOwnerService.getInstance();
+  const authService = AuthService.getInstance();
 
   useEffect(() => {
     loadDashboardData();
