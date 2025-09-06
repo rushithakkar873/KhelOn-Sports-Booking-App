@@ -149,8 +149,8 @@ export default function LoginScreen() {
 
             {/* Title */}
             <View style={styles.titleContainer}>
-              <Text style={styles.greeting}>Hello!</Text>
-              <Text style={styles.subtitle}>Welcome back</Text>
+              <Text style={styles.greeting}>Welcome Back!</Text>
+              <Text style={styles.subtitle}>Sign in to your account</Text>
             </View>
 
             {/* Login Form */}
@@ -158,6 +158,7 @@ export default function LoginScreen() {
               <View style={styles.form}>
                 {/* Role Selection */}
                 <View style={styles.roleSelection}>
+                  <Text style={styles.roleTitle}>I am a:</Text>
                   <View style={styles.roleButtons}>
                     <TouchableOpacity
                       style={[
@@ -200,63 +201,80 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <View style={styles.inputGroup}>
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter your email"
-                      placeholderTextColor="#9ca3af"
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                    />
-                  </View>
-                </View>
 
-                <View style={styles.inputGroup}>
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter your password"
-                      placeholderTextColor="#9ca3af"
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!showPassword}
-                      autoComplete="password"
-                    />
+                {!otpSent ? (
+                  <>
+                    <View style={styles.inputGroup}>
+                      <View style={styles.inputContainer}>
+                        <Ionicons name="call-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Enter mobile number (+91XXXXXXXXXX)"
+                          placeholderTextColor="#9ca3af"
+                          value={mobile}
+                          onChangeText={setMobile}
+                          keyboardType="phone-pad"
+                          autoComplete="tel"
+                        />
+                      </View>
+                      <Text style={styles.helperText}>Enter your registered mobile number</Text>
+                    </View>
+
                     <TouchableOpacity
-                      onPress={() => setShowPassword(!showPassword)}
-                      style={styles.eyeIcon}
+                      style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                      onPress={handleSendOTP}
+                      disabled={isLoading}
                     >
-                      <Ionicons 
-                        name={showPassword ? "eye-outline" : "eye-off-outline"} 
-                        size={20} 
-                        color="#9ca3af" 
-                      />
+                      <Text style={styles.loginButtonText}>
+                        {isLoading ? 'Sending OTP...' : 'Send OTP'}
+                      </Text>
                     </TouchableOpacity>
-                  </View>
-                </View>
+                  </>
+                ) : (
+                  <>
+                    <View style={styles.inputGroup}>
+                      <View style={styles.inputContainer}>
+                        <Ionicons name="shield-checkmark-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Enter 6-digit OTP"
+                          placeholderTextColor="#9ca3af"
+                          value={otp}
+                          onChangeText={setOtp}
+                          keyboardType="number-pad"
+                          maxLength={6}
+                          autoComplete="sms-otp"
+                        />
+                      </View>
+                      <Text style={styles.helperText}>
+                        OTP sent to {mobile}
+                        {devOtp ? `\nDev OTP: ${devOtp.split(': ')[1]}` : ''}
+                      </Text>
+                    </View>
 
-                <TouchableOpacity
-                  style={styles.loginButton}
-                  onPress={handleLogin}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.loginButtonText}>
-                    {isLoading ? 'Signing In...' : 'Sign In'}
-                  </Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                      onPress={handleLogin}
+                      disabled={isLoading}
+                    >
+                      <Text style={styles.loginButtonText}>
+                        {isLoading ? 'Verifying...' : 'Verify & Sign In'}
+                      </Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={styles.forgotPassword}
-                  onPress={() => Alert.alert('Forgot Password', 'Password reset feature coming soon!')}
-                >
-                  <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                </TouchableOpacity>
+                    <View style={styles.resendContainer}>
+                      {countdown > 0 ? (
+                        <Text style={styles.countdownText}>
+                          Resend OTP in {countdown}s
+                        </Text>
+                      ) : (
+                        <TouchableOpacity onPress={handleResendOTP}>
+                          <Text style={styles.resendText}>Resend OTP</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </>
+                )}
               </View>
 
               {/* Footer */}
