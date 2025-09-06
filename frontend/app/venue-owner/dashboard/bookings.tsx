@@ -79,102 +79,40 @@ export default function BookingsScreen() {
 
   const loadBookings = async () => {
     try {
-      // Mock data with professional images
-      const mockBookings: Booking[] = [
-        {
-          id: '1',
-          venueName: 'Elite Cricket Ground',
-          playerName: 'Arjun Singh',
-          playerPhone: '+91 9876543210',
-          sport: 'Cricket',
-          bookingDate: '2025-01-15',
-          startTime: '18:00',
-          endTime: '20:00',
-          duration: 2,
-          totalAmount: 2400,
-          status: 'confirmed',
-          paymentStatus: 'paid',
-          createdAt: '2025-01-10T14:30:00Z',
-          image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9',
-        },
-        {
-          id: '2',
-          venueName: 'Champions Football Turf',
-          playerName: 'Priya Sharma',
-          playerPhone: '+91 8765432109',
-          sport: 'Football',
-          bookingDate: '2025-01-16',
-          startTime: '19:00',
-          endTime: '20:00',
-          duration: 1,
-          totalAmount: 900,
-          status: 'pending',
-          paymentStatus: 'pending',
-          createdAt: '2025-01-11T10:15:00Z',
-          image: 'https://images.unsplash.com/photo-1724500760032-b2eb510e59c4',
-        },
-        {
-          id: '3',
-          venueName: 'Elite Cricket Ground',
-          playerName: 'Rahul Verma',
-          playerPhone: '+91 7654321098',
-          sport: 'Cricket',
-          bookingDate: '2025-01-14',
-          startTime: '16:00',
-          endTime: '18:00',
-          duration: 2,
-          totalAmount: 2200,
-          status: 'completed',
-          paymentStatus: 'paid',
-          createdAt: '2025-01-09T16:45:00Z',
-          image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9',
-        },
-        {
-          id: '4',
-          venueName: 'Badminton Arena Pro',
-          playerName: 'Sneha Patel',
-          playerPhone: '+91 6543210987',
-          sport: 'Badminton',
-          bookingDate: '2025-01-13',
-          startTime: '07:00',
-          endTime: '08:00',
-          duration: 1,
-          totalAmount: 600,
-          status: 'cancelled',
-          paymentStatus: 'refunded',
-          createdAt: '2025-01-08T11:20:00Z',
-          image: 'https://images.pexels.com/photos/8533631/pexels-photo-8533631.jpeg',
-        },
-        {
-          id: '5',
-          venueName: 'Champions Football Turf',
-          playerName: 'Vikash Kumar',
-          playerPhone: '+91 5432109876',
-          sport: 'Football',
-          bookingDate: '2025-01-17',
-          startTime: '18:00',
-          endTime: '19:00',
-          duration: 1,
-          totalAmount: 900,
-          status: 'confirmed',
-          paymentStatus: 'paid',
-          createdAt: '2025-01-12T09:30:00Z',
-          image: 'https://images.unsplash.com/photo-1724500760032-b2eb510e59c4',
-        },
-      ];
+      // Check if user is authenticated and is venue owner
+      if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
+        Alert.alert('Authentication Error', 'Please log in as a venue owner', [
+          { text: 'OK', onPress: () => router.replace('/auth/login') }
+        ]);
+        return;
+      }
+
+      // Fetch bookings from API
+      const filterStatus = selectedStatus === 'all' ? undefined : selectedStatus;
+      const bookingsData = await venueOwnerService.getBookings(undefined, filterStatus, undefined, undefined, 0, 50);
+      setBookings(bookingsData);
 
       // Update status counts
       statusFilters.forEach(filter => {
         if (filter.key === 'all') {
-          filter.count = mockBookings.length;
+          filter.count = bookingsData.length;
         } else {
-          filter.count = mockBookings.filter(booking => booking.status === filter.key).length;
+          filter.count = bookingsData.filter(booking => booking.status === filter.key).length;
         }
       });
-
-      setBookings(mockBookings);
     } catch (error) {
       console.error('Error loading bookings:', error);
+      
+      Alert.alert(
+        'Error', 
+        'Failed to load bookings. Please check your connection and try again.',
+        [
+          { text: 'Retry', onPress: () => loadBookings() },
+          { text: 'Cancel' }
+        ]
+      );
+      
+      setBookings([]);
     } finally {
       setIsLoading(false);
     }
