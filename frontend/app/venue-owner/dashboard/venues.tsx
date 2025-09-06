@@ -20,6 +20,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
+import VenueOwnerService, { Venue, CreateVenueData } from '../../../services/venueOwnerService';
+import AuthService from '../../../services/authService';
 
 const { width } = Dimensions.get('window');
 
