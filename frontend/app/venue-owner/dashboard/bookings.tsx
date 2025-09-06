@@ -791,9 +791,7 @@ const styles = StyleSheet.create({
   },
   statsSection: {
     paddingVertical: 24,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    backgroundColor: '#f5f6f7',
   },
   statsContainer: {
     paddingHorizontal: 24,
