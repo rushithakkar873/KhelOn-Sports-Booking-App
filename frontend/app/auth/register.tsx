@@ -234,80 +234,69 @@ export default function RegisterScreen() {
               <Ionicons name="mail-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your email"
+                placeholder="Enter your email (optional)"
                 value={formData.email}
                 onChangeText={(value) => updateField('email', value)}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
+                editable={!otpSent}
               />
             </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mobile Number</Text>
+            <Text style={styles.label}>Mobile Number *</Text>
             <View style={styles.inputContainer}>
               <Ionicons name="call-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your mobile number"
+                placeholder="Enter mobile number (+91XXXXXXXXXX)"
                 value={formData.mobile}
                 onChangeText={(value) => updateField('mobile', value)}
                 keyboardType="phone-pad"
                 autoComplete="tel"
+                editable={!otpSent}
               />
             </View>
+            <Text style={styles.helperText}>
+              Enter your mobile number for OTP verification
+            </Text>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Create a password"
-                value={formData.password}
-                onChangeText={(value) => updateField('password', value)}
-                secureTextEntry={!showPassword}
-                autoComplete="password-new"
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword(!showPassword)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons 
-                  name={showPassword ? "eye-outline" : "eye-off-outline"} 
-                  size={20} 
-                  color="#9ca3af" 
+          {otpSent && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Verification Code *</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons name="shield-checkmark-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter 6-digit OTP"
+                  value={otp}
+                  onChangeText={setOtp}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoComplete="sms-otp"
                 />
-              </TouchableOpacity>
+              </View>
+              <Text style={styles.helperText}>
+                OTP sent to {formData.mobile}
+                {devOtp ? `\nDev OTP: ${devOtp.split(': ')[1]}` : ''}
+              </Text>
+              
+              <View style={styles.resendContainer}>
+                {countdown > 0 ? (
+                  <Text style={styles.countdownText}>
+                    Resend OTP in {countdown}s
+                  </Text>
+                ) : (
+                  <TouchableOpacity onPress={handleResendOTP}>
+                    <Text style={styles.resendText}>Resend OTP</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChangeText={(value) => updateField('confirmPassword', value)}
-                secureTextEntry={!showConfirmPassword}
-                autoComplete="password-new"
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons 
-                  name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} 
-                  size={20} 
-                  color="#9ca3af" 
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+          )}
 
           {/* Business Information - Only show for venue owners */}
           {formData.role === 'venue_owner' && (
