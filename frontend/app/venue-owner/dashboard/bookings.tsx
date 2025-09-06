@@ -1031,4 +1031,55 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '500',
   },
+  bookingTypeSelector: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  typeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
+    alignItems: 'center',
+  },
+  typeButtonActive: {
+    backgroundColor: '#212529',
+  },
+  typeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  typeButtonTextActive: {
+    color: '#ffffff',
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#212529',
+    backgroundColor: '#f9fafb',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  timeInput: {
+    flex: 1,
+  },
 });
