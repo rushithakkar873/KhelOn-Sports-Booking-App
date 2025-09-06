@@ -282,9 +282,55 @@ export default function BookingsScreen() {
 
   const filteredBookings = getFilteredBookings();
 
+  const handleAddBooking = () => {
+    setShowAddBookingModal(true);
+    setNewBooking({
+      venueName: '',
+      playerName: '',
+      playerPhone: '',
+      sport: '',
+      bookingDate: '',
+      startTime: '',
+      endTime: '',
+      totalAmount: '',
+      type: 'manual',
+    });
+  };
+
+  const handleSubmitBooking = () => {
+    // Validate form
+    if (!newBooking.venueName.trim() || !newBooking.playerName.trim() || 
+        !newBooking.bookingDate || !newBooking.startTime || !newBooking.endTime) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
+    // Create new booking
+    const booking: Booking = {
+      id: Date.now().toString(),
+      venueName: newBooking.venueName,
+      playerName: newBooking.playerName,
+      playerPhone: newBooking.playerPhone,
+      sport: newBooking.sport,
+      bookingDate: newBooking.bookingDate,
+      startTime: newBooking.startTime,
+      endTime: newBooking.endTime,
+      duration: 1, // Calculate based on time difference
+      totalAmount: parseInt(newBooking.totalAmount) || 0,
+      status: newBooking.type === 'block' ? 'cancelled' : 'confirmed',
+      paymentStatus: newBooking.type === 'block' ? 'refunded' : 'paid',
+      createdAt: new Date().toISOString(),
+      image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9', // Default image
+    };
+
+    setBookings([booking, ...bookings]);
+    setShowAddBookingModal(false);
+    Alert.alert('Success', `${newBooking.type === 'block' ? 'Time slot blocked' : 'Booking added'} successfully!`);
+  };
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -299,6 +345,12 @@ export default function BookingsScreen() {
               <Text style={styles.greeting}>Bookings</Text>
               <Text style={styles.subtitle}>{bookings.length} total bookings</Text>
             </View>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={handleAddBooking}
+            >
+              <Ionicons name="add" size={24} color="#ffffff" />
+            </TouchableOpacity>
           </View>
 
           {/* Quick Stats */}
