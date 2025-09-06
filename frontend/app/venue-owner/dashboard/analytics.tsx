@@ -102,13 +102,18 @@ export default function AnalyticsScreen() {
   };
 
   const getRevenueChartData = () => {
-    if (!analyticsData) return { labels: [], datasets: [{ data: [] }] };
+    if (!analyticsData || !analyticsData.revenue_trend) return { labels: [], datasets: [{ data: [0] }] };
+    
+    const trendEntries = Object.entries(analyticsData.revenue_trend);
+    if (trendEntries.length === 0) return { labels: ['No Data'], datasets: [{ data: [0] }] };
     
     return {
-      labels: analyticsData.bookingsTrend.map(item => item.month),
+      labels: trendEntries.map(([date]) => 
+        new Date(date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })
+      ).slice(-7), // Show last 7 days
       datasets: [
         {
-          data: analyticsData.bookingsTrend.map(item => item.revenue / 1000),
+          data: trendEntries.map(([, revenue]) => revenue / 1000).slice(-7),
           strokeWidth: 3,
         },
       ],
