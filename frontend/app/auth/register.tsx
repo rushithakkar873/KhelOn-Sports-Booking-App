@@ -330,6 +330,7 @@ export default function RegisterScreen() {
                     onChangeText={(value) => updateField('businessAddress', value)}
                     multiline
                     numberOfLines={2}
+                    editable={!otpSent}
                   />
                 </View>
               </View>
