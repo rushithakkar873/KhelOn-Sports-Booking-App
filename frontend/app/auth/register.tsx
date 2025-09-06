@@ -311,9 +311,10 @@ export default function RegisterScreen() {
                   <Ionicons name="storefront-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter business name (optional)"
+                    placeholder="Enter business name (required for venue owners)"
                     value={formData.businessName}
                     onChangeText={(value) => updateField('businessName', value)}
+                    editable={!otpSent}
                   />
                 </View>
               </View>
