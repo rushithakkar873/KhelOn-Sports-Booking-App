@@ -622,7 +622,7 @@ export default function BookingsScreen() {
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Player:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.playerName}</Text>
+                    <Text style={styles.detailsValue}>{selectedBooking.user_name}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Phone:</Text>
