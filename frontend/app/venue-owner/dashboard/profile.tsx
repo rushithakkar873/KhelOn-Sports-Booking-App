@@ -298,9 +298,9 @@ export default function ProfileScreen() {
                     </View>
                   )}
                 </View>
-                <Text style={styles.profileEmail}>{profile.email}</Text>
+                <Text style={styles.profileEmail}>{profile.email || 'Not provided'}</Text>
                 <Text style={styles.profileMobile}>{profile.mobile}</Text>
-                <Text style={styles.joinDate}>Member since {formatDate(profile.joinedDate)}</Text>
+                <Text style={styles.joinDate}>Member since {VenueOwnerService.formatDate(profile.created_at)}</Text>
               </View>
             </View>
 
