@@ -46,48 +46,24 @@ export default function AnalyticsScreen() {
 
   const loadAnalytics = async () => {
     try {
-      // Mock analytics data
-      const mockData: AnalyticsData = {
-        totalRevenue: 245800,
-        totalBookings: 189,
-        occupancyRate: 68,
-        averageBookingValue: 1301,
-        revenueGrowth: 12.5,
-        bookingsTrend: [
-          { month: 'Oct', bookings: 45, revenue: 58000 },
-          { month: 'Nov', bookings: 62, revenue: 78000 },
-          { month: 'Dec', bookings: 58, revenue: 72000 },
-          { month: 'Jan', bookings: 67, revenue: 85000 },
-        ],
-        sportDistribution: [
-          { sport: 'Cricket', bookings: 98, revenue: 142000, color: '#3b82f6' },
-          { sport: 'Football', bookings: 67, revenue: 78000, color: '#10b981' },
-          { sport: 'Badminton', bookings: 34, revenue: 25800, color: '#f59e0b' },
-        ],
-        venuePerformance: [
-          { venueName: 'Elite Cricket Ground', bookings: 98, revenue: 142000, occupancy: 78 },
-          { venueName: 'Champions Football Turf', bookings: 67, revenue: 78000, occupancy: 65 },
-          { venueName: 'Badminton Arena Pro', bookings: 34, revenue: 25800, occupancy: 52 },
-        ],
-        peakHours: [
-          { hour: '6AM', bookings: 8 },
-          { hour: '8AM', bookings: 15 },
-          { hour: '10AM', bookings: 12 },
-          { hour: '4PM', bookings: 18 },
-          { hour: '6PM', bookings: 25 },
-          { hour: '8PM', bookings: 20 },
-        ],
-        monthlyComparison: [
-          { month: 'Oct', revenue: 58000, bookings: 45 },
-          { month: 'Nov', revenue: 78000, bookings: 62 },
-          { month: 'Dec', revenue: 72000, bookings: 58 },
-          { month: 'Jan', revenue: 85000, bookings: 67 },
-        ],
-      };
+      // Calculate date range based on selectedTimeRange
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - parseInt(selectedTimeRange));
 
-      setAnalyticsData(mockData);
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      // Get real analytics data from API
+      const data = await venueOwnerService.getAnalyticsDashboard(startDateStr, endDateStr);
+      setAnalyticsData(data);
     } catch (error) {
       console.error('Error loading analytics:', error);
+      Alert.alert(
+        'Error', 
+        'Failed to load analytics data. Please check your connection and try again.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setIsLoading(false);
     }
