@@ -354,11 +354,13 @@ export default function RegisterScreen() {
 
           <TouchableOpacity
             style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
-            onPress={handleRegister}
+            onPress={otpSent ? handleRegister : handleSendOTP}
             disabled={isLoading}
           >
             <Text style={styles.registerButtonText}>
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading 
+                ? (otpSent ? 'Creating Account...' : 'Sending OTP...') 
+                : (otpSent ? 'Verify & Create Account' : 'Send OTP')}
             </Text>
           </TouchableOpacity>
         </View>
