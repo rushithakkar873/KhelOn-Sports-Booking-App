@@ -369,6 +369,13 @@ const styles = StyleSheet.create({
   roleSelection: {
     marginBottom: 24,
   },
+  roleTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
   roleButtons: {
     flexDirection: 'row',
     gap: 8,
