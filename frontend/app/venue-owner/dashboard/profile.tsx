@@ -162,8 +162,9 @@ export default function ProfileScreen() {
         { 
           text: 'Logout', 
           style: 'destructive',
-          onPress: () => {
-            // Clear token and navigate to login
+          onPress: async () => {
+            // Clear authentication data
+            await authService.logout();
             router.replace('/auth/login');
           }
         }
