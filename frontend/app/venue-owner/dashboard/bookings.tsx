@@ -340,7 +340,7 @@ export default function BookingsScreen() {
                 activeOpacity={0.8}
               >
                 <ImageBackground
-                  source={{ uri: booking.image }}
+                  source={{ uri: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9' }}
                   style={styles.bookingImageBackground}
                   imageStyle={styles.bookingImage}
                 >
