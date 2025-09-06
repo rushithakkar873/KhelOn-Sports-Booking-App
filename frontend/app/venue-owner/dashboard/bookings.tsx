@@ -160,12 +160,22 @@ export default function BookingsScreen() {
     }
   };
 
-  const updateBookingStatus = (bookingId: string, newStatus: Booking['status']) => {
-    setBookings(bookings.map(booking =>
-      booking.id === bookingId
-        ? { ...booking, status: newStatus }
-        : booking
-    ));
+  const updateBookingStatus = async (bookingId: string, newStatus: Booking['status']) => {
+    try {
+      await venueOwnerService.updateBookingStatus(bookingId, newStatus);
+      
+      // Update local state
+      setBookings(bookings.map(booking =>
+        booking.id === bookingId
+          ? { ...booking, status: newStatus }
+          : booking
+      ));
+
+      Alert.alert('Success', `Booking ${newStatus} successfully`);
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      Alert.alert('Error', 'Failed to update booking status. Please try again.');
+    }
   };
 
   const formatCurrency = (amount: number) => {
