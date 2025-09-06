@@ -279,6 +279,7 @@ export default function VenueOwnerRegister() {
                 onChangeText={(value) => updateField('businessAddress', value)}
                 multiline
                 numberOfLines={2}
+                editable={!otpSent}
               />
             </View>
           </View>
@@ -293,17 +294,20 @@ export default function VenueOwnerRegister() {
                 value={formData.gstNumber}
                 onChangeText={(value) => updateField('gstNumber', value)}
                 autoCapitalize="characters"
+                editable={!otpSent}
               />
             </View>
           </View>
 
           <TouchableOpacity
             style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
-            onPress={handleRegister}
+            onPress={otpSent ? handleRegister : handleSendOTP}
             disabled={isLoading}
           >
             <Text style={styles.registerButtonText}>
-              {isLoading ? 'Creating Account...' : 'Create Account'}
+              {isLoading 
+                ? (otpSent ? 'Creating Account...' : 'Sending OTP...') 
+                : (otpSent ? 'Verify & Create Account' : 'Send OTP')}
             </Text>
           </TouchableOpacity>
 
