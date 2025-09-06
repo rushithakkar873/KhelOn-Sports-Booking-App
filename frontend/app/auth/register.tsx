@@ -19,18 +19,29 @@ export default function RegisterScreen() {
     name: '',
     email: '',
     mobile: '',
-    password: '',
-    confirmPassword: '',
     role: 'player' as 'player' | 'venue_owner',
     businessName: '',
     businessAddress: '',
     gstNumber: '',
   });
+  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [devOtp, setDevOtp] = useState(''); // For development
   
   const router = useRouter();
+  const authService = AuthService.getInstance();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [countdown]);
 
   const updateField = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
