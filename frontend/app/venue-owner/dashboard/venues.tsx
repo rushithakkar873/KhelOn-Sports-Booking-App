@@ -767,17 +767,17 @@ export default function VenuesScreen() {
 
                 <View style={styles.detailsSection}>
                   <Text style={styles.detailsTitle}>Time Slots & Pricing</Text>
-                  {selectedVenue.timeSlots.map((slot) => (
-                    <View key={slot.id} style={styles.slotRow}>
+                  {selectedVenue.slots.map((slot) => (
+                    <View key={slot._id} style={styles.slotRow}>
                       <View style={styles.slotInfo}>
-                        <Text style={styles.slotTime}>{slot.startTime} - {slot.endTime}</Text>
-                        <Text style={styles.slotPrice}>{formatCurrency(slot.price)}</Text>
+                        <Text style={styles.slotTime}>{VenueOwnerService.formatTime(slot.start_time)} - {VenueOwnerService.formatTime(slot.end_time)}</Text>
+                        <Text style={styles.slotPrice}>{formatCurrency(slot.price_per_hour)}</Text>
                       </View>
                       <Switch
-                        value={slot.isAvailable}
-                        onValueChange={() => toggleSlotAvailability(selectedVenue.id, slot.id)}
+                        value={slot.is_active}
+                        onValueChange={() => toggleSlotAvailability(selectedVenue.id, slot._id)}
                         trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
-                        thumbColor={slot.isAvailable ? '#3b82f6' : '#9ca3af'}
+                        thumbColor={slot.is_active ? '#3b82f6' : '#9ca3af'}
                       />
                     </View>
                   ))}
