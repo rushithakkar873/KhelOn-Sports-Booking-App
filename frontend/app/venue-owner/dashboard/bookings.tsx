@@ -62,6 +62,8 @@ export default function BookingsScreen() {
   });
   
   const router = useRouter();
+  const venueOwnerService = VenueOwnerService.getInstance();
+  const authService = AuthService.getInstance();
 
   const statusFilters = [
     { key: 'all', label: 'All', count: 0, color: '#6b7280' },
