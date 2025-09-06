@@ -634,7 +634,7 @@ export default function BookingsScreen() {
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Date:</Text>
-                    <Text style={styles.detailsValue}>{formatDate(selectedBooking.bookingDate)}</Text>
+                    <Text style={styles.detailsValue}>{formatDate(selectedBooking.booking_date)}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Time:</Text>
