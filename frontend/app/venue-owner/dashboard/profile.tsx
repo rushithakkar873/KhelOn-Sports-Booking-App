@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
 
 interface VenueOwnerProfile {
   id: string;
