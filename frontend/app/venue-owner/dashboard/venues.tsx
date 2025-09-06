@@ -581,7 +581,7 @@ export default function VenuesScreen() {
                 activeOpacity={0.8}
               >
                 <ImageBackground
-                  source={{ uri: venue.image }}
+                  source={{ uri: venue.images?.[0] || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e' }}
                   style={styles.venueImageBackground}
                   imageStyle={styles.venueImage}
                 >
