@@ -726,6 +726,8 @@ export default function BookingsScreen() {
             )}
           </SafeAreaView>
         </Modal>
+
+        <VenueOwnerBottomNavigation currentRoute="bookings" />
       </SafeAreaView>
     </View>
   );
