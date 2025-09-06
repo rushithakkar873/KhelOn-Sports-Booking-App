@@ -57,58 +57,65 @@ export default function VenueOwnerDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // TODO: Replace with actual API call using stored token
-      // For now, using mock data
-      const mockData: DashboardData = {
-        totalVenues: 2,
-        totalBookings: 24,
-        totalRevenue: 36000,
-        occupancyRate: 68.5,
-        recentBookings: [
-          {
-            id: '1',
-            venueName: 'Elite Cricket Ground',
-            playerName: 'Arjun Singh',
-            bookingDate: '2025-01-15',
-            startTime: '18:00',
-            totalAmount: 1800,
-            status: 'confirmed'
-          },
-          {
-            id: '2',
-            venueName: 'Elite Football Turf',
-            playerName: 'Priya Sharma',
-            bookingDate: '2025-01-14',
-            startTime: '16:00',
-            totalAmount: 1200,
-            status: 'completed'
-          }
-        ],
-        revenueTrend: {
-          '2025-01-10': 2400,
-          '2025-01-11': 1800,
-          '2025-01-12': 3200,
-          '2025-01-13': 2800,
-          '2025-01-14': 4100,
-          '2025-01-15': 1800,
-          '2025-01-16': 2200,
-        },
-        topSports: [
-          { sport: 'Cricket', count: 15 },
-          { sport: 'Football', count: 9 },
-        ],
-        peakHours: [
-          { hour: '18:00', count: 8 },
-          { hour: '19:00', count: 6 },
-          { hour: '17:00', count: 5 },
-          { hour: '20:00', count: 3 },
-          { hour: '16:00', count: 2 },
-        ]
+      // Check if user is authenticated and is venue owner
+      if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
+        Alert.alert('Authentication Error', 'Please log in as a venue owner', [
+          { text: 'OK', onPress: () => router.replace('/auth/login') }
+        ]);
+        return;
+      }
+
+      // Fetch analytics data from API
+      const analytics = await venueOwnerService.getAnalyticsDashboard();
+      
+      // Fetch recent bookings
+      const recentBookings = await venueOwnerService.getBookings(undefined, undefined, undefined, undefined, 0, 5);
+      
+      // Transform API data to dashboard format
+      const transformedData: DashboardData = {
+        totalVenues: analytics.total_venues,
+        totalBookings: analytics.total_bookings,
+        totalRevenue: analytics.total_revenue,
+        occupancyRate: analytics.occupancy_rate,
+        recentBookings: recentBookings.map(booking => ({
+          id: booking.id,
+          venueName: booking.venue_name || 'Unknown Venue',
+          playerName: booking.user_name || 'Unknown Player',
+          bookingDate: booking.booking_date,
+          startTime: booking.start_time,
+          totalAmount: booking.total_amount,
+          status: booking.status
+        })),
+        revenueTrend: analytics.revenue_trend || {},
+        topSports: analytics.top_sports || [],
+        peakHours: analytics.peak_hours || [],
       };
 
-      setDashboardData(mockData);
+      setDashboardData(transformedData);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      
+      // Show error message
+      Alert.alert(
+        'Error', 
+        'Failed to load dashboard data. Please check your connection and try again.',
+        [
+          { text: 'Retry', onPress: () => loadDashboardData() },
+          { text: 'Cancel' }
+        ]
+      );
+      
+      // Fall back to empty data instead of mock data
+      setDashboardData({
+        totalVenues: 0,
+        totalBookings: 0,
+        totalRevenue: 0,
+        occupancyRate: 0,
+        recentBookings: [],
+        revenueTrend: {},
+        topSports: [],
+        peakHours: [],
+      });
     } finally {
       setIsLoading(false);
     }
