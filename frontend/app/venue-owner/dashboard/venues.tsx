@@ -12,10 +12,16 @@ import {
   Switch,
   StatusBar,
   ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
+
+const { width } = Dimensions.get('window');
 
 interface TimeSlot {
   id: string;
@@ -40,6 +46,17 @@ interface Venue {
   image: string;
 }
 
+interface VenueForm {
+  name: string;
+  sports: string[];
+  location: string;
+  description: string;
+  facilities: string[];
+  pricePerHour: string;
+  timeSlots: { startTime: string; endTime: string; price: string }[];
+  imageUrl: string;
+}
+
 export default function VenuesScreen() {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -47,8 +64,22 @@ export default function VenuesScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [venueForm, setVenueForm] = useState<VenueForm>({
+    name: '',
+    sports: [],
+    location: '',
+    description: '',
+    facilities: [],
+    pricePerHour: '',
+    timeSlots: [{ startTime: '', endTime: '', price: '' }],
+    imageUrl: '',
+  });
   
   const router = useRouter();
+
+  const sportsOptions = ['Cricket', 'Football', 'Badminton', 'Tennis', 'Basketball', 'Volleyball'];
+  const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen'];
 
   useEffect(() => {
     loadVenues();
@@ -97,23 +128,6 @@ export default function VenuesScreen() {
             { id: '4', startTime: '19:00', endTime: '20:00', price: 1000, isAvailable: true },
           ]
         },
-        {
-          id: '3',
-          name: 'Badminton Arena Pro',
-          sports: ['Badminton'],
-          location: 'Powai, Mumbai',
-          pricePerHour: 600,
-          facilities: ['AC', 'Parking', 'Washroom', 'Equipment'],
-          description: '4 professional badminton courts with AC',
-          isActive: false,
-          totalBookings: 67,
-          rating: 4.2,
-          image: 'https://images.pexels.com/photos/8533631/pexels-photo-8533631.jpeg',
-          timeSlots: [
-            { id: '1', startTime: '06:00', endTime: '08:00', price: 500, isAvailable: true },
-            { id: '2', startTime: '18:00', endTime: '20:00', price: 700, isAvailable: true },
-          ]
-        }
       ];
 
       setVenues(mockVenues);
@@ -158,14 +172,344 @@ export default function VenuesScreen() {
     setShowDetailsModal(true);
   };
 
+  const resetForm = () => {
+    setVenueForm({
+      name: '',
+      sports: [],
+      location: '',
+      description: '',
+      facilities: [],
+      pricePerHour: '',
+      timeSlots: [{ startTime: '', endTime: '', price: '' }],
+      imageUrl: '',
+    });
+    setCurrentStep(1);
+  };
+
+  const handleAddVenue = () => {
+    setShowAddModal(true);
+    resetForm();
+  };
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    resetForm();
+  };
+
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        return venueForm.name.trim() !== '' && venueForm.location.trim() !== '' && venueForm.sports.length > 0;
+      case 2:
+        return venueForm.description.trim() !== '' && venueForm.facilities.length > 0 && venueForm.pricePerHour.trim() !== '';
+      case 3:
+        return venueForm.timeSlots.every(slot => slot.startTime && slot.endTime && slot.price);
+      case 4:
+        return venueForm.imageUrl.trim() !== '';
+      default:
+        return false;
+    }
+  };
+
+  const handleNextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      Alert.alert('Error', 'Please fill in all required fields');
+    }
+  };
+
+  const handlePreviousStep = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+  const handleSubmitVenue = async () => {
+    try {
+      // Here you would make API call to create venue
+      const newVenue: Venue = {
+        id: Date.now().toString(),
+        name: venueForm.name,
+        sports: venueForm.sports,
+        location: venueForm.location,
+        description: venueForm.description,
+        facilities: venueForm.facilities,
+        pricePerHour: parseInt(venueForm.pricePerHour),
+        isActive: true,
+        totalBookings: 0,
+        rating: 0,
+        image: venueForm.imageUrl,
+        timeSlots: venueForm.timeSlots.map((slot, index) => ({
+          id: index.toString(),
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          price: parseInt(slot.price),
+          isAvailable: true,
+        })),
+      };
+
+      setVenues([...venues, newVenue]);
+      handleCloseAddModal();
+      Alert.alert('Success', 'Venue added successfully!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add venue. Please try again.');
+    }
+  };
+
+  const addTimeSlot = () => {
+    setVenueForm({
+      ...venueForm,
+      timeSlots: [...venueForm.timeSlots, { startTime: '', endTime: '', price: '' }]
+    });
+  };
+
+  const removeTimeSlot = (index: number) => {
+    if (venueForm.timeSlots.length > 1) {
+      const newSlots = venueForm.timeSlots.filter((_, i) => i !== index);
+      setVenueForm({ ...venueForm, timeSlots: newSlots });
+    }
+  };
+
+  const updateTimeSlot = (index: number, field: string, value: string) => {
+    const newSlots = venueForm.timeSlots.map((slot, i) => 
+      i === index ? { ...slot, [field]: value } : slot
+    );
+    setVenueForm({ ...venueForm, timeSlots: newSlots });
+  };
+
+  const toggleSport = (sport: string) => {
+    const newSports = venueForm.sports.includes(sport)
+      ? venueForm.sports.filter(s => s !== sport)
+      : [...venueForm.sports, sport];
+    setVenueForm({ ...venueForm, sports: newSports });
+  };
+
+  const toggleFacility = (facility: string) => {
+    const newFacilities = venueForm.facilities.includes(facility)
+      ? venueForm.facilities.filter(f => f !== facility)
+      : [...venueForm.facilities, facility];
+    setVenueForm({ ...venueForm, facilities: newFacilities });
+  };
+
   const formatCurrency = (amount: number) => {
     return `₹${amount.toLocaleString('en-IN')}`;
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <View style={styles.stepContent}>
+            <Text style={styles.stepTitle}>Basic Information</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Venue Name *</Text>
+              <TextInput
+                style={styles.formInput}
+                value={venueForm.name}
+                onChangeText={(text) => setVenueForm({ ...venueForm, name: text })}
+                placeholder="Enter venue name"
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Location *</Text>
+              <TextInput
+                style={styles.formInput}
+                value={venueForm.location}
+                onChangeText={(text) => setVenueForm({ ...venueForm, location: text })}
+                placeholder="Enter complete address"
+                placeholderTextColor="#9ca3af"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Sports Supported *</Text>
+              <View style={styles.optionsGrid}>
+                {sportsOptions.map((sport) => (
+                  <TouchableOpacity
+                    key={sport}
+                    style={[
+                      styles.optionChip,
+                      venueForm.sports.includes(sport) && styles.optionChipSelected
+                    ]}
+                    onPress={() => toggleSport(sport)}
+                  >
+                    <Text style={[
+                      styles.optionChipText,
+                      venueForm.sports.includes(sport) && styles.optionChipTextSelected
+                    ]}>
+                      {sport}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+        );
+
+      case 2:
+        return (
+          <View style={styles.stepContent}>
+            <Text style={styles.stepTitle}>Details & Facilities</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Description *</Text>
+              <TextInput
+                style={[styles.formInput, styles.textArea]}
+                value={venueForm.description}
+                onChangeText={(text) => setVenueForm({ ...venueForm, description: text })}
+                placeholder="Describe your venue..."
+                placeholderTextColor="#9ca3af"
+                multiline
+                numberOfLines={4}
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Base Price per Hour *</Text>
+              <TextInput
+                style={styles.formInput}
+                value={venueForm.pricePerHour}
+                onChangeText={(text) => setVenueForm({ ...venueForm, pricePerHour: text })}
+                placeholder="Enter base price"
+                placeholderTextColor="#9ca3af"
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Facilities *</Text>
+              <View style={styles.optionsGrid}>
+                {facilityOptions.map((facility) => (
+                  <TouchableOpacity
+                    key={facility}
+                    style={[
+                      styles.optionChip,
+                      venueForm.facilities.includes(facility) && styles.optionChipSelected
+                    ]}
+                    onPress={() => toggleFacility(facility)}
+                  >
+                    <Text style={[
+                      styles.optionChipText,
+                      venueForm.facilities.includes(facility) && styles.optionChipTextSelected
+                    ]}>
+                      {facility}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+        );
+
+      case 3:
+        return (
+          <View style={styles.stepContent}>
+            <Text style={styles.stepTitle}>Time Slots & Pricing</Text>
+            
+            <ScrollView style={styles.slotsContainer} showsVerticalScrollIndicator={false}>
+              {venueForm.timeSlots.map((slot, index) => (
+                <View key={index} style={styles.slotCard}>
+                  <View style={styles.slotHeader}>
+                    <Text style={styles.slotLabel}>Slot {index + 1}</Text>
+                    {venueForm.timeSlots.length > 1 && (
+                      <TouchableOpacity onPress={() => removeTimeSlot(index)}>
+                        <Ionicons name="close-circle" size={20} color="#ef4444" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  <View style={styles.slotRow}>
+                    <View style={styles.timeInput}>
+                      <Text style={styles.timeLabel}>Start Time</Text>
+                      <TextInput
+                        style={styles.formInput}
+                        value={slot.startTime}
+                        onChangeText={(text) => updateTimeSlot(index, 'startTime', text)}
+                        placeholder="HH:MM"
+                        placeholderTextColor="#9ca3af"
+                      />
+                    </View>
+                    
+                    <View style={styles.timeInput}>
+                      <Text style={styles.timeLabel}>End Time</Text>
+                      <TextInput
+                        style={styles.formInput}
+                        value={slot.endTime}
+                        onChangeText={(text) => updateTimeSlot(index, 'endTime', text)}
+                        placeholder="HH:MM"
+                        placeholderTextColor="#9ca3af"
+                      />
+                    </View>
+                  </View>
+                  
+                  <View style={styles.formGroup}>
+                    <Text style={styles.timeLabel}>Price for this slot</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={slot.price}
+                      onChangeText={(text) => updateTimeSlot(index, 'price', text)}
+                      placeholder="Enter price"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+              ))}
+              
+              <TouchableOpacity style={styles.addSlotButton} onPress={addTimeSlot}>
+                <Ionicons name="add" size={16} color="#212529" />
+                <Text style={styles.addSlotText}>Add Another Slot</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        );
+
+      case 4:
+        return (
+          <View style={styles.stepContent}>
+            <Text style={styles.stepTitle}>Venue Image</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Image URL *</Text>
+              <TextInput
+                style={styles.formInput}
+                value={venueForm.imageUrl}
+                onChangeText={(text) => setVenueForm({ ...venueForm, imageUrl: text })}
+                placeholder="Enter image URL"
+                placeholderTextColor="#9ca3af"
+              />
+              <Text style={styles.formHint}>
+                Paste a URL of your venue image or use a stock image URL
+              </Text>
+            </View>
+
+            {venueForm.imageUrl && (
+              <View style={styles.imagePreview}>
+                <Text style={styles.formLabel}>Preview:</Text>
+                <ImageBackground
+                  source={{ uri: venueForm.imageUrl }}
+                  style={styles.previewImage}
+                  imageStyle={styles.previewImageStyle}
+                >
+                  <View style={styles.previewOverlay} />
+                  <Text style={styles.previewText}>{venueForm.name}</Text>
+                </ImageBackground>
+              </View>
+            )}
+          </View>
+        );
+
+      default:
+        return null;
+    }
   };
 
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading venues...</Text>
@@ -177,7 +521,7 @@ export default function VenuesScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -194,7 +538,7 @@ export default function VenuesScreen() {
             </View>
             <TouchableOpacity 
               style={styles.addButton}
-              onPress={() => setShowAddModal(true)}
+              onPress={handleAddVenue}
             >
               <Ionicons name="add" size={24} color="#ffffff" />
             </TouchableOpacity>
@@ -205,7 +549,7 @@ export default function VenuesScreen() {
             <View style={styles.statsGrid}>
               <View style={styles.statCard}>
                 <View style={styles.statIconContainer}>
-                  <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
                 </View>
                 <View style={styles.statInfo}>
                   <Text style={styles.statValue}>{venues.filter(v => v.isActive).length}</Text>
@@ -215,7 +559,7 @@ export default function VenuesScreen() {
               
               <View style={styles.statCard}>
                 <View style={styles.statIconContainer}>
-                  <Ionicons name="calendar" size={24} color="#3b82f6" />
+                  <Ionicons name="calendar" size={20} color="#3b82f6" />
                 </View>
                 <View style={styles.statInfo}>
                   <Text style={styles.statValue}>{venues.reduce((sum, v) => sum + v.totalBookings, 0)}</Text>
@@ -225,7 +569,7 @@ export default function VenuesScreen() {
               
               <View style={styles.statCard}>
                 <View style={styles.statIconContainer}>
-                  <Ionicons name="star" size={24} color="#f59e0b" />
+                  <Ionicons name="star" size={20} color="#f59e0b" />
                 </View>
                 <View style={styles.statInfo}>
                   <Text style={styles.statValue}>
@@ -269,12 +613,26 @@ export default function VenuesScreen() {
 
                   {/* Venue Content */}
                   <View style={styles.venueContent}>
-                    <View style={styles.venueHeader}>
-                      <View style={styles.venueInfo}>
-                        <Text style={styles.venueName}>{venue.name}</Text>
+                    <View style={styles.venueMainInfo}>
+                      <View style={styles.venueDetails}>
+                        <Text style={styles.venueName} numberOfLines={1}>{venue.name}</Text>
                         <View style={styles.venueLocationRow}>
-                          <Ionicons name="location" size={16} color="rgba(255,255,255,0.8)" />
-                          <Text style={styles.venueLocation}>{venue.location}</Text>
+                          <Ionicons name="location" size={14} color="rgba(255,255,255,0.8)" />
+                          <Text style={styles.venueLocation} numberOfLines={1}>{venue.location}</Text>
+                        </View>
+                        <View style={styles.venueStats}>
+                          <View style={styles.venueStatItem}>
+                            <Ionicons name="star" size={14} color="#fbbf24" />
+                            <Text style={styles.venueStatText}>{venue.rating}</Text>
+                          </View>
+                          <View style={styles.venueStatItem}>
+                            <Ionicons name="calendar" size={14} color="rgba(255,255,255,0.8)" />
+                            <Text style={styles.venueStatText}>{venue.totalBookings}</Text>
+                          </View>
+                          <View style={styles.venueStatItem}>
+                            <Ionicons name="cash" size={14} color="rgba(255,255,255,0.8)" />
+                            <Text style={styles.venueStatText}>{formatCurrency(venue.pricePerHour)}/hr</Text>
+                          </View>
                         </View>
                       </View>
                       
@@ -283,23 +641,8 @@ export default function VenuesScreen() {
                         onValueChange={() => toggleVenueStatus(venue.id)}
                         trackColor={{ false: 'rgba(255,255,255,0.2)', true: 'rgba(16, 185, 129, 0.3)' }}
                         thumbColor={venue.isActive ? '#10b981' : '#ffffff'}
-                        style={styles.statusSwitch}
+                        style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
                       />
-                    </View>
-
-                    <View style={styles.venueStats}>
-                      <View style={styles.venueStatItem}>
-                        <Ionicons name="star" size={16} color="#fbbf24" />
-                        <Text style={styles.venueStatText}>{venue.rating}</Text>
-                      </View>
-                      <View style={styles.venueStatItem}>
-                        <Ionicons name="calendar" size={16} color="rgba(255,255,255,0.8)" />
-                        <Text style={styles.venueStatText}>{venue.totalBookings} bookings</Text>
-                      </View>
-                      <View style={styles.venueStatItem}>
-                        <Ionicons name="cash" size={16} color="rgba(255,255,255,0.8)" />
-                        <Text style={styles.venueStatText}>{formatCurrency(venue.pricePerHour)}/hr</Text>
-                      </View>
                     </View>
                   </View>
                 </ImageBackground>
@@ -327,7 +670,7 @@ export default function VenuesScreen() {
                 <Text style={styles.emptyStateText}>Add your first venue to start managing bookings</Text>
                 <TouchableOpacity 
                   style={styles.emptyStateButton}
-                  onPress={() => setShowAddModal(true)}
+                  onPress={handleAddVenue}
                 >
                   <Text style={styles.emptyStateButtonText}>Add Venue</Text>
                   <Ionicons name="arrow-forward" size={16} color="#ffffff" />
@@ -344,21 +687,55 @@ export default function VenuesScreen() {
         <Modal
           visible={showAddModal}
           animationType="slide"
-          presentationStyle="pageSheet"
+          presentationStyle="fullScreen"
         >
           <SafeAreaView style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <TouchableOpacity onPress={() => setShowAddModal(false)}>
-                <Text style={styles.modalCancel}>Cancel</Text>
-              </TouchableOpacity>
-              <Text style={styles.modalTitle}>Add New Venue</Text>
-              <TouchableOpacity>
-                <Text style={styles.modalSave}>Save</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.modalContent}>
-              <Text style={styles.modalNote}>This feature will be fully implemented with venue creation form.</Text>
-            </ScrollView>
+            <KeyboardAvoidingView 
+              style={styles.modalContainer}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+              {/* Modal Header */}
+              <View style={styles.modalHeader}>
+                <TouchableOpacity onPress={handleCloseAddModal}>
+                  <Text style={styles.modalCancel}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.modalTitle}>Add New Venue</Text>
+                <View style={styles.stepIndicator}>
+                  <Text style={styles.stepText}>{currentStep}/4</Text>
+                </View>
+              </View>
+
+              {/* Step Progress */}
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${(currentStep / 4) * 100}%` }]} />
+                </View>
+              </View>
+
+              {/* Step Content */}
+              <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                {renderStepContent()}
+              </ScrollView>
+
+              {/* Navigation Buttons */}
+              <View style={styles.modalFooter}>
+                {currentStep > 1 && (
+                  <TouchableOpacity style={styles.secondaryButton} onPress={handlePreviousStep}>
+                    <Text style={styles.secondaryButtonText}>Previous</Text>
+                  </TouchableOpacity>
+                )}
+                
+                <TouchableOpacity 
+                  style={[styles.primaryButton, currentStep === 1 && styles.fullWidthButton]}
+                  onPress={currentStep === 4 ? handleSubmitVenue : handleNextStep}
+                  disabled={!validateStep(currentStep)}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {currentStep === 4 ? 'Create Venue' : 'Next'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
           </SafeAreaView>
         </Modal>
 
@@ -379,7 +756,7 @@ export default function VenuesScreen() {
               </TouchableOpacity>
             </View>
             {selectedVenue && (
-              <ScrollView style={styles.modalContent}>
+              <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.detailsSection}>
                   <Text style={styles.detailsTitle}>Basic Information</Text>
                   <View style={styles.detailsRow}>
@@ -432,6 +809,8 @@ export default function VenuesScreen() {
             )}
           </SafeAreaView>
         </Modal>
+
+        <VenueOwnerBottomNavigation currentRoute="venues" />
       </SafeAreaView>
     </View>
   );
@@ -464,7 +843,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 32,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f6f7',
   },
   headerContent: {
     flex: 1,
@@ -496,44 +875,47 @@ const styles = StyleSheet.create({
   statsSection: {
     paddingHorizontal: 24,
     paddingVertical: 24,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    backgroundColor: '#f5f6f7',
   },
   statsGrid: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 12,
   },
   statCard: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   statIconContainer: {
-    marginRight: 12,
+    marginRight: 10,
   },
   statInfo: {
     flex: 1,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#212529',
-    lineHeight: 24,
+    lineHeight: 22,
   },
   statLabel: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#6b7280',
     fontWeight: '500',
     marginTop: 2,
   },
   venuesSection: {
     paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingTop: 8,
   },
   sectionTitle: {
     fontSize: 20,
@@ -553,8 +935,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   venueImageBackground: {
-    height: 200,
-    justifyContent: 'space-between',
+    height: 160,
   },
   venueImage: {
     borderTopLeftRadius: 20,
@@ -577,57 +958,57 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#ffffff',
     letterSpacing: 0.5,
   },
   venueContent: {
-    padding: 20,
-  },
-  venueHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-  },
-  venueInfo: {
     flex: 1,
-    marginRight: 16,
+    padding: 16,
+    justifyContent: 'flex-end',
+  },
+  venueMainInfo: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  venueDetails: {
+    flex: 1,
+    marginRight: 12,
   },
   venueName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#ffffff',
-    marginBottom: 6,
-    lineHeight: 24,
+    marginBottom: 4,
+    lineHeight: 22,
   },
   venueLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 8,
   },
   venueLocation: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.8)',
     marginLeft: 4,
     fontWeight: '500',
-  },
-  statusSwitch: {
-    transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
+    flex: 1,
   },
   venueStats: {
     flexDirection: 'row',
-    gap: 20,
+    gap: 12,
   },
   venueStatItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   venueStatText: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
     color: 'rgba(255, 255, 255, 0.9)',
-    marginLeft: 4,
+    marginLeft: 3,
   },
   facilitiesContainer: {
     flexDirection: 'row',
@@ -640,14 +1021,14 @@ const styles = StyleSheet.create({
   },
   facilityTag: {
     backgroundColor: '#f8fafc',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
   facilityText: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#475569',
     fontWeight: '600',
   },
@@ -712,15 +1093,205 @@ const styles = StyleSheet.create({
     color: '#212529',
     fontWeight: '600',
   },
+  stepIndicator: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  stepText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  progressContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 2,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#212529',
+    borderRadius: 2,
+  },
   modalContent: {
     flex: 1,
     padding: 20,
   },
-  modalNote: {
+  stepContent: {
+    flex: 1,
+  },
+  stepTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 24,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#212529',
+    backgroundColor: '#f9fafb',
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  formHint: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  optionChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  optionChipSelected: {
+    backgroundColor: '#212529',
+    borderColor: '#212529',
+  },
+  optionChipText: {
     fontSize: 14,
     color: '#6b7280',
-    textAlign: 'center',
-    fontStyle: 'italic',
+    fontWeight: '500',
+  },
+  optionChipTextSelected: {
+    color: '#ffffff',
+  },
+  slotsContainer: {
+    maxHeight: 400,
+  },
+  slotCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  slotHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  slotLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#212529',
+  },
+  slotRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  timeInput: {
+    flex: 1,
+  },
+  timeLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  addSlotButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    backgroundColor: '#f9fafb',
+  },
+  addSlotText: {
+    fontSize: 16,
+    color: '#212529',
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+  imagePreview: {
+    marginTop: 16,
+  },
+  previewImage: {
+    height: 150,
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewImageStyle: {
+    borderRadius: 12,
+  },
+  previewOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 12,
+  },
+  previewText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: '#212529',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  fullWidthButton: {
+    marginLeft: 0,
   },
   detailsSection: {
     marginBottom: 32,
