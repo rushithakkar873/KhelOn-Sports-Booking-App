@@ -646,7 +646,7 @@ export default function BookingsScreen() {
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Amount:</Text>
-                    <Text style={styles.detailsValue}>{formatCurrency(selectedBooking.totalAmount)}</Text>
+                    <Text style={styles.detailsValue}>{formatCurrency(selectedBooking.total_amount)}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Status:</Text>
