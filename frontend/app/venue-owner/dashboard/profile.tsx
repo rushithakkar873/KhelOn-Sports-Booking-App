@@ -65,6 +65,8 @@ export default function ProfileScreen() {
   });
   
   const router = useRouter();
+  const venueOwnerService = VenueOwnerService.getInstance();
+  const authService = AuthService.getInstance();
 
   useEffect(() => {
     loadProfile();
