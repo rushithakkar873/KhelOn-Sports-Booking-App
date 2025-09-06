@@ -77,6 +77,10 @@ export default function BookingsScreen() {
     loadBookings();
   }, []);
 
+  useEffect(() => {
+    loadBookings();
+  }, [selectedStatus]);
+
   const loadBookings = async () => {
     try {
       // Check if user is authenticated and is venue owner
