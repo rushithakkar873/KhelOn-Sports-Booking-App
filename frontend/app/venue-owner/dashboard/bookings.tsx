@@ -658,9 +658,9 @@ export default function BookingsScreen() {
                     <Text style={styles.detailsLabel}>Payment:</Text>
                     <Text style={[
                       styles.detailsValue, 
-                      { color: selectedBooking.paymentStatus === 'paid' ? '#10b981' : '#f59e0b' }
+                      { color: selectedBooking.payment_status === 'paid' ? '#10b981' : '#f59e0b' }
                     ]}>
-                      {selectedBooking.paymentStatus.charAt(0).toUpperCase() + selectedBooking.paymentStatus.slice(1)}
+                      {selectedBooking.payment_status.charAt(0).toUpperCase() + selectedBooking.payment_status.slice(1)}
                     </Text>
                   </View>
                 </View>
