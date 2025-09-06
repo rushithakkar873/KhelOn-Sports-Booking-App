@@ -753,11 +753,11 @@ export default function VenuesScreen() {
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Location:</Text>
-                    <Text style={styles.detailsValue}>{selectedVenue.location}</Text>
+                    <Text style={styles.detailsValue}>{selectedVenue.address}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Sports:</Text>
-                    <Text style={styles.detailsValue}>{selectedVenue.sports.join(', ')}</Text>
+                    <Text style={styles.detailsValue}>{selectedVenue.sports_supported.join(', ')}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Description:</Text>
