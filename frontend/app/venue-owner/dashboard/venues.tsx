@@ -56,6 +56,8 @@ export default function VenuesScreen() {
   });
   
   const router = useRouter();
+  const venueOwnerService = VenueOwnerService.getInstance();
+  const authService = AuthService.getInstance();
 
   const sportsOptions = ['Cricket', 'Football', 'Badminton', 'Tennis', 'Basketball', 'Volleyball'];
   const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen'];
