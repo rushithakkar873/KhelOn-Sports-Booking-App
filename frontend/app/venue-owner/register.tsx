@@ -47,74 +47,100 @@ export default function VenueOwnerRegister() {
   };
 
   const validateForm = () => {
-    const { name, email, mobile, password, confirmPassword } = formData;
+    const { name, mobile, businessName } = formData;
 
-    if (!name || !email || !mobile || !password || !confirmPassword) {
+    if (!name || !mobile || !businessName) {
       Alert.alert('Error', 'Please fill in all required fields');
       return false;
     }
 
-    if (!email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return false;
-    }
-
-    if (mobile.length < 10) {
-      Alert.alert('Error', 'Please enter a valid mobile number');
-      return false;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+    const formattedMobile = AuthService.formatIndianMobile(mobile);
+    if (!AuthService.validateIndianMobile(formattedMobile)) {
+      Alert.alert('Error', 'Please enter a valid Indian mobile number\nFormat: +91XXXXXXXXXX');
       return false;
     }
 
     return true;
   };
 
-  const handleRegister = async () => {
+  const handleSendOTP = async () => {
     if (!validateForm()) return;
+
+    const formattedMobile = AuthService.formatIndianMobile(formData.mobile);
+    setIsLoading(true);
+
+    try {
+      const result = await authService.sendOTP(formattedMobile);
+      
+      if (result.success) {
+        setFormData({ ...formData, mobile: formattedMobile });
+        setOtpSent(true);
+        setCountdown(60); // 1 minute countdown
+        setDevOtp(result.dev_info || ''); // For development
+        
+        Alert.alert(
+          'OTP Sent!', 
+          `Verification code sent to ${formattedMobile}${result.dev_info ? `\n\nDev OTP: ${result.dev_info.split(': ')[1]}` : ''}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!otp) {
+      Alert.alert('Error', 'Please enter the OTP');
+      return;
+    }
+
+    if (otp.length !== 6) {
+      Alert.alert('Error', 'OTP must be 6 digits');
+      return;
+    }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/venue-owner/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.toLowerCase().trim(),
-          mobile: formData.mobile.trim(),
-          password: formData.password,
-          business_name: formData.businessName.trim() || null,
-          business_address: formData.businessAddress.trim() || null,
-          gst_number: formData.gstNumber.trim() || null,
-        }),
-      });
+      const registerData = {
+        mobile: formData.mobile,
+        otp: otp,
+        name: formData.name.trim(),
+        email: formData.email.toLowerCase().trim() || undefined,
+        role: 'venue_owner' as const,
+        business_name: formData.businessName.trim(),
+        business_address: formData.businessAddress.trim() || undefined,
+        gst_number: formData.gstNumber.trim() || undefined,
+      };
 
-      const data = await response.json();
+      const result = await authService.register(registerData);
 
-      if (response.ok) {
+      if (result.success) {
         Alert.alert(
           'Success', 
-          'Registration successful! You can now sign in.',
-          [{ text: 'OK', onPress: () => router.push('/venue-owner/login') }]
+          'Registration successful! Welcome to Playon.',
+          [{ text: 'OK', onPress: () => router.push('/venue-owner/dashboard') }]
         );
       } else {
-        Alert.alert('Error', data.detail || 'Registration failed');
+        Alert.alert('Error', result.message);
       }
     } catch (error) {
-      Alert.alert('Error', 'Network error. Please check your connection.');
+      Alert.alert('Error', 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResendOTP = async () => {
+    setCountdown(0);
+    setOtpSent(false);
+    setOtp('');
+    await handleSendOTP();
   };
 
   return (
