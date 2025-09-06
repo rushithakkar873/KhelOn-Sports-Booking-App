@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,57 +12,103 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AuthService from '../../services/authService';
 
 export default function VenueOwnerLogin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [devOtp, setDevOtp] = useState(''); // For development
   
   const router = useRouter();
+  const authService = AuthService.getInstance();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
     }
+    return () => clearInterval(interval);
+  }, [countdown]);
 
-    if (!email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+  const handleSendOTP = async () => {
+    const formattedMobile = AuthService.formatIndianMobile(mobile);
+    
+    if (!AuthService.validateIndianMobile(formattedMobile)) {
+      Alert.alert('Error', 'Please enter a valid Indian mobile number\nFormat: +91XXXXXXXXXX');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/venue-owner/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.toLowerCase().trim(),
-          password,
-        }),
-      });
+      const result = await authService.sendOTP(formattedMobile);
+      
+      if (result.success) {
+        setMobile(formattedMobile);
+        setOtpSent(true);
+        setCountdown(60); // 1 minute countdown
+        setDevOtp(result.dev_info || ''); // For development
+        
+        Alert.alert(
+          'OTP Sent!', 
+          `Verification code sent to ${formattedMobile}${result.dev_info ? `\n\nDev OTP: ${result.dev_info.split(': ')[1]}` : ''}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      const data = await response.json();
+  const handleLogin = async () => {
+    if (!otp) {
+      Alert.alert('Error', 'Please enter the OTP');
+      return;
+    }
 
-      if (response.ok) {
-        // Store the token and user data (you might want to use AsyncStorage or context)
-        // For now, just navigate to dashboard
+    if (otp.length !== 6) {
+      Alert.alert('Error', 'OTP must be 6 digits');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await authService.login(mobile, otp);
+      
+      if (result.success && result.user) {
+        if (result.user.role !== 'venue_owner') {
+          Alert.alert('Error', 'This mobile number is registered as a player. Please use the player login.');
+          return;
+        }
+        
         Alert.alert('Success', 'Login successful!', [
           { text: 'OK', onPress: () => router.push('/venue-owner/dashboard') }
         ]);
       } else {
-        Alert.alert('Error', data.detail || 'Login failed');
+        Alert.alert('Error', result.message);
       }
     } catch (error) {
-      Alert.alert('Error', 'Network error. Please check your connection.');
+      Alert.alert('Error', 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResendOTP = async () => {
+    setCountdown(0);
+    setOtpSent(false);
+    setOtp('');
+    await handleSendOTP();
   };
 
   return (
