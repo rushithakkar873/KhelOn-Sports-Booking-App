@@ -252,10 +252,10 @@ export default function VenueOwnerRegister() {
           )}
 
           {/* Business Information */}
-          <Text style={styles.sectionTitle}>Business Information (Optional)</Text>
+          <Text style={styles.sectionTitle}>Business Information</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Business Name</Text>
+            <Text style={styles.label}>Business Name *</Text>
             <View style={styles.inputContainer}>
               <Ionicons name="storefront-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
               <TextInput
@@ -263,6 +263,7 @@ export default function VenueOwnerRegister() {
                 placeholder="Enter business name"
                 value={formData.businessName}
                 onChangeText={(value) => updateField('businessName', value)}
+                editable={!otpSent}
               />
             </View>
           </View>
