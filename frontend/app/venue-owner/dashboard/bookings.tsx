@@ -250,19 +250,18 @@ export default function BookingsScreen() {
     // Create new booking
     const booking: Booking = {
       id: Date.now().toString(),
-      venueName: newBooking.venueName,
-      playerName: newBooking.playerName,
-      playerPhone: newBooking.playerPhone,
+      venue_name: newBooking.venueName,
+      user_name: newBooking.playerName,
+      user_mobile: newBooking.playerPhone,
       sport: newBooking.sport,
-      bookingDate: newBooking.bookingDate,
-      startTime: newBooking.startTime,
-      endTime: newBooking.endTime,
-      duration: 1, // Calculate based on time difference
-      totalAmount: parseInt(newBooking.totalAmount) || 0,
+      booking_date: newBooking.bookingDate,
+      start_time: newBooking.startTime,
+      end_time: newBooking.endTime,
+      duration_hours: 1, // Calculate based on time difference
+      total_amount: parseInt(newBooking.totalAmount) || 0,
       status: newBooking.type === 'block' ? 'cancelled' : 'confirmed',
-      paymentStatus: newBooking.type === 'block' ? 'refunded' : 'paid',
-      createdAt: new Date().toISOString(),
-      image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9', // Default image
+      payment_status: newBooking.type === 'block' ? 'refunded' : 'paid',
+      created_at: new Date().toISOString(),
     };
 
     setBookings([booking, ...bookings]);
