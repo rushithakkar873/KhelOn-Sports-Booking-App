@@ -179,16 +179,11 @@ export default function BookingsScreen() {
   };
 
   const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN')}`;
+    return VenueOwnerService.formatCurrency(amount);
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    });
+    return VenueOwnerService.formatDate(dateString);
   };
 
   const getStatusColor = (status: string) => {
