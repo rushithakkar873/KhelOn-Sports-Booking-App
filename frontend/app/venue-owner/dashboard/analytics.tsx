@@ -18,21 +18,9 @@ import VenueOwnerService, { AnalyticsDashboard } from '../../../services/venueOw
 
 const { width } = Dimensions.get('window');
 
-interface AnalyticsData {
-  totalRevenue: number;
-  totalBookings: number;
-  occupancyRate: number;
-  averageBookingValue: number;
-  revenueGrowth: number;
-  bookingsTrend: { month: string; bookings: number; revenue: number }[];
-  sportDistribution: { sport: string; bookings: number; revenue: number; color: string }[];
-  venuePerformance: { venueName: string; bookings: number; revenue: number; occupancy: number }[];
-  peakHours: { hour: string; bookings: number }[];
-  monthlyComparison: { month: string; revenue: number; bookings: number }[];
-}
-
 export default function AnalyticsScreen() {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsDashboard | null>(null);
+  const venueOwnerService = VenueOwnerService.getInstance();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState('30');
