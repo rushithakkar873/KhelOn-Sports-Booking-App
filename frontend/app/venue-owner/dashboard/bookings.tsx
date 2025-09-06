@@ -24,21 +24,21 @@ import AuthService from '../../../services/authService';
 
 const { width } = Dimensions.get('window');
 
+// Use API booking interface instead of custom one
 interface Booking {
   id: string;
-  venueName: string;
-  playerName: string;
-  playerPhone: string;
-  sport: string;
-  bookingDate: string;
-  startTime: string;
-  endTime: string;
-  duration: number;
-  totalAmount: number;
+  venue_name?: string;
+  user_name?: string;
+  user_mobile?: string;
+  sport?: string;
+  booking_date: string;
+  start_time: string;
+  end_time: string;
+  duration_hours: number;
+  total_amount: number;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'refunded';
-  createdAt: string;
-  image: string;
+  payment_status: 'pending' | 'paid' | 'refunded';
+  created_at: string;
 }
 
 export default function BookingsScreen() {
