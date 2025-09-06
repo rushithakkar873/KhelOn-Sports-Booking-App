@@ -499,6 +499,161 @@ export default function BookingsScreen() {
           <View style={{ height: 100 }} />
         </ScrollView>
 
+        {/* Add Booking Modal */}
+        <Modal
+          visible={showAddBookingModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <KeyboardAvoidingView 
+              style={styles.modalContainer}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
+              <View style={styles.modalHeader}>
+                <TouchableOpacity onPress={() => setShowAddBookingModal(false)}>
+                  <Text style={styles.modalCancel}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.modalTitle}>Add Booking</Text>
+                <TouchableOpacity onPress={handleSubmitBooking}>
+                  <Text style={styles.modalSave}>Save</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                <View style={styles.bookingTypeSelector}>
+                  <TouchableOpacity
+                    style={[
+                      styles.typeButton,
+                      newBooking.type === 'manual' && styles.typeButtonActive
+                    ]}
+                    onPress={() => setNewBooking({ ...newBooking, type: 'manual' })}
+                  >
+                    <Text style={[
+                      styles.typeButtonText,
+                      newBooking.type === 'manual' && styles.typeButtonTextActive
+                    ]}>
+                      Manual Booking
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.typeButton,
+                      newBooking.type === 'block' && styles.typeButtonActive
+                    ]}
+                    onPress={() => setNewBooking({ ...newBooking, type: 'block' })}
+                  >
+                    <Text style={[
+                      styles.typeButtonText,
+                      newBooking.type === 'block' && styles.typeButtonTextActive
+                    ]}>
+                      Block Slot
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Venue Name *</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={newBooking.venueName}
+                    onChangeText={(text) => setNewBooking({ ...newBooking, venueName: text })}
+                    placeholder="Select or enter venue"
+                    placeholderTextColor="#9ca3af"
+                  />
+                </View>
+
+                {newBooking.type === 'manual' && (
+                  <>
+                    <View style={styles.formGroup}>
+                      <Text style={styles.formLabel}>Player Name *</Text>
+                      <TextInput
+                        style={styles.formInput}
+                        value={newBooking.playerName}
+                        onChangeText={(text) => setNewBooking({ ...newBooking, playerName: text })}
+                        placeholder="Enter player name"
+                        placeholderTextColor="#9ca3af"
+                      />
+                    </View>
+
+                    <View style={styles.formGroup}>
+                      <Text style={styles.formLabel}>Phone Number</Text>
+                      <TextInput
+                        style={styles.formInput}
+                        value={newBooking.playerPhone}
+                        onChangeText={(text) => setNewBooking({ ...newBooking, playerPhone: text })}
+                        placeholder="Enter phone number"
+                        placeholderTextColor="#9ca3af"
+                        keyboardType="phone-pad"
+                      />
+                    </View>
+                  </>
+                )}
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Sport</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={newBooking.sport}
+                    onChangeText={(text) => setNewBooking({ ...newBooking, sport: text })}
+                    placeholder="Enter sport"
+                    placeholderTextColor="#9ca3af"
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Booking Date *</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={newBooking.bookingDate}
+                    onChangeText={(text) => setNewBooking({ ...newBooking, bookingDate: text })}
+                    placeholder="YYYY-MM-DD"
+                    placeholderTextColor="#9ca3af"
+                  />
+                </View>
+
+                <View style={styles.timeRow}>
+                  <View style={styles.timeInput}>
+                    <Text style={styles.formLabel}>Start Time *</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={newBooking.startTime}
+                      onChangeText={(text) => setNewBooking({ ...newBooking, startTime: text })}
+                      placeholder="HH:MM"
+                      placeholderTextColor="#9ca3af"
+                    />
+                  </View>
+                  
+                  <View style={styles.timeInput}>
+                    <Text style={styles.formLabel}>End Time *</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={newBooking.endTime}
+                      onChangeText={(text) => setNewBooking({ ...newBooking, endTime: text })}
+                      placeholder="HH:MM"
+                      placeholderTextColor="#9ca3af"
+                    />
+                  </View>
+                </View>
+
+                {newBooking.type === 'manual' && (
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Total Amount</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={newBooking.totalAmount}
+                      onChangeText={(text) => setNewBooking({ ...newBooking, totalAmount: text })}
+                      placeholder="Enter amount"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                )}
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
+        </Modal>
+
         {/* Booking Details Modal */}
         <Modal
           visible={showDetailsModal}
