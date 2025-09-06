@@ -298,29 +298,31 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Stats Cards */}
+          {/* Stats Cards - 2-1 Layout */}
           <View style={styles.statsSection}>
-            <View style={styles.statsGrid}>
+            <View style={styles.statsTopRow}>
               <View style={styles.statCard}>
                 <View style={styles.statIcon}>
-                  <Ionicons name="business" size={24} color="#3b82f6" />
+                  <Ionicons name="business" size={20} color="#3b82f6" />
                 </View>
                 <Text style={styles.statValue}>{profile.totalVenues}</Text>
                 <Text style={styles.statLabel}>Venues</Text>
               </View>
               <View style={styles.statCard}>
                 <View style={styles.statIcon}>
-                  <Ionicons name="calendar" size={24} color="#10b981" />
+                  <Ionicons name="calendar" size={20} color="#10b981" />
                 </View>
                 <Text style={styles.statValue}>{profile.totalBookings}</Text>
                 <Text style={styles.statLabel}>Bookings</Text>
               </View>
-              <View style={styles.statCard}>
+            </View>
+            <View style={styles.statsBottomRow}>
+              <View style={styles.statCardFull}>
                 <View style={styles.statIcon}>
-                  <Ionicons name="cash" size={24} color="#f59e0b" />
+                  <Ionicons name="cash" size={20} color="#f59e0b" />
                 </View>
                 <Text style={styles.statValue}>{formatCurrency(profile.totalRevenue)}</Text>
-                <Text style={styles.statLabel}>Revenue</Text>
+                <Text style={styles.statLabel}>Total Revenue</Text>
               </View>
             </View>
           </View>
