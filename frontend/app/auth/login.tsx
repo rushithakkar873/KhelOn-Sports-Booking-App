@@ -423,6 +423,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#212529',
   },
+  helperText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 4,
+  },
+  resendContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  countdownText: {
+    fontSize: 14,
+    color: '#9ca3af',
+  },
+  resendText: {
+    fontSize: 14,
+    color: '#212529',
+    fontWeight: '600',
+  },
   eyeIcon: {
     padding: 8,
   },
