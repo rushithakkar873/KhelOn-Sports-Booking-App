@@ -204,32 +204,41 @@ export default function VenuesScreen() {
 
   const handleSubmitVenue = async () => {
     try {
-      // Here you would make API call to create venue
-      const newVenue: Venue = {
-        id: Date.now().toString(),
+      // Create venue data object for API
+      const venueData: CreateVenueData = {
         name: venueForm.name,
-        sports: venueForm.sports,
-        location: venueForm.location,
+        sports_supported: venueForm.sports,
+        address: venueForm.location,
+        city: 'Mumbai', // TODO: Extract from location or add separate field
+        state: 'Maharashtra', // TODO: Extract from location or add separate field  
+        pincode: '400001', // TODO: Extract from location or add separate field
         description: venueForm.description,
-        facilities: venueForm.facilities,
-        pricePerHour: parseInt(venueForm.pricePerHour),
-        isActive: true,
-        totalBookings: 0,
-        rating: 0,
-        image: venueForm.imageUrl,
-        timeSlots: venueForm.timeSlots.map((slot, index) => ({
-          id: index.toString(),
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          price: parseInt(slot.price),
-          isAvailable: true,
+        amenities: venueForm.facilities,
+        base_price_per_hour: parseInt(venueForm.pricePerHour),
+        contact_phone: authService.getCurrentUser()?.mobile || '',
+        images: venueForm.imageUrl ? [venueForm.imageUrl] : [],
+        slots: venueForm.timeSlots.map((slot, index) => ({
+          day_of_week: 0, // TODO: Add day selection in form or default to all days
+          start_time: slot.startTime,
+          end_time: slot.endTime,
+          capacity: 20, // TODO: Add capacity field to form
+          price_per_hour: parseInt(slot.price),
+          is_peak_hour: false, // TODO: Add peak hour logic
         })),
       };
 
-      setVenues([...venues, newVenue]);
-      handleCloseAddModal();
-      Alert.alert('Success', 'Venue added successfully!');
+      const result = await venueOwnerService.createVenue(venueData);
+      
+      if (result.success) {
+        // Refresh venues list
+        await loadVenues();
+        handleCloseAddModal();
+        Alert.alert('Success', 'Venue added successfully!');
+      } else {
+        Alert.alert('Error', result.message || 'Failed to add venue');
+      }
     } catch (error) {
+      console.error('Error creating venue:', error);
       Alert.alert('Error', 'Failed to add venue. Please try again.');
     }
   };
