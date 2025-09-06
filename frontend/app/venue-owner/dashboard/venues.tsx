@@ -637,7 +637,7 @@ export default function VenuesScreen() {
 
                 {/* Facilities Tags */}
                 <View style={styles.facilitiesContainer}>
-                  {venue.facilities.slice(0, 4).map((facility, fIndex) => (
+                  {venue.amenities.slice(0, 4).map((facility, fIndex) => (
                     <View key={fIndex} style={styles.facilityTag}>
                       <Text style={styles.facilityText}>{facility}</Text>
                     </View>
