@@ -22,17 +22,16 @@ import AuthService from '../../../services/authService';
 interface VenueOwnerProfile {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   mobile: string;
-  businessName: string;
-  businessAddress: string;
-  gstNumber: string;
+  business_name?: string;
+  business_address?: string;
+  gst_number?: string;
   profileImage?: string;
-  joinedDate: string;
-  isVerified: boolean;
-  totalVenues: number;
-  totalBookings: number;
-  totalRevenue: number;
+  created_at: string;
+  is_verified: boolean;
+  total_venues?: number;
+  total_revenue?: number;
 }
 
 interface NotificationSettings {
