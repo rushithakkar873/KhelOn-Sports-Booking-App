@@ -46,6 +46,18 @@ export default function BookingsScreen() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showAddBookingModal, setShowAddBookingModal] = useState(false);
+  const [newBooking, setNewBooking] = useState({
+    venueName: '',
+    playerName: '',
+    playerPhone: '',
+    sport: '',
+    bookingDate: '',
+    startTime: '',
+    endTime: '',
+    totalAmount: '',
+    type: 'manual' as 'manual' | 'block',
+  });
   
   const router = useRouter();
 
