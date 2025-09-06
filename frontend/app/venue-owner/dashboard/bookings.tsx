@@ -389,15 +389,15 @@ export default function BookingsScreen() {
                   <View style={styles.paymentRow}>
                     <View style={styles.paymentStatus}>
                       <Ionicons 
-                        name={booking.paymentStatus === 'paid' ? 'checkmark-circle' : 'time'} 
+                        name={booking.payment_status === 'paid' ? 'checkmark-circle' : 'time'} 
                         size={16} 
-                        color={booking.paymentStatus === 'paid' ? '#10b981' : '#f59e0b'} 
+                        color={booking.payment_status === 'paid' ? '#10b981' : '#f59e0b'} 
                       />
                       <Text style={[
                         styles.paymentText,
-                        { color: booking.paymentStatus === 'paid' ? '#10b981' : '#f59e0b' }
+                        { color: booking.payment_status === 'paid' ? '#10b981' : '#f59e0b' }
                       ]}>
-                        {booking.paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}
+                        {booking.payment_status === 'paid' ? 'Paid' : 'Payment Pending'}
                       </Text>
                     </View>
                   </View>
