@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,23 +12,35 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AuthService from '../../services/authService';
 
 export default function VenueOwnerRegister() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     mobile: '',
-    password: '',
-    confirmPassword: '',
     businessName: '',
     businessAddress: '',
     gstNumber: '',
   });
+  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [devOtp, setDevOtp] = useState(''); // For development
   
   const router = useRouter();
+  const authService = AuthService.getInstance();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [countdown]);
 
   const updateField = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
