@@ -104,12 +104,26 @@ export default function VenuesScreen() {
     setIsRefreshing(false);
   };
 
-  const toggleVenueStatus = (venueId: string) => {
-    setVenues(venues.map(venue => 
-      venue.id === venueId 
-        ? { ...venue, isActive: !venue.isActive }
-        : venue
-    ));
+  const toggleVenueStatus = async (venueId: string) => {
+    try {
+      const venue = venues.find(v => v.id === venueId);
+      if (!venue) return;
+
+      const newStatus = !venue.is_active;
+      await venueOwnerService.updateVenueStatus(venueId, newStatus);
+      
+      // Update local state
+      setVenues(venues.map(v => 
+        v.id === venueId 
+          ? { ...v, is_active: newStatus }
+          : v
+      ));
+
+      Alert.alert('Success', `Venue ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    } catch (error) {
+      console.error('Error updating venue status:', error);
+      Alert.alert('Error', 'Failed to update venue status. Please try again.');
+    }
   };
 
   const toggleSlotAvailability = (venueId: string, slotId: string) => {
