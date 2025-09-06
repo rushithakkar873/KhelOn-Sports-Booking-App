@@ -126,19 +126,24 @@ export default function VenuesScreen() {
     }
   };
 
-  const toggleSlotAvailability = (venueId: string, slotId: string) => {
+  const toggleSlotAvailability = async (venueId: string, slotId: string) => {
+    // Note: This would require a separate API endpoint for slot management
+    // For now, keep the local state update but add a note
     setVenues(venues.map(venue => 
       venue.id === venueId 
         ? {
             ...venue,
-            timeSlots: venue.timeSlots.map(slot =>
-              slot.id === slotId
-                ? { ...slot, isAvailable: !slot.isAvailable }
+            slots: venue.slots.map(slot =>
+              slot._id === slotId
+                ? { ...slot, is_active: !slot.is_active }
                 : slot
             )
           }
         : venue
     ));
+    
+    // TODO: Implement API call for slot availability update
+    Alert.alert('Note', 'Slot availability updated locally. API integration pending.');
   };
 
   const handleVenueDetails = (venue: Venue) => {
