@@ -363,7 +363,7 @@ export default function BookingsScreen() {
                     </View>
                     
                     <View style={styles.bookingAmount}>
-                      <Text style={styles.amountText}>{formatCurrency(booking.totalAmount)}</Text>
+                      <Text style={styles.amountText}>{formatCurrency(booking.total_amount)}</Text>
                     </View>
                   </View>
                 </ImageBackground>
