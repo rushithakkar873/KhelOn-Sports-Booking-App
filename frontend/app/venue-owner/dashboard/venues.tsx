@@ -68,52 +68,31 @@ export default function VenuesScreen() {
 
   const loadVenues = async () => {
     try {
-      // Mock data with professional images
-      const mockVenues: Venue[] = [
-        {
-          id: '1',
-          name: 'Elite Cricket Ground',
-          sports: ['Cricket'],
-          location: 'Andheri, Mumbai',
-          pricePerHour: 1200,
-          facilities: ['Floodlights', 'Parking', 'Washroom', 'Seating'],
-          description: 'Professional cricket ground with excellent facilities',
-          isActive: true,
-          totalBookings: 156,
-          rating: 4.8,
-          image: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9',
-          timeSlots: [
-            { id: '1', startTime: '06:00', endTime: '08:00', price: 1000, isAvailable: true },
-            { id: '2', startTime: '08:00', endTime: '10:00', price: 1200, isAvailable: true },
-            { id: '3', startTime: '10:00', endTime: '12:00', price: 1200, isAvailable: false },
-            { id: '4', startTime: '16:00', endTime: '18:00', price: 1400, isAvailable: true },
-            { id: '5', startTime: '18:00', endTime: '20:00', price: 1500, isAvailable: true },
-          ]
-        },
-        {
-          id: '2',
-          name: 'Champions Football Turf',
-          sports: ['Football'],
-          location: 'Bandra, Mumbai',
-          pricePerHour: 800,
-          facilities: ['Floodlights', 'Parking', 'Washroom'],
-          description: 'Synthetic turf football ground',
-          isActive: true,
-          totalBookings: 89,
-          rating: 4.5,
-          image: 'https://images.unsplash.com/photo-1724500760032-b2eb510e59c4',
-          timeSlots: [
-            { id: '1', startTime: '06:00', endTime: '07:00', price: 600, isAvailable: true },
-            { id: '2', startTime: '07:00', endTime: '08:00', price: 700, isAvailable: true },
-            { id: '3', startTime: '18:00', endTime: '19:00', price: 900, isAvailable: true },
-            { id: '4', startTime: '19:00', endTime: '20:00', price: 1000, isAvailable: true },
-          ]
-        },
-      ];
+      // Check if user is authenticated and is venue owner
+      if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
+        Alert.alert('Authentication Error', 'Please log in as a venue owner', [
+          { text: 'OK', onPress: () => router.replace('/auth/login') }
+        ]);
+        return;
+      }
 
-      setVenues(mockVenues);
+      // Fetch venues from API
+      const venuesData = await venueOwnerService.getVenues(0, 50, undefined);
+      setVenues(venuesData);
     } catch (error) {
       console.error('Error loading venues:', error);
+      
+      Alert.alert(
+        'Error', 
+        'Failed to load venues. Please check your connection and try again.',
+        [
+          { text: 'Retry', onPress: () => loadVenues() },
+          { text: 'Cancel' }
+        ]
+      );
+      
+      // Set empty venues on error
+      setVenues([]);
     } finally {
       setIsLoading(false);
     }
