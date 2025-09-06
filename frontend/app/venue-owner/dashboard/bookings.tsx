@@ -642,7 +642,7 @@ export default function BookingsScreen() {
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Duration:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.duration} hours</Text>
+                    <Text style={styles.detailsValue}>{selectedBooking.duration_hours} hours</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Amount:</Text>
