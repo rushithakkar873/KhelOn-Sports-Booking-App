@@ -345,6 +345,7 @@ export default function RegisterScreen() {
                     value={formData.gstNumber}
                     onChangeText={(value) => updateField('gstNumber', value)}
                     autoCapitalize="characters"
+                    editable={!otpSent}
                   />
                 </View>
               </View>
