@@ -16,49 +16,88 @@ import { useRouter } from 'expo-router';
 import AuthService from '../../services/authService';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [devOtp, setDevOtp] = useState(''); // For development
   const [userRole, setUserRole] = useState<'player' | 'venue_owner'>('player');
   
   const router = useRouter();
+  const authService = AuthService.getInstance();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
     }
+    return () => clearInterval(interval);
+  }, [countdown]);
 
-    if (!email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+  const handleSendOTP = async () => {
+    const formattedMobile = AuthService.formatIndianMobile(mobile);
+    
+    if (!AuthService.validateIndianMobile(formattedMobile)) {
+      Alert.alert('Error', 'Please enter a valid Indian mobile number\nFormat: +91XXXXXXXXXX');
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // Determine API endpoint based on user role
-      const apiEndpoint = userRole === 'venue_owner' 
-        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/venue-owner/login`
-        : `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/login`;
+      const result = await authService.sendOTP(formattedMobile);
+      
+      if (result.success) {
+        setMobile(formattedMobile);
+        setOtpSent(true);
+        setCountdown(60); // 1 minute countdown
+        setDevOtp(result.dev_info || ''); // For development
+        
+        Alert.alert(
+          'OTP Sent!', 
+          `Verification code sent to ${formattedMobile}${result.dev_info ? `\n\nDev OTP: ${result.dev_info.split(': ')[1]}` : ''}`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.toLowerCase().trim(),
-          password,
-        }),
-      });
+  const handleLogin = async () => {
+    if (!otp) {
+      Alert.alert('Error', 'Please enter the OTP');
+      return;
+    }
 
-      const data = await response.json();
+    if (otp.length !== 6) {
+      Alert.alert('Error', 'OTP must be 6 digits');
+      return;
+    }
 
-      if (response.ok) {
+    setIsLoading(true);
+
+    try {
+      const result = await authService.login(mobile, otp);
+      
+      if (result.success && result.user) {
+        // Check if user role matches selected role
+        if (result.user.role !== userRole) {
+          const roleText = result.user.role === 'venue_owner' ? 'venue owner' : 'player';
+          const selectedRoleText = userRole === 'venue_owner' ? 'venue owner' : 'player';
+          Alert.alert('Error', `This mobile number is registered as a ${roleText}. Please select the correct role or register as a ${selectedRoleText}.`);
+          return;
+        }
+        
         // Navigate based on user role
-        const destination = userRole === 'venue_owner' 
+        const destination = result.user.role === 'venue_owner' 
           ? '/venue-owner/dashboard'
           : '/main/home';
         
@@ -66,20 +105,20 @@ export default function LoginScreen() {
           { text: 'OK', onPress: () => router.replace(destination) }
         ]);
       } else {
-        Alert.alert('Error', data.detail || 'Login failed');
+        Alert.alert('Error', result.message);
       }
     } catch (error) {
-      // Fallback to mock login for development
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const destination = userRole === 'venue_owner' 
-        ? '/venue-owner/dashboard'
-        : '/main/home';
-      
-      router.replace(destination);
+      Alert.alert('Error', 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResendOTP = async () => {
+    setCountdown(0);
+    setOtpSent(false);
+    setOtp('');
+    await handleSendOTP();
   };
 
   return (
