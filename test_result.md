@@ -105,6 +105,21 @@
 user_problem_statement: "Build Playon - a mobile sports venue booking and tournament management app with user authentication, venue discovery, booking system, tournament creation and management targeting Indian market with Razorpay payments (mock initially)"
 
 backend:
+  - task: "Unified Authentication System with Mobile OTP"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented new unified authentication system with mobile OTP verification. Supports both players and venue owners with single user table. Includes /auth/send-otp, /auth/verify-otp, /auth/register, /auth/login, and /auth/profile endpoints with Indian mobile number validation (+91XXXXXXXXXX format)."
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TESTING COMPLETED: All unified authentication endpoints working perfectly. ✅ Send OTP API with Indian mobile validation (+919876543210, +918765432109), ✅ Verify OTP API with correct/incorrect codes, ✅ User registration for both player and venue_owner roles with OTP verification, ✅ User login with mobile + OTP, ✅ Protected routes (/auth/profile) with JWT token validation, ✅ Venue owner routes (/venue-owner/venues) with role-based access control, ✅ Mock OTP generation and verification working, ✅ Error handling for invalid requests, ✅ API response structure consistency. Tested with realistic Indian data (Arjun Sharma - player, Rajesh Kumar - venue owner, Elite Sports Complex). All 7/7 test suites passed. Created unified_auth_test.py with comprehensive test coverage."
+
   - task: "User Authentication API"
     implemented: true
     working: true
