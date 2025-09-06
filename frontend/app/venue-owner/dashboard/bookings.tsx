@@ -880,19 +880,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    padding: 20,
+    padding: 16,
   },
   bookingInfo: {
     flex: 1,
+    marginRight: 12,
   },
   venueName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
     marginBottom: 4,
   },
   playerName: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
   },
@@ -900,7 +901,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   amountText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
   },
