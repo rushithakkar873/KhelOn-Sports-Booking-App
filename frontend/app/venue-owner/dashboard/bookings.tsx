@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 32,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f6f7',
   },
   headerContent: {
     flex: 1,
@@ -775,6 +775,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     fontWeight: '500',
+  },
+  addButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#212529',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#212529',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
   },
   statsSection: {
     paddingVertical: 24,
