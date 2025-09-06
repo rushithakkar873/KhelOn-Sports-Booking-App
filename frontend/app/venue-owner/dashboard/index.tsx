@@ -128,13 +128,7 @@ export default function VenueOwnerDashboard() {
   };
 
   const formatCurrency = (amount: number) => {
-    if (amount >= 100000) {
-      return `₹${(amount / 100000).toFixed(1)}L`;
-    }
-    if (amount >= 1000) {
-      return `₹${(amount / 1000).toFixed(1)}K`;
-    }
-    return `₹${amount.toLocaleString('en-IN')}`;
+    return VenueOwnerService.formatCurrency(amount);
   };
 
   const getRevenueChartData = () => {
