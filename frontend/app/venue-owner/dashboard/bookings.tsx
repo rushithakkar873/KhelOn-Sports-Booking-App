@@ -618,7 +618,7 @@ export default function BookingsScreen() {
                   <Text style={styles.detailsTitle}>Booking Information</Text>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Venue:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.venueName}</Text>
+                    <Text style={styles.detailsValue}>{selectedBooking.venue_name}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Player:</Text>
