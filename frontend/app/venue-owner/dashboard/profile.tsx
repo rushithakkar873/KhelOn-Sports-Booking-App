@@ -208,7 +208,7 @@ export default function ProfileScreen() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.loadingContainer}>
             <Text style={styles.loadingText}>Loading profile...</Text>
@@ -221,7 +221,7 @@ export default function ProfileScreen() {
   if (!profile) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>Failed to load profile</Text>
@@ -233,7 +233,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
