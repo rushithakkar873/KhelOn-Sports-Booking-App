@@ -76,7 +76,7 @@ export default function AnalyticsScreen() {
   };
 
   const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN')}`;
+    return VenueOwnerService.formatCurrency(amount);
   };
 
   const chartConfig = {
