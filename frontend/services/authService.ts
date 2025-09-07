@@ -123,7 +123,7 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'Failed to send OTP',
+        message: (error as Error).message || 'Failed to send OTP',
       };
     }
   }
@@ -145,7 +145,7 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'OTP verification failed',
+        message: (error as Error).message || 'OTP verification failed',
       };
     }
   }
@@ -179,7 +179,7 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'Registration failed',
+        message: (error as Error).message || 'Registration failed',
       };
     }
   }
@@ -213,7 +213,7 @@ class AuthService {
     } catch (error) {
       return {
         success: false,
-        message: error.message || 'Login failed',
+        message: (error as Error).message || 'Login failed',
       };
     }
   }
