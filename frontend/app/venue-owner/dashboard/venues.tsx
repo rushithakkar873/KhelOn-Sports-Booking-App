@@ -133,11 +133,13 @@ export default function VenuesScreen() {
       venue.id === venueId 
         ? {
             ...venue,
-            slots: venue.slots.map(slot =>
-              slot._id === slotId
-                ? { ...slot, is_active: !slot.is_active }
-                : slot
-            )
+            slots: venue?.slots && Array.isArray(venue.slots) 
+              ? venue.slots.map(slot =>
+                  slot?._id === slotId
+                    ? { ...slot, is_active: !slot.is_active }
+                    : slot
+                )
+              : []
           }
         : venue
     ));
