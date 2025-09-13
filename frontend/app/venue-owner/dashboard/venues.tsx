@@ -639,14 +639,22 @@ export default function VenuesScreen() {
 
                 {/* Facilities Tags */}
                 <View style={styles.facilitiesContainer}>
-                  {venue.amenities.slice(0, 4).map((facility, fIndex) => (
-                    <View key={fIndex} style={styles.facilityTag}>
-                      <Text style={styles.facilityText}>{facility}</Text>
-                    </View>
-                  ))}
-                  {venue.amenities.length > 4 && (
+                  {venue?.amenities && Array.isArray(venue.amenities) && venue.amenities.length > 0 ? (
+                    <>
+                      {venue.amenities.slice(0, 4).map((facility, fIndex) => (
+                        <View key={fIndex} style={styles.facilityTag}>
+                          <Text style={styles.facilityText}>{facility}</Text>
+                        </View>
+                      ))}
+                      {venue.amenities.length > 4 && (
+                        <View style={styles.facilityTag}>
+                          <Text style={styles.facilityText}>+{venue.amenities.length - 4}</Text>
+                        </View>
+                      )}
+                    </>
+                  ) : (
                     <View style={styles.facilityTag}>
-                      <Text style={styles.facilityText}>+{venue.amenities.length - 4}</Text>
+                      <Text style={styles.facilityText}>No facilities listed</Text>
                     </View>
                   )}
                 </View>
