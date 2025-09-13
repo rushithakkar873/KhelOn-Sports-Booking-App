@@ -122,38 +122,56 @@ export default function AnalyticsScreen() {
   };
 
   const getBookingsChartData = () => {
-    if (!analyticsData) return { labels: [], datasets: [{ data: [] }] };
+    if (!analyticsData || !analyticsData.bookingsTrend || analyticsData.bookingsTrend.length === 0) {
+      return { 
+        labels: ['No Data'], 
+        datasets: [{ data: [0] }] 
+      };
+    }
     
     return {
       labels: analyticsData.bookingsTrend.map(item => item.month),
       datasets: [
         {
-          data: analyticsData.bookingsTrend.map(item => item.bookings),
+          data: analyticsData.bookingsTrend.map(item => item.bookings || 0),
         },
       ],
     };
   };
 
   const getSportsDistributionData = () => {
-    if (!analyticsData) return [];
+    if (!analyticsData || !analyticsData.sportDistribution || analyticsData.sportDistribution.length === 0) {
+      return [{
+        name: 'No Data',
+        population: 1,
+        color: '#e5e7eb',
+        legendFontColor: '#6b7280',
+        legendFontSize: 12,
+      }];
+    }
     
     return analyticsData.sportDistribution.map((sport, index) => ({
-      name: sport.sport,
-      population: sport.bookings,
-      color: sport.color,
+      name: sport.sport || 'Unknown',
+      population: sport.bookings || 0,
+      color: sport.color || '#e5e7eb',
       legendFontColor: '#6b7280',
       legendFontSize: 12,
     }));
   };
 
   const getPeakHoursData = () => {
-    if (!analyticsData) return { labels: [], datasets: [{ data: [] }] };
+    if (!analyticsData || !analyticsData.peak_hours || analyticsData.peak_hours.length === 0) {
+      return { 
+        labels: ['No Data'], 
+        datasets: [{ data: [0] }] 
+      };
+    }
     
     return {
-      labels: analyticsData.peakHours.map(item => item.hour),
+      labels: analyticsData.peak_hours.map(item => item.hour || '00:00'),
       datasets: [
         {
-          data: analyticsData.peakHours.map(item => item.bookings),
+          data: analyticsData.peak_hours.map(item => item.bookings || 0),
         },
       ],
     };
