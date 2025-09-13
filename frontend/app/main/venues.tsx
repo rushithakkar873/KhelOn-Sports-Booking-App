@@ -276,9 +276,10 @@ export default function VenuesScreen() {
                   </View>
                 )}
               </TouchableOpacity>
-            ))}
+            ))
+            ) : null}
 
-            {filteredVenues.length === 0 && (
+            {(!filteredVenues || filteredVenues.length === 0) && (
               <View style={styles.emptyState}>
                 <Ionicons name="search-outline" size={48} color="#9ca3af" />
                 <Text style={styles.emptyStateTitle}>No venues found</Text>
