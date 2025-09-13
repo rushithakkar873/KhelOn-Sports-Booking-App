@@ -812,6 +812,17 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontWeight: '500',
   },
+  emptyState: {
+    paddingVertical: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
   modalContainer: {
     flex: 1,
     backgroundColor: '#ffffff',
