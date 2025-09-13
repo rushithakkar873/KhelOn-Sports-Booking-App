@@ -624,8 +624,9 @@ class VenueOwnerAPITester:
             print("❌ Failed to create test venue")
             return False
         
-        # Note: We'll skip booking creation for now as it requires full booking system
-        # self.create_test_booking()
+        # Create a real booking for testing booking endpoints
+        if not self.create_real_booking_via_db():
+            print("⚠️  Failed to create test booking - booking tests will be limited")
         
         test_results = []
         
