@@ -187,7 +187,7 @@ export default function AnalyticsScreen() {
     };
   };
 
-  if (isLoading || !analyticsData) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -197,6 +197,34 @@ export default function AnalyticsScreen() {
             size="medium"
             color="#212529"
           />
+        </SafeAreaView>
+      </View>
+    );
+  }
+
+  // If data failed to load, show error state with option to retry
+  if (!analyticsData) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.errorContainer}>
+            <Ionicons name="analytics-outline" size={64} color="#9ca3af" />
+            <Text style={styles.errorTitle}>Unable to Load Analytics</Text>
+            <Text style={styles.errorMessage}>
+              There was a problem loading your analytics data. Please check your connection and try again.
+            </Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={() => {
+                setIsLoading(true);
+                loadAnalytics();
+              }}
+            >
+              <Ionicons name="refresh" size={20} color="#ffffff" />
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       </View>
     );
