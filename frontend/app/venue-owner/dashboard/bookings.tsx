@@ -340,13 +340,14 @@ export default function BookingsScreen() {
 
           {/* Bookings List */}
           <View style={styles.bookingsSection}>
-            {filteredBookings.map((booking, index) => (
-              <TouchableOpacity
-                key={booking.id}
-                style={styles.bookingCard}
-                onPress={() => handleBookingAction(booking, 'details')}
-                activeOpacity={0.8}
-              >
+            {filteredBookings && Array.isArray(filteredBookings) && filteredBookings.length > 0 ? (
+              filteredBookings.map((booking, index) => (
+                <TouchableOpacity
+                  key={booking?.id || index}
+                  style={styles.bookingCard}
+                  onPress={() => handleBookingAction(booking, 'details')}
+                  activeOpacity={0.8}
+                >
                 <ImageBackground
                   source={{ uri: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9' }}
                   style={styles.bookingImageBackground}
