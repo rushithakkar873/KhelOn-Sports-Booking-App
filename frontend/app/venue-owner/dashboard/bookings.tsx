@@ -415,17 +415,17 @@ export default function BookingsScreen() {
                   </View>
 
                   {/* Action Buttons */}
-                  {getBookingActions(booking).length > 0 && (
+                  {getBookingActions(booking) && Array.isArray(getBookingActions(booking)) && getBookingActions(booking).length > 0 && (
                     <View style={styles.actionsContainer}>
                       {getBookingActions(booking).map((action) => (
                         <TouchableOpacity
-                          key={action.key}
-                          style={[styles.actionButton, { borderColor: action.color }]}
-                          onPress={() => handleBookingAction(booking, action.key)}
+                          key={action?.key || Math.random()}
+                          style={[styles.actionButton, { borderColor: action?.color || '#9ca3af' }]}
+                          onPress={() => handleBookingAction(booking, action?.key)}
                         >
-                          <Ionicons name={action.icon as any} size={16} color={action.color} />
-                          <Text style={[styles.actionText, { color: action.color }]}>
-                            {action.label}
+                          <Ionicons name={action?.icon as any} size={16} color={action?.color || '#9ca3af'} />
+                          <Text style={[styles.actionText, { color: action?.color || '#9ca3af' }]}>
+                            {action?.label || 'Action'}
                           </Text>
                         </TouchableOpacity>
                       ))}
