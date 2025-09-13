@@ -237,9 +237,11 @@ export default function ProfileScreen() {
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading profile...</Text>
-          </View>
+          <AnimatedLoader 
+            message="Loading profile..." 
+            size="medium"
+            color="#212529"
+          />
         </SafeAreaView>
       </View>
     );
