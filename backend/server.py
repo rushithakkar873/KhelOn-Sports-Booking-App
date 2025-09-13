@@ -435,6 +435,220 @@ async def get_analytics_dashboard(
         "peak_hours": [{"hour": f"{hour:02d}:00", "count": count} for hour, count in peak_hours]
     }
 
+@api_router.get("/venue-owner/venues/{venue_id}", response_model=VenueResponse)
+async def get_owner_venue(venue_id: str, current_owner: dict = Depends(get_current_venue_owner)):
+    """Get specific venue details for venue owner"""
+    venue = await db.venues.find_one({"_id": venue_id, "owner_id": current_owner["_id"]})
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found"
+        )
+    
+    return VenueResponse(
+        id=venue["_id"],
+        name=venue["name"],
+        owner_id=venue["owner_id"],
+        owner_name=venue["owner_name"],
+        sports_supported=venue["sports_supported"],
+        address=venue["address"],
+        city=venue["city"],
+        state=venue["state"],
+        pincode=venue["pincode"],
+        description=venue.get("description"),
+        amenities=venue.get("amenities", []),
+        base_price_per_hour=venue["base_price_per_hour"],
+        contact_phone=venue["contact_phone"],
+        whatsapp_number=venue.get("whatsapp_number"),
+        images=venue.get("images", []),
+        rules_and_regulations=venue.get("rules_and_regulations"),
+        cancellation_policy=venue.get("cancellation_policy"),
+        rating=venue.get("rating", 0.0),
+        total_bookings=venue.get("total_bookings", 0),
+        total_reviews=venue.get("total_reviews", 0),
+        is_active=venue.get("is_active", True),
+        slots=venue.get("slots", []),
+        created_at=venue["created_at"]
+    )
+
+@api_router.put("/venue-owner/venues/{venue_id}/status")
+async def update_venue_status(
+    venue_id: str, 
+    is_active: bool,
+    current_owner: dict = Depends(get_current_venue_owner)
+):
+    """Update venue status (activate/deactivate)"""
+    result = await db.venues.update_one(
+        {"_id": venue_id, "owner_id": current_owner["_id"]},
+        {
+            "$set": {
+                "is_active": is_active,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found"
+        )
+    
+    return {
+        "message": f"Venue {'activated' if is_active else 'deactivated'} successfully"
+    }
+
+# Venue Owner - Booking Management Routes
+@api_router.get("/venue-owner/bookings", response_model=List[BookingResponse])
+async def get_owner_bookings(
+    current_owner: dict = Depends(get_current_venue_owner),
+    venue_id: Optional[str] = None,
+    status: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 10
+):
+    """Get bookings for venue owner's venues"""
+    # First get all venues owned by this owner
+    owner_venues = await db.venues.find({"owner_id": current_owner["_id"]}).to_list(length=None)
+    venue_ids = [venue["_id"] for venue in owner_venues]
+    
+    if not venue_ids:
+        return []
+    
+    # Build query for bookings
+    query = {"venue_id": {"$in": venue_ids}}
+    
+    if venue_id:
+        query["venue_id"] = venue_id
+    if status:
+        query["status"] = status
+    if start_date and end_date:
+        query["booking_date"] = {"$gte": start_date, "$lte": end_date}
+    elif start_date:
+        query["booking_date"] = {"$gte": start_date}
+    elif end_date:
+        query["booking_date"] = {"$lte": end_date}
+    
+    bookings = await db.bookings.find(query).sort("created_at", -1).skip(skip).limit(limit).to_list(length=limit)
+    
+    booking_responses = []
+    for booking in bookings:
+        # Get venue details
+        venue = next((v for v in owner_venues if v["_id"] == booking["venue_id"]), None)
+        venue_name = venue["name"] if venue else "Unknown Venue"
+        
+        booking_responses.append(BookingResponse(
+            id=booking["_id"],
+            venue_id=booking["venue_id"],
+            venue_name=venue_name,
+            slot_id=booking.get("slot_id", ""),
+            user_id=booking["user_id"],
+            user_name=booking.get("user_name", "Unknown User"),
+            booking_date=booking["booking_date"],
+            start_time=booking["start_time"],
+            end_time=booking["end_time"],
+            duration_hours=booking["duration_hours"],
+            total_amount=booking["total_amount"],
+            status=booking.get("status", "confirmed"),
+            payment_status=booking.get("payment_status", "pending"),
+            payment_id=booking.get("payment_id"),
+            player_name=booking["player_name"],
+            player_phone=booking["player_phone"],
+            notes=booking.get("notes"),
+            created_at=booking["created_at"],
+            updated_at=booking.get("updated_at", booking["created_at"])
+        ))
+    
+    return booking_responses
+
+@api_router.get("/venue-owner/bookings/{booking_id}", response_model=BookingResponse)
+async def get_booking_details(booking_id: str, current_owner: dict = Depends(get_current_venue_owner)):
+    """Get specific booking details"""
+    booking = await db.bookings.find_one({"_id": booking_id})
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found"
+        )
+    
+    # Verify the booking belongs to owner's venue
+    venue = await db.venues.find_one({"_id": booking["venue_id"], "owner_id": current_owner["_id"]})
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: This booking doesn't belong to your venue"
+        )
+    
+    return BookingResponse(
+        id=booking["_id"],
+        venue_id=booking["venue_id"],
+        venue_name=venue["name"],
+        slot_id=booking.get("slot_id", ""),
+        user_id=booking["user_id"],
+        user_name=booking.get("user_name", "Unknown User"),
+        booking_date=booking["booking_date"],
+        start_time=booking["start_time"],
+        end_time=booking["end_time"],
+        duration_hours=booking["duration_hours"],
+        total_amount=booking["total_amount"],
+        status=booking.get("status", "confirmed"),
+        payment_status=booking.get("payment_status", "pending"),
+        payment_id=booking.get("payment_id"),
+        player_name=booking["player_name"],
+        player_phone=booking["player_phone"],
+        notes=booking.get("notes"),
+        created_at=booking["created_at"],
+        updated_at=booking.get("updated_at", booking["created_at"])
+    )
+
+@api_router.put("/venue-owner/bookings/{booking_id}/status")
+async def update_booking_status(
+    booking_id: str,
+    new_status: str,
+    current_owner: dict = Depends(get_current_venue_owner)
+):
+    """Update booking status"""
+    valid_statuses = ["confirmed", "cancelled", "completed"]
+    if new_status not in valid_statuses:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+        )
+    
+    booking = await db.bookings.find_one({"_id": booking_id})
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found"
+        )
+    
+    # Verify the booking belongs to owner's venue
+    venue = await db.venues.find_one({"_id": booking["venue_id"], "owner_id": current_owner["_id"]})
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: This booking doesn't belong to your venue"
+        )
+    
+    # Update booking status
+    await db.bookings.update_one(
+        {"_id": booking_id},
+        {
+            "$set": {
+                "status": new_status,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    return {
+        "message": f"Booking status updated to {new_status}",
+        "booking_id": booking_id,
+        "new_status": new_status
+    }
+
 # ================================
 # BASIC HEALTH ROUTES
 # ================================
