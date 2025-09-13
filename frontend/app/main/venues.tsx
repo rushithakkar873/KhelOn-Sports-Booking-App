@@ -262,11 +262,15 @@ export default function VenuesScreen() {
                 {index !== 0 && (
                   <View style={styles.venueDetailsCard}>
                     <Text style={styles.venuePrice}>₹{venue.price}/hr</Text>
-                    <Text style={styles.venueSport}>{venue.sport}</Text>
+                    <Text style={styles.venueSport}>{venue?.sport || 'Sport'}</Text>
                     <View style={styles.venueFacilities}>
-                      {venue.facilities.slice(0, 2).map((facility, fIndex) => (
-                        <Text key={fIndex} style={styles.facilityText}>{facility}</Text>
-                      ))}
+                      {venue?.facilities && Array.isArray(venue.facilities) && venue.facilities.length > 0 ? (
+                        venue.facilities.slice(0, 2).map((facility, fIndex) => (
+                          <Text key={fIndex} style={styles.facilityText}>{facility}</Text>
+                        ))
+                      ) : (
+                        <Text style={styles.facilityText}>No facilities listed</Text>
+                      )}
                     </View>
                   </View>
                 )}
