@@ -749,48 +749,68 @@ export default function VenuesScreen() {
                   <Text style={styles.detailsTitle}>Basic Information</Text>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Name:</Text>
-                    <Text style={styles.detailsValue}>{selectedVenue.name}</Text>
+                    <Text style={styles.detailsValue}>{selectedVenue?.name || 'Unknown'}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Location:</Text>
-                    <Text style={styles.detailsValue}>{selectedVenue.address}</Text>
+                    <Text style={styles.detailsValue}>{selectedVenue?.address || 'N/A'}</Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Sports:</Text>
-                    <Text style={styles.detailsValue}>{selectedVenue.sports_supported.join(', ')}</Text>
+                    <Text style={styles.detailsValue}>
+                      {selectedVenue?.sports_supported && Array.isArray(selectedVenue.sports_supported) 
+                        ? selectedVenue.sports_supported.join(', ') 
+                        : 'N/A'}
+                    </Text>
                   </View>
                   <View style={styles.detailsRow}>
                     <Text style={styles.detailsLabel}>Description:</Text>
-                    <Text style={styles.detailsValue}>{selectedVenue.description}</Text>
+                    <Text style={styles.detailsValue}>{selectedVenue?.description || 'No description available'}</Text>
                   </View>
                 </View>
 
                 <View style={styles.detailsSection}>
                   <Text style={styles.detailsTitle}>Time Slots & Pricing</Text>
-                  {selectedVenue.slots.map((slot) => (
-                    <View key={slot._id} style={styles.slotRow}>
-                      <View style={styles.slotInfo}>
-                        <Text style={styles.slotTime}>{VenueOwnerService.formatTime(slot.start_time)} - {VenueOwnerService.formatTime(slot.end_time)}</Text>
-                        <Text style={styles.slotPrice}>{formatCurrency(slot.price_per_hour)}</Text>
+                  {selectedVenue?.slots && Array.isArray(selectedVenue.slots) && selectedVenue.slots.length > 0 ? (
+                    selectedVenue.slots.map((slot) => (
+                      <View key={slot?._id || Math.random()} style={styles.slotRow}>
+                        <View style={styles.slotInfo}>
+                          <Text style={styles.slotTime}>
+                            {slot?.start_time && slot?.end_time 
+                              ? `${VenueOwnerService.formatTime(slot.start_time)} - ${VenueOwnerService.formatTime(slot.end_time)}`
+                              : 'Time not available'}
+                          </Text>
+                          <Text style={styles.slotPrice}>{formatCurrency(slot?.price_per_hour || 0)}</Text>
+                        </View>
+                        <Switch
+                          value={slot?.is_active || false}
+                          onValueChange={() => toggleSlotAvailability(selectedVenue?.id, slot?._id)}
+                          trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
+                          thumbColor={slot?.is_active ? '#3b82f6' : '#9ca3af'}
+                        />
                       </View>
-                      <Switch
-                        value={slot.is_active}
-                        onValueChange={() => toggleSlotAvailability(selectedVenue.id, slot._id)}
-                        trackColor={{ false: '#e5e7eb', true: '#dbeafe' }}
-                        thumbColor={slot.is_active ? '#3b82f6' : '#9ca3af'}
-                      />
+                    ))
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Text style={styles.emptyStateText}>No time slots available</Text>
                     </View>
-                  ))}
+                  )}
                 </View>
 
                 <View style={styles.detailsSection}>
                   <Text style={styles.detailsTitle}>Facilities</Text>
                   <View style={styles.facilitiesGrid}>
-                    {selectedVenue.facilities.map((facility, index) => (
-                      <View key={index} style={styles.facilityChip}>
-                        <Text style={styles.facilityChipText}>{facility}</Text>
+                    {selectedVenue?.amenities && Array.isArray(selectedVenue.amenities) && selectedVenue.amenities.length > 0 ? (
+                      selectedVenue.amenities.map((facility, index) => (
+                        <View key={index} style={styles.facilityChip}>
+                          <Text style={styles.facilityChipText}>{facility}</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.emptyState}>
+                        <Text style={styles.emptyStateText}>No facilities listed</Text>
                       </View>
-                    ))}
+                    )}
                   </View>
                 </View>
               </ScrollView>
