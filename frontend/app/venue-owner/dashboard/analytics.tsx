@@ -164,9 +164,11 @@ export default function AnalyticsScreen() {
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading analytics...</Text>
-          </View>
+          <AnimatedLoader 
+            message="Loading analytics..." 
+            size="medium"
+            color="#212529"
+          />
         </SafeAreaView>
       </View>
     );
