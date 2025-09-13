@@ -240,6 +240,18 @@ backend:
         agent: "testing"
         comment: "RE-TESTED AFTER RECENT CHANGES: Venue owner analytics dashboard endpoint still working perfectly. ✅ Comprehensive metrics (2 venues, 0 bookings, ₹0 revenue, 0% occupancy), ✅ Date range filtering (start_date, end_date, both), ✅ Revenue trend data structure, ✅ Top sports and peak hours analysis, ✅ Recent bookings tracking, ✅ Proper data aggregation and calculations. All analytics features confirmed working correctly after recent changes."
 
+  - task: "Venue Owner Integration API Endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "COMPREHENSIVE TESTING COMPLETED: All specific venue owner integration endpoints working perfectly to fix frontend integration issues. ✅ GET /api/venue-owner/venues/{venue_id} - Specific venue details with complete information, slots configuration, ownership validation, ✅ PUT /api/venue-owner/venues/{venue_id}/status?is_active=true - Venue status updates (activate/deactivate) with query parameter handling, ✅ GET /api/venue-owner/bookings - Venue owner bookings with comprehensive filtering (venue_id, status, date range) and pagination, ✅ GET /api/venue-owner/bookings/{booking_id} - Specific booking details with ownership validation and complete booking information, ✅ PUT /api/venue-owner/bookings/{booking_id}/status?new_status=confirmed - Booking status updates (confirmed/cancelled/completed) with validation, ✅ GET /api/venue-owner/analytics/dashboard - Analytics dashboard with metrics, date filtering, revenue tracking. All endpoints tested with unified auth system (mobile OTP +919876543210), proper authentication/authorization, error handling, and realistic test data (Rajesh Kumar - venue owner, Elite Cricket Ground Mumbai, Arjun Sharma - player). Created venue_owner_api_test.py with 7 test suites. All 7/7 test suites passed. Integration endpoints are production-ready and match frontend API contract expectations."
+
 frontend:
   - task: "Authentication Screens"
     implemented: true
