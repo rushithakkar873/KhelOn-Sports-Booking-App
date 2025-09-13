@@ -80,7 +80,7 @@ export interface AnalyticsDashboard {
   recent_bookings: any[];
   revenue_trend: Record<string, number>;
   top_sports: Array<{sport: string; count: number}>;
-  peak_hours: Array<{hour: string; count: number}>;
+  peak_hours: Array<{hour: string; bookings: number}>;
   // Additional data for analytics screen
   bookingsTrend: Array<{month: string; bookings: number}>;
   sportDistribution: Array<{sport: string; bookings: number; revenue: number; color: string}>;
