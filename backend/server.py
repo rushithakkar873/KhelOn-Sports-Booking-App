@@ -432,7 +432,7 @@ async def get_analytics_dashboard(
         "recent_bookings": recent_bookings[:5],
         "revenue_trend": dict(daily_revenue),
         "top_sports": [{"sport": sport, "count": count} for sport, count in top_sports],
-        "peak_hours": [{"hour": f"{hour:02d}:00", "count": count} for hour, count in peak_hours],
+        "peak_hours": [{"hour": f"{hour:02d}:00", "bookings": count} for hour, count in peak_hours],
         # Additional data for frontend compatibility
         "bookingsTrend": [
             {"month": "Jan", "bookings": total_bookings // 12},
