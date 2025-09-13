@@ -433,9 +433,10 @@ export default function BookingsScreen() {
                   )}
                 </View>
               </TouchableOpacity>
-            ))}
+            ))
+            ) : null}
 
-            {filteredBookings.length === 0 && (
+            {(!filteredBookings || filteredBookings.length === 0) && (
               <View style={styles.emptyState}>
                 <Ionicons name="calendar-outline" size={64} color="#9ca3af" />
                 <Text style={styles.emptyStateTitle}>No bookings found</Text>
