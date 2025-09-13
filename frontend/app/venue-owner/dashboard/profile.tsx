@@ -293,7 +293,7 @@ export default function ProfileScreen() {
                   <Text style={styles.profileName}>{profile.name}</Text>
                   {profile.is_verified && (
                     <View style={styles.verifiedBadge}>
-                      <Iconicons name="checkmark-circle" size={18} color="#10b981" />
+                      <Ionicons name="checkmark-circle" size={18} color="#10b981" />
                       <Text style={styles.verifiedText}>Verified</Text>
                     </View>
                   )}
@@ -310,16 +310,16 @@ export default function ProfileScreen() {
               <View style={styles.businessGrid}>
                 <View style={styles.businessItem}>
                   <Text style={styles.businessLabel}>Business Name</Text>
-                  <Text style={styles.businessValue}>{profile.businessName || 'Not provided'}</Text>
+                  <Text style={styles.businessValue}>{profile.business_name || 'Not provided'}</Text>
                 </View>
                 <View style={styles.businessItem}>
                   <Text style={styles.businessLabel}>GST Number</Text>
-                  <Text style={styles.businessValue}>{profile.gstNumber || 'Not provided'}</Text>
+                  <Text style={styles.businessValue}>{profile.gst_number || 'Not provided'}</Text>
                 </View>
               </View>
               <View style={styles.businessItem}>
                 <Text style={styles.businessLabel}>Business Address</Text>
-                <Text style={styles.businessValue}>{profile.businessAddress || 'Not provided'}</Text>
+                <Text style={styles.businessValue}>{profile.business_address || 'Not provided'}</Text>
               </View>
             </View>
           </View>
