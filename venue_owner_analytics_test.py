@@ -156,22 +156,30 @@ class VenueOwnerAnalyticsTester:
             print("❌ No development OTP received")
             return False
         
-        # Step 2: Register venue owner (if not exists)
-        registration_data = self.venue_owner_data.copy()
-        registration_data["otp"] = dev_otp
+        # Step 2: Try login first (user might already exist)
+        login_data = {"mobile": self.venue_owner_mobile, "otp": dev_otp}
+        result = self.make_request("POST", "/auth/login", login_data)
         
-        result = self.make_request("POST", "/auth/register", registration_data)
         if result["success"]:
-            print("✅ Venue owner registered successfully")
+            print("✅ Venue owner logged in successfully")
             self.venue_owner_token = result["data"].get("access_token")
             self.venue_owner_id = result["data"]["user"]["id"]
         else:
-            # Try login if registration fails (user might already exist)
-            login_data = {"mobile": self.venue_owner_mobile, "otp": dev_otp}
-            result = self.make_request("POST", "/auth/login", login_data)
+            # If login fails, try registration
+            # Need to send OTP again since it was consumed by login attempt
+            result = self.make_request("POST", "/auth/send-otp", otp_request)
+            if not result["success"]:
+                print(f"❌ Failed to send OTP for registration: {result}")
+                return False
             
+            dev_otp = result["data"].get("dev_info", "").replace("OTP: ", "")
+            
+            registration_data = self.venue_owner_data.copy()
+            registration_data["otp"] = dev_otp
+            
+            result = self.make_request("POST", "/auth/register", registration_data)
             if result["success"]:
-                print("✅ Venue owner logged in successfully")
+                print("✅ Venue owner registered successfully")
                 self.venue_owner_token = result["data"].get("access_token")
                 self.venue_owner_id = result["data"]["user"]["id"]
             else:
