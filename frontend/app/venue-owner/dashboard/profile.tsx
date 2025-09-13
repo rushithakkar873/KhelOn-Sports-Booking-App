@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
 import VenueOwnerService from '../../../services/venueOwnerService';
 import AuthService from '../../../services/authService';
+import AnimatedLoader from '../../../components/AnimatedLoader';
 
 interface VenueOwnerProfile {
   id: string;
