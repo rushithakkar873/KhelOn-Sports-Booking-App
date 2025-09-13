@@ -143,9 +143,9 @@ export default function ProfileScreen() {
       setProfile({
         ...profile,
         name: editForm.name,
-        businessName: editForm.businessName,
-        businessAddress: editForm.businessAddress,
-        gstNumber: editForm.gstNumber,
+        business_name: editForm.businessName,
+        business_address: editForm.businessAddress,
+        gst_number: editForm.gstNumber,
       });
     }
 
