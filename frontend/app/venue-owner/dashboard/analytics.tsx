@@ -418,12 +418,12 @@ export default function AnalyticsScreen() {
           <View style={styles.comparisonSection}>
             <Text style={styles.sectionTitle}>Monthly Comparison</Text>
             <View style={styles.comparisonGrid}>
-              {analyticsData.monthlyComparison && analyticsData.monthlyComparison.length > 0 ? (
+              {analyticsData?.monthlyComparison && Array.isArray(analyticsData.monthlyComparison) && analyticsData.monthlyComparison.length > 0 ? (
                 analyticsData.monthlyComparison.map((month, index) => (
-                  <View key={month.month || index} style={styles.comparisonCard}>
-                    <Text style={styles.comparisonMonth}>{month.month || 'Unknown'}</Text>
-                    <Text style={styles.comparisonRevenue}>{formatCurrency(month.revenue || 0)}</Text>
-                    <Text style={styles.comparisonBookings}>{month.bookings || 0} bookings</Text>
+                  <View key={month?.month || index} style={styles.comparisonCard}>
+                    <Text style={styles.comparisonMonth}>{month?.month || 'Unknown'}</Text>
+                    <Text style={styles.comparisonRevenue}>{formatCurrency(month?.revenue || 0)}</Text>
+                    <Text style={styles.comparisonBookings}>{month?.bookings || 0} bookings</Text>
                   </View>
                 ))
               ) : (
