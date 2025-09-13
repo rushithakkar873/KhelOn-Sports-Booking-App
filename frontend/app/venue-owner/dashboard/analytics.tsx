@@ -372,47 +372,59 @@ export default function AnalyticsScreen() {
           {/* Venue Performance */}
           <View style={styles.performanceSection}>
             <Text style={styles.sectionTitle}>Venue Performance</Text>
-            {analyticsData.venuePerformance.map((venue, index) => (
-              <View key={venue.venueName} style={styles.venuePerformanceCard}>
-                <View style={styles.venueInfo}>
-                  <Text style={styles.venueName}>{venue.venueName}</Text>
-                  <View style={styles.venueMetrics}>
-                    <Text style={styles.venueBookings}>{venue.bookings} bookings</Text>
-                    <Text style={styles.venueRevenue}>{formatCurrency(venue.revenue)}</Text>
-                  </View>
-                </View>
-                <View style={styles.occupancyContainer}>
-                  <Text style={styles.occupancyValue}>{venue.occupancy}%</Text>
-                  <View style={styles.occupancyBarContainer}>
-                    <View style={styles.occupancyBar}>
-                      <View 
-                        style={[
-                          styles.occupancyFill,
-                          { 
-                            width: `${venue.occupancy}%`,
-                            backgroundColor: venue.occupancy >= 70 ? '#10b981' : venue.occupancy >= 50 ? '#f59e0b' : '#ef4444'
-                          }
-                        ]}
-                      />
+            {analyticsData.venuePerformance && analyticsData.venuePerformance.length > 0 ? (
+              analyticsData.venuePerformance.map((venue, index) => (
+                <View key={venue.venueName || index} style={styles.venuePerformanceCard}>
+                  <View style={styles.venueInfo}>
+                    <Text style={styles.venueName}>{venue.venueName || 'Unknown Venue'}</Text>
+                    <View style={styles.venueMetrics}>
+                      <Text style={styles.venueBookings}>{venue.bookings || 0} bookings</Text>
+                      <Text style={styles.venueRevenue}>{formatCurrency(venue.revenue || 0)}</Text>
                     </View>
                   </View>
-                  <Text style={styles.occupancyLabel}>Occupancy</Text>
+                  <View style={styles.occupancyContainer}>
+                    <Text style={styles.occupancyValue}>{venue.occupancy || 0}%</Text>
+                    <View style={styles.occupancyBarContainer}>
+                      <View style={styles.occupancyBar}>
+                        <View 
+                          style={[
+                            styles.occupancyFill,
+                            { 
+                              width: `${Math.min(venue.occupancy || 0, 100)}%`,
+                              backgroundColor: (venue.occupancy || 0) >= 70 ? '#10b981' : (venue.occupancy || 0) >= 50 ? '#f59e0b' : '#ef4444'
+                            }
+                          ]}
+                        />
+                      </View>
+                    </View>
+                    <Text style={styles.occupancyLabel}>Occupancy</Text>
+                  </View>
                 </View>
+              ))
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>No venue performance data available</Text>
               </View>
-            ))}
+            )}
           </View>
 
           {/* Monthly Comparison */}
           <View style={styles.comparisonSection}>
             <Text style={styles.sectionTitle}>Monthly Comparison</Text>
             <View style={styles.comparisonGrid}>
-              {analyticsData.monthlyComparison.map((month) => (
-                <View key={month.month} style={styles.comparisonCard}>
-                  <Text style={styles.comparisonMonth}>{month.month}</Text>
-                  <Text style={styles.comparisonRevenue}>{formatCurrency(month.revenue)}</Text>
-                  <Text style={styles.comparisonBookings}>{month.bookings} bookings</Text>
+              {analyticsData.monthlyComparison && analyticsData.monthlyComparison.length > 0 ? (
+                analyticsData.monthlyComparison.map((month, index) => (
+                  <View key={month.month || index} style={styles.comparisonCard}>
+                    <Text style={styles.comparisonMonth}>{month.month || 'Unknown'}</Text>
+                    <Text style={styles.comparisonRevenue}>{formatCurrency(month.revenue || 0)}</Text>
+                    <Text style={styles.comparisonBookings}>{month.bookings || 0} bookings</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>No comparison data available</Text>
                 </View>
-              ))}
+              )}
             </View>
           </View>
 
