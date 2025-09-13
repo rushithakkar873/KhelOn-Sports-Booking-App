@@ -291,9 +291,9 @@ export default function ProfileScreen() {
               <View style={styles.profileInfo}>
                 <View style={styles.nameRow}>
                   <Text style={styles.profileName}>{profile.name}</Text>
-                  {profile.isVerified && (
+                  {profile.is_verified && (
                     <View style={styles.verifiedBadge}>
-                      <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+                      <Iconicons name="checkmark-circle" size={18} color="#10b981" />
                       <Text style={styles.verifiedText}>Verified</Text>
                     </View>
                   )}
