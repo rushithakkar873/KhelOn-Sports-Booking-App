@@ -175,9 +175,11 @@ export default function VenueOwnerDashboard() {
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading dashboard...</Text>
-          </View>
+          <AnimatedLoader 
+            message="Loading dashboard..." 
+            size="medium"
+            color="#212529"
+          />
         </SafeAreaView>
       </View>
     );
