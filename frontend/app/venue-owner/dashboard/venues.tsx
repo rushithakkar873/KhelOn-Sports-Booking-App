@@ -399,25 +399,26 @@ export default function VenuesScreen() {
             <Text style={styles.stepTitle}>Time Slots & Pricing</Text>
             
             <ScrollView style={styles.slotsContainer} showsVerticalScrollIndicator={false}>
-              {venueForm.timeSlots.map((slot, index) => (
-                <View key={index} style={styles.slotCard}>
-                  <View style={styles.slotHeader}>
-                    <Text style={styles.slotLabel}>Slot {index + 1}</Text>
-                    {venueForm.timeSlots.length > 1 && (
-                      <TouchableOpacity onPress={() => removeTimeSlot(index)}>
-                        <Ionicons name="close-circle" size={20} color="#ef4444" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  
-                  <View style={styles.slotRow}>
-                    <View style={styles.timeInput}>
-                      <Text style={styles.timeLabel}>Start Time</Text>
-                      <TextInput
-                        style={styles.formInput}
-                        value={slot.startTime}
-                        onChangeText={(text) => updateTimeSlot(index, 'startTime', text)}
-                        placeholder="HH:MM"
+              {venueForm?.timeSlots && Array.isArray(venueForm.timeSlots) && venueForm.timeSlots.length > 0 ? (
+                venueForm.timeSlots.map((slot, index) => (
+                  <View key={index} style={styles.slotCard}>
+                    <View style={styles.slotHeader}>
+                      <Text style={styles.slotLabel}>Slot {index + 1}</Text>
+                      {venueForm.timeSlots.length > 1 && (
+                        <TouchableOpacity onPress={() => removeTimeSlot(index)}>
+                          <Ionicons name="close-circle" size={20} color="#ef4444" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    
+                    <View style={styles.slotRow}>
+                      <View style={styles.timeInput}>
+                        <Text style={styles.timeLabel}>Start Time</Text>
+                        <TextInput
+                          style={styles.formInput}
+                          value={slot?.startTime || ''}
+                          onChangeText={(text) => updateTimeSlot(index, 'startTime', text)}
+                          placeholder="HH:MM"
                         placeholderTextColor="#9ca3af"
                       />
                     </View>
