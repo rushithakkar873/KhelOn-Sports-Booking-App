@@ -57,9 +57,17 @@ export default function AnalyticsScreen() {
 
       // Get real analytics data from API
       const data = await venueOwnerService.getAnalyticsDashboard(startDateStr, endDateStr);
-      setAnalyticsData(data);
+      
+      // Ensure data structure is valid
+      if (data && typeof data === 'object') {
+        setAnalyticsData(data);
+      } else {
+        console.warn('Invalid analytics data received:', data);
+        setAnalyticsData(null);
+      }
     } catch (error) {
       console.error('Error loading analytics:', error);
+      setAnalyticsData(null);
       Alert.alert(
         'Error', 
         'Failed to load analytics data. Please check your connection and try again.',
