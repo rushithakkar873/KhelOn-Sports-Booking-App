@@ -18,6 +18,7 @@ import { LineChart, BarChart } from 'react-native-chart-kit';
 import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
 import VenueOwnerService from '../../../services/venueOwnerService';
 import AuthService from '../../../services/authService';
+import AnimatedLoader from '../../../components/AnimatedLoader';
 
 const { width } = Dimensions.get('window');
 const chartWidth = width - 80; // Reduced width for mobile
