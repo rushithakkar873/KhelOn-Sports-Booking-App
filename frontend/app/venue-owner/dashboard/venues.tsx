@@ -427,7 +427,7 @@ export default function VenuesScreen() {
                       <Text style={styles.timeLabel}>End Time</Text>
                       <TextInput
                         style={styles.formInput}
-                        value={slot.endTime}
+                        value={slot?.endTime || ''}
                         onChangeText={(text) => updateTimeSlot(index, 'endTime', text)}
                         placeholder="HH:MM"
                         placeholderTextColor="#9ca3af"
@@ -439,7 +439,7 @@ export default function VenuesScreen() {
                     <Text style={styles.timeLabel}>Price for this slot</Text>
                     <TextInput
                       style={styles.formInput}
-                      value={slot.price}
+                      value={slot?.price || ''}
                       onChangeText={(text) => updateTimeSlot(index, 'price', text)}
                       placeholder="Enter price"
                       placeholderTextColor="#9ca3af"
@@ -447,7 +447,12 @@ export default function VenuesScreen() {
                     />
                   </View>
                 </View>
-              ))}
+              ))
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>No time slots added yet</Text>
+                </View>
+              )}
               
               <TouchableOpacity style={styles.addSlotButton} onPress={addTimeSlot}>
                 <Ionicons name="add" size={16} color="#212529" />
