@@ -129,10 +129,13 @@ export default function BookingsScreen() {
   };
 
   const getFilteredBookings = () => {
+    if (!bookings || !Array.isArray(bookings)) {
+      return [];
+    }
     if (selectedStatus === 'all') {
       return bookings;
     }
-    return bookings.filter(booking => booking.status === selectedStatus);
+    return bookings.filter(booking => booking?.status === selectedStatus);
   };
 
   const handleBookingAction = (booking: Booking, action: string) => {
