@@ -204,11 +204,17 @@ export default function ProfileScreen() {
                   
                   {/* Sports Interests */}
                   <View style={styles.sportsContainer}>
-                    {profile.sportsInterests.map((sport, index) => (
-                      <View key={index} style={styles.sportTag}>
-                        <Text style={styles.sportTagText}>{sport}</Text>
+                    {profile?.sportsInterests && Array.isArray(profile.sportsInterests) && profile.sportsInterests.length > 0 ? (
+                      profile.sportsInterests.map((sport, index) => (
+                        <View key={index} style={styles.sportTag}>
+                          <Text style={styles.sportTagText}>{sport}</Text>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.sportTag}>
+                        <Text style={styles.sportTagText}>No sports selected</Text>
                       </View>
-                    ))}
+                    )}
                   </View>
                 </View>
               </ImageBackground>
