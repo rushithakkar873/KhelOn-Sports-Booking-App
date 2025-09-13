@@ -339,16 +339,22 @@ export default function AnalyticsScreen() {
               center={[10, 0]}
             />
             <View style={styles.sportsStats}>
-              {analyticsData.sportDistribution.map((sport, index) => (
-                <View key={sport.sport} style={styles.sportStat}>
-                  <View style={[styles.sportIndicator, { backgroundColor: sport.color }]} />
-                  <View style={styles.sportInfo}>
-                    <Text style={styles.sportName}>{sport.sport}</Text>
-                    <Text style={styles.sportMetrics}>{sport.bookings} bookings</Text>
-                    <Text style={styles.sportRevenue}>{formatCurrency(sport.revenue)}</Text>
+              {analyticsData?.sportDistribution && Array.isArray(analyticsData.sportDistribution) && analyticsData.sportDistribution.length > 0 ? (
+                analyticsData.sportDistribution.map((sport, index) => (
+                  <View key={sport?.sport || index} style={styles.sportStat}>
+                    <View style={[styles.sportIndicator, { backgroundColor: sport?.color || '#e5e7eb' }]} />
+                    <View style={styles.sportInfo}>
+                      <Text style={styles.sportName}>{sport?.sport || 'Unknown'}</Text>
+                      <Text style={styles.sportMetrics}>{sport?.bookings || 0} bookings</Text>
+                      <Text style={styles.sportRevenue}>{formatCurrency(sport?.revenue || 0)}</Text>
+                    </View>
                   </View>
+                ))
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>No sports data available</Text>
                 </View>
-              ))}
+              )}
             </View>
           </View>
 
