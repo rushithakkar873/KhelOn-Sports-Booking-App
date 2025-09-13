@@ -245,40 +245,81 @@ class VenueOwnerAPITester:
             print(f"❌ Player registration failed: {result}")
             return False
         
-        # Step 2: Create a booking directly in the database (simulate booking creation)
-        if not self.test_venue_id or not player_token:
-            print("❌ Missing venue ID or player token")
-            return False
+    def create_real_booking_via_db(self):
+        """Create a real booking by directly inserting into MongoDB"""
+        print("\n=== Creating Real Test Booking via Database ===")
         
-        # Create a mock booking document directly
-        booking_data = {
-            "_id": str(__import__('uuid').uuid4()),
-            "venue_id": self.test_venue_id,
-            "user_id": player_id,
-            "slot_id": "test-slot-123",
-            "booking_date": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
-            "start_time": "18:00",
-            "end_time": "20:00",
-            "duration_hours": 2,
-            "total_amount": 3000.0,
-            "status": "confirmed",
-            "payment_status": "pending",
-            "player_name": self.test_player["name"],
-            "player_phone": self.test_player["mobile"],
-            "notes": "Test booking for venue owner API testing",
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
-        }
-        
-        # We'll use the MongoDB client to insert this booking directly
         try:
-            # This is a simulation - in real scenario, we'd use the booking API
-            print("ℹ️  Creating test booking directly (simulating booking system)")
-            self.test_booking_id = booking_data["_id"]
-            print(f"   Test Booking ID: {self.test_booking_id}")
+            from motor.motor_asyncio import AsyncIOMotorClient
+            import asyncio
+            import os
+            
+            # Get MongoDB connection details
+            mongo_url = "mongodb+srv://Rushi08:h7grfXY1vbf3MRyC@cluster0.cd9pn1a.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+            
+            async def insert_booking():
+                client = AsyncIOMotorClient(mongo_url)
+                db = client["PlayON_DB"]
+                
+                # First, register a player if not exists
+                player_id = str(__import__('uuid').uuid4())
+                
+                # Check if player exists
+                existing_player = await db.users.find_one({"mobile": self.test_player["mobile"]})
+                if existing_player:
+                    player_id = existing_player["_id"]
+                    print(f"   Using existing player: {player_id}")
+                else:
+                    # Create player
+                    player_doc = {
+                        "_id": player_id,
+                        "mobile": self.test_player["mobile"],
+                        "name": self.test_player["name"],
+                        "email": self.test_player["email"],
+                        "role": "player",
+                        "is_verified": True,
+                        "created_at": datetime.utcnow(),
+                        "updated_at": datetime.utcnow(),
+                        "is_active": True,
+                        "sports_interests": self.test_player["sports_interests"],
+                        "location": self.test_player["location"]
+                    }
+                    await db.users.insert_one(player_doc)
+                    print(f"   Created new player: {player_id}")
+                
+                # Create booking
+                booking_id = str(__import__('uuid').uuid4())
+                booking_doc = {
+                    "_id": booking_id,
+                    "venue_id": self.test_venue_id,
+                    "user_id": player_id,
+                    "slot_id": "test-slot-123",
+                    "booking_date": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
+                    "start_time": "18:00",
+                    "end_time": "20:00",
+                    "duration_hours": 2,
+                    "total_amount": 3000.0,
+                    "status": "confirmed",
+                    "payment_status": "pending",
+                    "player_name": self.test_player["name"],
+                    "player_phone": self.test_player["mobile"],
+                    "notes": "Test booking for venue owner API testing",
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow()
+                }
+                
+                await db.bookings.insert_one(booking_doc)
+                client.close()
+                return booking_id
+            
+            # Run the async function
+            booking_id = asyncio.run(insert_booking())
+            self.test_booking_id = booking_id
+            print(f"✅ Real test booking created: {booking_id}")
             return True
+            
         except Exception as e:
-            print(f"❌ Failed to create test booking: {str(e)}")
+            print(f"❌ Failed to create real booking: {str(e)}")
             return False
 
     def test_get_specific_venue_details(self):
