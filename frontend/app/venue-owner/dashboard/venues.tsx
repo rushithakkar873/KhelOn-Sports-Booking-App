@@ -1298,6 +1298,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
   },
+  emptyState: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#9ca3af',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
   fullWidthButton: {
     marginLeft: 0,
   },
