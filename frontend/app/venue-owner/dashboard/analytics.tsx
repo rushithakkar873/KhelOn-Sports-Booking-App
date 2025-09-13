@@ -378,26 +378,26 @@ export default function AnalyticsScreen() {
           {/* Venue Performance */}
           <View style={styles.performanceSection}>
             <Text style={styles.sectionTitle}>Venue Performance</Text>
-            {analyticsData.venuePerformance && analyticsData.venuePerformance.length > 0 ? (
+            {analyticsData?.venuePerformance && Array.isArray(analyticsData.venuePerformance) && analyticsData.venuePerformance.length > 0 ? (
               analyticsData.venuePerformance.map((venue, index) => (
-                <View key={venue.venueName || index} style={styles.venuePerformanceCard}>
+                <View key={venue?.venueName || index} style={styles.venuePerformanceCard}>
                   <View style={styles.venueInfo}>
-                    <Text style={styles.venueName}>{venue.venueName || 'Unknown Venue'}</Text>
+                    <Text style={styles.venueName}>{venue?.venueName || 'Unknown Venue'}</Text>
                     <View style={styles.venueMetrics}>
-                      <Text style={styles.venueBookings}>{venue.bookings || 0} bookings</Text>
-                      <Text style={styles.venueRevenue}>{formatCurrency(venue.revenue || 0)}</Text>
+                      <Text style={styles.venueBookings}>{venue?.bookings || 0} bookings</Text>
+                      <Text style={styles.venueRevenue}>{formatCurrency(venue?.revenue || 0)}</Text>
                     </View>
                   </View>
                   <View style={styles.occupancyContainer}>
-                    <Text style={styles.occupancyValue}>{venue.occupancy || 0}%</Text>
+                    <Text style={styles.occupancyValue}>{venue?.occupancy || 0}%</Text>
                     <View style={styles.occupancyBarContainer}>
                       <View style={styles.occupancyBar}>
                         <View 
                           style={[
                             styles.occupancyFill,
                             { 
-                              width: `${Math.min(venue.occupancy || 0, 100)}%`,
-                              backgroundColor: (venue.occupancy || 0) >= 70 ? '#10b981' : (venue.occupancy || 0) >= 50 ? '#f59e0b' : '#ef4444'
+                              width: `${Math.min(venue?.occupancy || 0, 100)}%`,
+                              backgroundColor: (venue?.occupancy || 0) >= 70 ? '#10b981' : (venue?.occupancy || 0) >= 50 ? '#f59e0b' : '#ef4444'
                             }
                           ]}
                         />
