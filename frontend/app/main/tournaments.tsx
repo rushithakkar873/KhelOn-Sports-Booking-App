@@ -253,12 +253,13 @@ export default function TournamentsScreen() {
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
       >
-        {filteredTournaments.map((tournament) => (
-          <TouchableOpacity
-            key={tournament.id}
-            style={styles.tournamentCard}
-            onPress={() => handleTournamentPress(tournament)}
-          >
+        {filteredTournaments && Array.isArray(filteredTournaments) && filteredTournaments.length > 0 ? (
+          filteredTournaments.map((tournament) => (
+            <TouchableOpacity
+              key={tournament?.id || Math.random()}
+              style={styles.tournamentCard}
+              onPress={() => handleTournamentPress(tournament)}
+            >
             <View style={styles.tournamentHeader}>
               <View style={styles.tournamentTitleSection}>
                 <Text style={styles.tournamentName}>{tournament.name}</Text>
