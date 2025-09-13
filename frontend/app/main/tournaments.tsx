@@ -346,9 +346,10 @@ export default function TournamentsScreen() {
               </TouchableOpacity>
             )}
           </TouchableOpacity>
-        ))}
+        ))
+        ) : null}
 
-        {filteredTournaments.length === 0 && (
+        {(!filteredTournaments || filteredTournaments.length === 0) && (
           <View style={styles.emptyState}>
             <Ionicons name="trophy-outline" size={48} color="#9ca3af" />
             <Text style={styles.emptyStateTitle}>No tournaments found</Text>
