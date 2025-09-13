@@ -250,7 +250,7 @@ export default function AnalyticsScreen() {
                     <Ionicons name="cash" size={24} color="#10b981" />
                   </View>
                 </View>
-                <Text style={styles.metricValue}>{formatCurrency(analyticsData.total_revenue)}</Text>
+                <Text style={styles.metricValue}>{formatCurrency(analyticsData?.total_revenue || 0)}</Text>
                 <Text style={styles.metricLabel}>Total Revenue</Text>
               </View>
 
@@ -260,7 +260,7 @@ export default function AnalyticsScreen() {
                     <Ionicons name="calendar" size={24} color="#3b82f6" />
                   </View>
                 </View>
-                <Text style={styles.metricValue}>{analyticsData.total_bookings}</Text>
+                <Text style={styles.metricValue}>{analyticsData?.total_bookings || 0}</Text>
                 <Text style={styles.metricLabel}>Total Bookings</Text>
               </View>
             </View>
@@ -272,7 +272,7 @@ export default function AnalyticsScreen() {
                     <Ionicons name="trending-up" size={24} color="#f59e0b" />
                   </View>
                 </View>
-                <Text style={styles.metricValue}>{analyticsData.occupancy_rate}%</Text>
+                <Text style={styles.metricValue}>{analyticsData?.occupancy_rate || 0}%</Text>
                 <Text style={styles.metricLabel}>Occupancy Rate</Text>
               </View>
               
@@ -282,7 +282,7 @@ export default function AnalyticsScreen() {
                     <Ionicons name="storefront" size={24} color="#8b5cf6" />
                   </View>
                 </View>
-                <Text style={styles.metricValue}>{analyticsData.total_venues}</Text>
+                <Text style={styles.metricValue}>{analyticsData?.total_venues || 0}</Text>
                 <Text style={styles.metricLabel}>Total Venues</Text>
               </View>
             </View>
