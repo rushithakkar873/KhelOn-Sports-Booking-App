@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import VenueOwnerService, { AnalyticsDashboard } from '../../../services/venueOwnerService';
+import AnimatedLoader from '../../../components/AnimatedLoader';
 
 const { width } = Dimensions.get('window');
 
