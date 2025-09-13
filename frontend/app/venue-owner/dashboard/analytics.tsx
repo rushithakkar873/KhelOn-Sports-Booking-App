@@ -103,7 +103,9 @@ export default function AnalyticsScreen() {
   };
 
   const getRevenueChartData = () => {
-    if (!analyticsData || !analyticsData.revenue_trend) return { labels: [], datasets: [{ data: [0] }] };
+    if (!analyticsData || !analyticsData.revenue_trend || typeof analyticsData.revenue_trend !== 'object') {
+      return { labels: ['No Data'], datasets: [{ data: [0] }] };
+    }
     
     const trendEntries = Object.entries(analyticsData.revenue_trend);
     if (trendEntries.length === 0) return { labels: ['No Data'], datasets: [{ data: [0] }] };
@@ -114,7 +116,7 @@ export default function AnalyticsScreen() {
       ).slice(-7), // Show last 7 days
       datasets: [
         {
-          data: trendEntries.map(([, revenue]) => revenue / 1000).slice(-7),
+          data: trendEntries.map(([, revenue]) => (revenue || 0) / 1000).slice(-7),
           strokeWidth: 3,
         },
       ],
