@@ -207,12 +207,13 @@ export default function VenuesScreen() {
 
           {/* Venues List */}
           <View style={styles.section}>
-            {filteredVenues.map((venue, index) => (
-              <TouchableOpacity
-                key={venue.id}
-                style={[styles.venueCard, index === 0 && styles.featuredVenueCard]}
-                onPress={() => handleVenuePress(venue)}
-              >
+            {filteredVenues && Array.isArray(filteredVenues) && filteredVenues.length > 0 ? (
+              filteredVenues.map((venue, index) => (
+                <TouchableOpacity
+                  key={venue?.id || index}
+                  style={[styles.venueCard, index === 0 && styles.featuredVenueCard]}
+                  onPress={() => handleVenuePress(venue)}
+                >
                 <ImageBackground
                   source={{ uri: venue.image }}
                   style={index === 0 ? styles.featuredVenueImage : styles.venueImage}
