@@ -406,9 +406,10 @@ export default function BookingsScreen() {
                   )}
                 </View>
               </TouchableOpacity>
-            ))}
+            ))
+            ) : null}
 
-            {filteredBookings.length === 0 && (
+            {(!filteredBookings || filteredBookings.length === 0) && (
               <View style={styles.emptyState}>
                 <ImageBackground
                   source={{ uri: 'https://images.unsplash.com/photo-1435527173128-983b87201f4d' }}
