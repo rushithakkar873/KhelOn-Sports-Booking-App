@@ -173,8 +173,6 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
 
 # Import venue models from original server
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
-import uuid
 
 class SlotCreate(BaseModel):
     day_of_week: int = Field(..., ge=0, le=6)  # 0=Monday, 6=Sunday
