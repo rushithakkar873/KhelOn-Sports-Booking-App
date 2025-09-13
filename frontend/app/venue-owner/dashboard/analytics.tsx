@@ -122,7 +122,7 @@ export default function AnalyticsScreen() {
   };
 
   const getBookingsChartData = () => {
-    if (!analyticsData || !analyticsData.bookingsTrend || analyticsData.bookingsTrend.length === 0) {
+    if (!analyticsData || !analyticsData.bookingsTrend || !Array.isArray(analyticsData.bookingsTrend) || analyticsData.bookingsTrend.length === 0) {
       return { 
         labels: ['No Data'], 
         datasets: [{ data: [0] }] 
@@ -130,17 +130,17 @@ export default function AnalyticsScreen() {
     }
     
     return {
-      labels: analyticsData.bookingsTrend.map(item => item.month),
+      labels: analyticsData.bookingsTrend.map(item => item?.month || 'Unknown'),
       datasets: [
         {
-          data: analyticsData.bookingsTrend.map(item => item.bookings || 0),
+          data: analyticsData.bookingsTrend.map(item => item?.bookings || 0),
         },
       ],
     };
   };
 
   const getSportsDistributionData = () => {
-    if (!analyticsData || !analyticsData.sportDistribution || analyticsData.sportDistribution.length === 0) {
+    if (!analyticsData || !analyticsData.sportDistribution || !Array.isArray(analyticsData.sportDistribution) || analyticsData.sportDistribution.length === 0) {
       return [{
         name: 'No Data',
         population: 1,
@@ -151,16 +151,16 @@ export default function AnalyticsScreen() {
     }
     
     return analyticsData.sportDistribution.map((sport, index) => ({
-      name: sport.sport || 'Unknown',
-      population: sport.bookings || 0,
-      color: sport.color || '#e5e7eb',
+      name: sport?.sport || 'Unknown',
+      population: sport?.bookings || 0,
+      color: sport?.color || '#e5e7eb',
       legendFontColor: '#6b7280',
       legendFontSize: 12,
     }));
   };
 
   const getPeakHoursData = () => {
-    if (!analyticsData || !analyticsData.peak_hours || analyticsData.peak_hours.length === 0) {
+    if (!analyticsData || !analyticsData.peak_hours || !Array.isArray(analyticsData.peak_hours) || analyticsData.peak_hours.length === 0) {
       return { 
         labels: ['No Data'], 
         datasets: [{ data: [0] }] 
@@ -168,10 +168,10 @@ export default function AnalyticsScreen() {
     }
     
     return {
-      labels: analyticsData.peak_hours.map(item => item.hour || '00:00'),
+      labels: analyticsData.peak_hours.map(item => item?.hour || '00:00'),
       datasets: [
         {
-          data: analyticsData.peak_hours.map(item => item.bookings || 0),
+          data: analyticsData.peak_hours.map(item => item?.bookings || 0),
         },
       ],
     };
