@@ -224,6 +224,27 @@ class VenueResponse(BaseModel):
     slots: List[Dict] = []
     created_at: datetime
 
+class BookingResponse(BaseModel):
+    id: str
+    venue_id: str
+    venue_name: str
+    slot_id: str
+    user_id: str
+    user_name: Optional[str] = None
+    booking_date: str
+    start_time: str
+    end_time: str
+    duration_hours: int
+    total_amount: float
+    status: str = "confirmed"  # confirmed, cancelled, completed
+    payment_status: str = "pending"  # pending, paid, failed, refunded
+    payment_id: Optional[str] = None
+    player_name: str
+    player_phone: str
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
 @api_router.post("/venue-owner/venues")
 async def create_venue_by_owner(venue_data: VenueCreate, current_owner: dict = Depends(get_current_venue_owner)):
     """Create venue by venue owner"""
