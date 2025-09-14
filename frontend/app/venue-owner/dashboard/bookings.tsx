@@ -1849,58 +1849,6 @@ const styles = StyleSheet.create({
   datePlaceholder: {
     color: '#9ca3af',
   },
-  timeSlotGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  timeSlotOption: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    padding: 12,
-    minWidth: '45%',
-    alignItems: 'center',
-  },
-  timeSlotOptionSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
-  },
-  peakTimeSlot: {
-    borderColor: '#f59e0b',
-    backgroundColor: '#fef3c7',
-  },
-  timeSlotText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  timeSlotTextSelected: {
-    color: '#ffffff',
-  },
-  timeSlotPrice: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  timeSlotPriceSelected: {
-    color: '#e5e7eb',
-  },
-  noSlotsContainer: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  noSlotsText: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
   amountDisplay: {
     backgroundColor: '#f0f9ff',
     borderRadius: 12,
