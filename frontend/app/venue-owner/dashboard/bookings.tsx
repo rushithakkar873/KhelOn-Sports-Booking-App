@@ -427,14 +427,11 @@ export default function BookingsScreen() {
 
   // Handle venue selection
   const handleVenueSelection = (venue: any) => {
-    const availableSlots = generateTimeSlots(venue);
-    
     setNewBooking({
       ...newBooking,
       venueId: venue.id,
       venueName: venue.name,
       selectedVenue: venue,
-      availableSlots,
       sport: venue.sports_supported?.[0] || '',
       startTime: '',
       endTime: '',
