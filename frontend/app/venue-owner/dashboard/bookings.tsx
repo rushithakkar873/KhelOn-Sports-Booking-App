@@ -581,14 +581,19 @@ export default function BookingsScreen() {
                 </View>
 
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Venue Name *</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    value={newBooking.venueName}
-                    onChangeText={(text) => setNewBooking({ ...newBooking, venueName: text })}
-                    placeholder="Select or enter venue"
-                    placeholderTextColor="#9ca3af"
-                  />
+                  <Text style={styles.formLabel}>Venue *</Text>
+                  <TouchableOpacity
+                    style={[styles.formInput, styles.venueSelector]}
+                    onPress={() => setShowVenuePickerModal(true)}
+                  >
+                    <Text style={[
+                      styles.venueSelectorText, 
+                      !newBooking.venueName && styles.venuePlaceholder
+                    ]}>
+                      {newBooking.venueName || 'Select a venue'}
+                    </Text>
+                    <Ionicons name="chevron-down" size={20} color="#9ca3af" />
+                  </TouchableOpacity>
                 </View>
 
                 {newBooking.type === 'manual' && (
