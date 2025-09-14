@@ -930,54 +930,135 @@ export default function BookingsScreen() {
                   </TouchableOpacity>
                   
                   {newBooking.showDatePicker && (
-                    <DateTimePicker
-                      value={newBooking.selectedDate}
-                      mode="date"
-                      display="default"
-                      minimumDate={new Date()}
-                      onChange={handleDateChange}
-                    />
+                    <View style={styles.datePickerContainer}>
+                      <DateTimePicker
+                        value={newBooking.selectedDate}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        minimumDate={new Date()}
+                        maximumDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)} // 30 days from now
+                        onChange={handleDateChange}
+                        style={styles.datePicker}
+                      />
+                      {Platform.OS === 'ios' && (
+                        <View style={styles.datePickerActions}>
+                          <TouchableOpacity
+                            style={[styles.datePickerButton, styles.datePickerCancel]}
+                            onPress={() => setNewBooking({ ...newBooking, showDatePicker: false })}
+                          >
+                            <Text style={styles.datePickerCancelText}>Cancel</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[styles.datePickerButton, styles.datePickerConfirm]}
+                            onPress={() => setNewBooking({ ...newBooking, showDatePicker: false })}
+                          >
+                            <Text style={styles.datePickerConfirmText}>Done</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
                   )}
                 </View>
 
-                {/* Time Slot Selection */}
+                {/* Time Selection */}
                 <View style={styles.formGroup}>
                   <Text style={styles.formLabel}>Time Slot *</Text>
-                  {newBooking.availableSlots.length > 0 ? (
-                    <View style={styles.timeSlotGrid}>
-                      {newBooking.availableSlots.map((slot: any, index: number) => {
-                        const isSelected = newBooking.startTime === slot.start_time && newBooking.endTime === slot.end_time;
-                        return (
-                          <TouchableOpacity
-                            key={index}
-                            style={[
-                              styles.timeSlotOption,
-                              isSelected && styles.timeSlotOptionSelected,
-                              slot.is_peak_hour && styles.peakTimeSlot
-                            ]}
-                            onPress={() => handleTimeSelection(slot.start_time, slot.end_time)}
+                  
+                  {/* Start Time Selection */}
+                  <View style={styles.timeSelectionContainer}>
+                    <View style={styles.timeSelectGroup}>
+                      <Text style={styles.timeSelectLabel}>Start Time</Text>
+                      <View style={styles.timeDropdownContainer}>
+                        {getAvailableTimeSlots(newBooking.selectedVenue, newBooking.bookingDate).length > 0 ? (
+                          <ScrollView 
+                            horizontal 
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.timeScrollView}
+                            contentContainerStyle={styles.timeScrollContent}
                           >
-                            <Text style={[
-                              styles.timeSlotText,
-                              isSelected && styles.timeSlotTextSelected
-                            ]}>
-                              {slot.start_time} - {slot.end_time}
+                            {getAvailableTimeSlots(newBooking.selectedVenue, newBooking.bookingDate).map((time, index) => (
+                              <TouchableOpacity
+                                key={index}
+                                style={[
+                                  styles.timeOption,
+                                  newBooking.startTime === time && styles.timeOptionSelected
+                                ]}
+                                onPress={() => handleStartTimeChange(time)}
+                              >
+                                <Text style={[
+                                  styles.timeOptionText,
+                                  newBooking.startTime === time && styles.timeOptionTextSelected
+                                ]}>
+                                  {time}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        ) : (
+                          <View style={styles.noTimesContainer}>
+                            <Text style={styles.noTimesText}>
+                              {newBooking.selectedVenue && newBooking.bookingDate ? 
+                                'No slots available for selected date' : 
+                                'Select venue and date first'
+                              }
                             </Text>
-                            <Text style={[
-                              styles.timeSlotPrice,
-                              isSelected && styles.timeSlotPriceSelected
-                            ]}>
-                              ₹{slot.price_per_hour}/hr{slot.is_peak_hour ? ' (Peak)' : ''}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
+                          </View>
+                        )}
+                      </View>
                     </View>
-                  ) : (
-                    <View style={styles.noSlotsContainer}>
-                      <Text style={styles.noSlotsText}>
-                        {newBooking.selectedVenue ? 'No slots available for selected date' : 'Select venue first'}
-                      </Text>
+
+                    {/* End Time Selection */}
+                    {newBooking.startTime && (
+                      <View style={styles.timeSelectGroup}>
+                        <Text style={styles.timeSelectLabel}>End Time</Text>
+                        <View style={styles.timeDropdownContainer}>
+                          {getValidEndTimes(newBooking.selectedVenue, newBooking.bookingDate, newBooking.startTime).length > 0 ? (
+                            <ScrollView 
+                              horizontal 
+                              showsHorizontalScrollIndicator={false}
+                              style={styles.timeScrollView}
+                              contentContainerStyle={styles.timeScrollContent}
+                            >
+                              {getValidEndTimes(newBooking.selectedVenue, newBooking.bookingDate, newBooking.startTime).map((time, index) => (
+                                <TouchableOpacity
+                                  key={index}
+                                  style={[
+                                    styles.timeOption,
+                                    newBooking.endTime === time && styles.timeOptionSelected
+                                  ]}
+                                  onPress={() => handleEndTimeChange(time)}
+                                >
+                                  <Text style={[
+                                    styles.timeOptionText,
+                                    newBooking.endTime === time && styles.timeOptionTextSelected
+                                  ]}>
+                                    {time}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          ) : (
+                            <View style={styles.noTimesContainer}>
+                              <Text style={styles.noTimesText}>No consecutive slots available</Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Selected Time Summary */}
+                  {newBooking.startTime && newBooking.endTime && (
+                    <View style={styles.timeSelectionSummary}>
+                      <View style={styles.timeSummaryCard}>
+                        <Ionicons name="time-outline" size={20} color="#3b82f6" />
+                        <Text style={styles.timeSummaryText}>
+                          {newBooking.startTime} - {newBooking.endTime}
+                        </Text>
+                        <Text style={styles.timeDurationText}>
+                          ({calculateDurationHours(newBooking.startTime, newBooking.endTime)} hour{calculateDurationHours(newBooking.startTime, newBooking.endTime) !== 1 ? 's' : ''})
+                        </Text>
+                      </View>
                     </View>
                   )}
                 </View>
