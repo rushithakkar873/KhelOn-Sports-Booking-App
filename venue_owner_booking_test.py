@@ -207,16 +207,16 @@ class VenueOwnerBookingTester:
             print("❌ No test venue available")
             return False
         
-        # Calculate booking date (tomorrow)
-        booking_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        # Calculate booking date (5 days from now to avoid conflicts)
+        booking_date = (datetime.now() + timedelta(days=5)).strftime("%Y-%m-%d")
         
         booking_data = {
             "venue_id": self.test_venue_id,
             "player_mobile": self.new_player_mobile,
             "player_name": self.new_player_name,
             "booking_date": booking_date,
-            "start_time": "18:00",
-            "end_time": "20:00",
+            "start_time": "14:00",  # Different time slot
+            "end_time": "16:00",
             "sport": "Cricket",
             "notes": "Team practice session for upcoming tournament"
         }
