@@ -246,6 +246,7 @@ export default function BookingsScreen() {
   const handleAddBooking = () => {
     setShowAddBookingModal(true);
     setNewBooking({
+      venueId: '',
       venueName: '',
       playerName: '',
       playerPhone: '',
