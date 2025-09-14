@@ -461,13 +461,109 @@ export default function BookingsScreen() {
 
   // Handle date selection
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    const currentDate = selectedDate || newBooking.selectedDate;
+    if (Platform.OS === 'android') {
+      setNewBooking({
+        ...newBooking,
+        showDatePicker: false,
+      });
+    }
+    
+    if (selectedDate) {
+      setNewBooking({
+        ...newBooking,
+        selectedDate: selectedDate,
+        bookingDate: selectedDate.toISOString().split('T')[0], // YYYY-MM-DD format
+        showDatePicker: Platform.OS === 'ios' ? false : newBooking.showDatePicker,
+      });
+    }
+  };
+
+  // Generate available time slots for a specific date
+  const getAvailableTimeSlots = (venue: any, date: string): string[] => {
+    if (!venue || !venue.slots || !Array.isArray(venue.slots)) return [];
+    
+    const selectedDate = new Date(date);
+    const dayOfWeek = selectedDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    
+    // Find slots for selected day of week
+    const daySlots = venue.slots.filter((slot: any) => slot.day_of_week === dayOfWeek);
+    
+    const timeSlots: string[] = [];
+    
+    daySlots.forEach((slot: any) => {
+      const startHour = parseInt(slot.start_time.split(':')[0]);
+      const endHour = parseInt(slot.end_time.split(':')[0]);
+      
+      // Generate hourly slots
+      for (let hour = startHour; hour < endHour; hour++) {
+        const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
+        timeSlots.push(timeSlot);
+      }
+    });
+    
+    return timeSlots.sort();
+  };
+
+  // Get valid end times based on selected start time
+  const getValidEndTimes = (venue: any, date: string, startTime: string): string[] => {
+    if (!venue || !date || !startTime) return [];
+    
+    const availableSlots = getAvailableTimeSlots(venue, date);
+    const startIndex = availableSlots.indexOf(startTime);
+    
+    if (startIndex === -1) return [];
+    
+    const validEndTimes: string[] = [];
+    
+    // Find consecutive available slots
+    for (let i = startIndex + 1; i < availableSlots.length; i++) {
+      const currentHour = parseInt(availableSlots[i - 1].split(':')[0]);
+      const nextHour = parseInt(availableSlots[i].split(':')[0]);
+      
+      // Add the current slot's end time
+      validEndTimes.push(`${(currentHour + 1).toString().padStart(2, '0')}:00`);
+      
+      // If next slot is not consecutive, break
+      if (nextHour !== currentHour + 1) {
+        break;
+      }
+    }
+    
+    // Add the final slot's end time if we reached the end
+    if (startIndex < availableSlots.length - 1) {
+      const lastSlotHour = parseInt(availableSlots[availableSlots.length - 1].split(':')[0]);
+      const lastEndTime = `${(lastSlotHour + 1).toString().padStart(2, '0')}:00`;
+      if (!validEndTimes.includes(lastEndTime)) {
+        validEndTimes.push(lastEndTime);
+      }
+    }
+    
+    return validEndTimes;
+  };
+
+  // Handle start time selection
+  const handleStartTimeChange = (startTime: string) => {
+    const validEndTimes = getValidEndTimes(newBooking.selectedVenue, newBooking.bookingDate, startTime);
     
     setNewBooking({
       ...newBooking,
-      showDatePicker: Platform.OS === 'ios',
-      selectedDate: currentDate,
-      bookingDate: currentDate.toISOString().split('T')[0] // YYYY-MM-DD format
+      startTime,
+      endTime: '', // Reset end time when start time changes
+      calculatedAmount: 0,
+    });
+  };
+
+  // Handle end time selection
+  const handleEndTimeChange = (endTime: string) => {
+    if (!newBooking.selectedVenue || !newBooking.startTime) return;
+    
+    const amount = calculateTotalAmount(newBooking.selectedVenue, newBooking.startTime, endTime);
+    
+    setNewBooking({
+      ...newBooking,
+      endTime,
+      calculatedAmount: amount,
+      totalAmount: amount.toString()
     });
   };
 
