@@ -24,7 +24,7 @@ class VenueOwnerBookingTester:
         self.test_booking_ids = []
         
         # Test data for venue owner (Rajesh Kumar)
-        self.venue_owner_mobile = "+919876543211"
+        self.venue_owner_mobile = "+919876543212"  # Updated mobile number
         self.venue_owner_name = "Rajesh Kumar"
         
         # Test data for players
