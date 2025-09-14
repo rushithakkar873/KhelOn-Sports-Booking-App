@@ -543,8 +543,10 @@ export default function BookingsScreen() {
                   <Text style={styles.modalCancel}>Cancel</Text>
                 </TouchableOpacity>
                 <Text style={styles.modalTitle}>Add Booking</Text>
-                <TouchableOpacity onPress={handleSubmitBooking}>
-                  <Text style={styles.modalSave}>Save</Text>
+                <TouchableOpacity onPress={handleSubmitBooking} disabled={isSubmitting}>
+                  <Text style={[styles.modalSave, isSubmitting && styles.modalSaveDisabled]}>
+                    {isSubmitting ? 'Creating...' : 'Save'}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
