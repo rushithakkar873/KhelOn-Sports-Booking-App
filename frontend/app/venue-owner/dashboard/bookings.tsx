@@ -994,15 +994,7 @@ export default function BookingsScreen() {
                       styles.venueOption,
                       newBooking.venueId === venue.id && styles.venueOptionSelected
                     ]}
-                    onPress={() => {
-                      setNewBooking({
-                        ...newBooking,
-                        venueId: venue.id,
-                        venueName: venue.name,
-                        sport: venue.sports_supported?.[0] || ''
-                      });
-                      setShowVenuePickerModal(false);
-                    }}
+                    onPress={() => handleVenueSelection(venue)}
                   >
                     <View style={styles.venueOptionContent}>
                       <Text style={[
