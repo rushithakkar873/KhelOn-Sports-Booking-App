@@ -191,6 +191,10 @@ class VenueOwnerBookingTester:
             print(f"✅ Existing player created: {self.existing_player_name}")
             print(f"   Mobile: {self.existing_player_mobile}")
             return True
+        elif result["status_code"] == 400 and "already exists" in result["data"].get("detail", ""):
+            print(f"✅ Existing player already exists: {self.existing_player_name}")
+            print(f"   Mobile: {self.existing_player_mobile}")
+            return True
         else:
             print(f"❌ Failed to create existing player: {result}")
             return False
