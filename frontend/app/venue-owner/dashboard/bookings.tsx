@@ -240,28 +240,11 @@ export default function BookingsScreen() {
   const filteredBookings = getFilteredBookings();
 
   const handleAddBooking = () => {
-    setShowAddBookingModal(true);
-    
-    // Auto-select venue if only one exists
-    const autoSelectedVenue = venues.length === 1 ? venues[0] : null;
-    
-    setNewBooking({
-      venueId: autoSelectedVenue?.id || '',
-      venueName: autoSelectedVenue?.name || '',
-      playerName: '',
-      playerPhone: '',
-      sport: autoSelectedVenue?.sports_supported?.[0] || '',
-      bookingDate: '',
-      startTime: '',
-      endTime: '',
-      totalAmount: '',
-      type: 'manual',
-      selectedVenue: autoSelectedVenue,
-      availableSlots: [],
-      selectedDate: new Date(),
-      showDatePicker: false,
-      calculatedAmount: 0,
-    });
+    setShowEnhancedBookingFlow(true);
+  };
+
+  const handleBookingCreated = () => {
+    loadBookings(); // Refresh the bookings list
   };
 
   const handleSubmitBooking = async () => {
