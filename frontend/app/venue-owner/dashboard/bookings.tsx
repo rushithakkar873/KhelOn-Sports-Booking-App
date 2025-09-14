@@ -110,7 +110,13 @@ export default function BookingsScreen() {
 
       // Also load venues for booking creation
       const venuesData = await venueOwnerService.getVenues(0, 50, true); // Only active venues
-      setVenues(venuesData);
+      
+      // Sort venues alphabetically
+      const sortedVenues = Array.isArray(venuesData) ? venuesData.sort((a, b) => 
+        (a.name || '').localeCompare(b.name || '')
+      ) : [];
+      
+      setVenues(sortedVenues);
 
       // Update status counts
       statusFilters.forEach(filter => {
