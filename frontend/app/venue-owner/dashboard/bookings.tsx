@@ -64,6 +64,12 @@ export default function BookingsScreen() {
     endTime: '',
     totalAmount: '',
     type: 'manual' as 'manual' | 'block',
+    // Additional fields for enhanced UX
+    selectedVenue: null as any,
+    availableSlots: [] as any[],
+    selectedDate: new Date(),
+    showDatePicker: false,
+    calculatedAmount: 0,
   });
   
   const router = useRouter();
