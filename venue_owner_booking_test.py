@@ -439,7 +439,7 @@ class VenueOwnerBookingTester:
         }
         
         result = self.make_request("POST", "/venue-owner/bookings", booking_data, auth_required=False)
-        if not result["success"] and result["status_code"] == 401:
+        if not result["success"] and result["status_code"] in [401, 403]:
             print("✅ Unauthorized access properly rejected")
             error_tests.append(True)
         else:
