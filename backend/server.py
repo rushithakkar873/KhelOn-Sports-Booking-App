@@ -677,6 +677,311 @@ async def update_booking_status(
 # BASIC HEALTH ROUTES
 # ================================
 
+# ================================
+# VENUE OWNER BOOKING CREATION WITH PAYMENT & SMS
+# ================================
+
+import razorpay
+import requests
+from pydantic import validator
+
+# Initialize Razorpay client
+razorpay_client = razorpay.Client(auth=(
+    os.environ.get('RAZORPAY_KEY_ID'),
+    os.environ.get('RAZORPAY_KEY_SECRET')
+))
+
+class VenueOwnerBookingCreate(BaseModel):
+    venue_id: str
+    player_mobile: str = Field(..., min_length=13, max_length=13)
+    player_name: Optional[str] = None
+    booking_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")  # YYYY-MM-DD
+    start_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")  # HH:MM
+    end_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")    # HH:MM
+    sport: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=500)
+    
+    @validator('player_mobile')
+    def validate_mobile(cls, v):
+        if not v.startswith('+91') or len(v) != 13:
+            raise ValueError('Invalid Indian mobile number. Format: +91XXXXXXXXXX')
+        return v
+
+class VenueOwnerBookingResponse(BaseModel):
+    booking_id: str
+    payment_link: str
+    message: str
+    player_mobile: str
+    total_amount: float
+    sms_status: str
+
+class SMSService:
+    """Enhanced SMS service for booking notifications"""
+    
+    @staticmethod
+    async def send_booking_sms(mobile: str, booking_details: dict) -> dict:
+        """Send booking confirmation SMS with payment link"""
+        try:
+            # Format message
+            message = f"""
+🏏 PLAYON BOOKING CONFIRMATION
+
+Venue: {booking_details['venue_name']}
+Date: {booking_details['booking_date']}
+Time: {booking_details['start_time']} - {booking_details['end_time']}
+Amount: ₹{booking_details['total_amount']}
+
+Complete payment: {booking_details['payment_link']}
+
+Questions? Call: {booking_details['venue_contact']}
+            """.strip()
+            
+            # For now, log the SMS (replace with real SMS service in production)
+            logger.info(f"📱 SMS to {mobile}: {message}")
+            
+            return {
+                "success": True,
+                "message": "SMS sent successfully",
+                "mobile": mobile,
+                "sms_id": f"sms_{uuid.uuid4().hex[:8]}"
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to send SMS: {str(e)}")
+            return {
+                "success": False,
+                "message": f"SMS failed: {str(e)}",
+                "mobile": mobile
+            }
+
+@api_router.post("/venue-owner/bookings", response_model=VenueOwnerBookingResponse)
+async def create_booking_by_owner(
+    booking_data: VenueOwnerBookingCreate, 
+    current_owner: dict = Depends(get_current_venue_owner)
+):
+    """Create booking by venue owner with payment link and SMS notification"""
+    
+    # 1. Verify venue ownership
+    venue = await db.venues.find_one({
+        "_id": booking_data.venue_id, 
+        "owner_id": current_owner["_id"],
+        "is_active": True
+    })
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found or access denied"
+        )
+    
+    # 2. Check for existing user or create new one
+    player_mobile = booking_data.player_mobile
+    existing_user = await db.users.find_one({"mobile": player_mobile})
+    
+    if existing_user:
+        # Use existing user details
+        player_user_id = existing_user["_id"]
+        player_name = existing_user["name"]
+        player_email = existing_user.get("email")
+    else:
+        # Create new user if name provided, otherwise use mobile as name
+        if not booking_data.player_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Player name is required for new users"
+            )
+        
+        player_user_id = str(uuid.uuid4())
+        player_name = booking_data.player_name
+        
+        new_user = {
+            "_id": player_user_id,
+            "mobile": player_mobile,
+            "name": player_name,
+            "role": "player",
+            "is_verified": False,
+            "created_at": datetime.utcnow(),
+            "created_by_venue_owner": current_owner["_id"]
+        }
+        await db.users.insert_one(new_user)
+    
+    # 3. Calculate booking duration and amount
+    from datetime import datetime as dt
+    start_dt = dt.strptime(booking_data.start_time, "%H:%M")
+    end_dt = dt.strptime(booking_data.end_time, "%H:%M")
+    duration_hours = (end_dt - start_dt).seconds // 3600
+    
+    if duration_hours <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="End time must be after start time"
+        )
+    
+    # Calculate amount based on venue base price
+    total_amount = venue["base_price_per_hour"] * duration_hours
+    
+    # 4. Check for slot conflicts
+    existing_booking = await db.bookings.find_one({
+        "venue_id": booking_data.venue_id,
+        "booking_date": booking_data.booking_date,
+        "start_time": booking_data.start_time,
+        "status": {"$ne": "cancelled"}
+    })
+    
+    if existing_booking:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This time slot is already booked"
+        )
+    
+    # 5. Create booking record
+    booking_id = str(uuid.uuid4())
+    
+    booking_record = {
+        "_id": booking_id,
+        "venue_id": booking_data.venue_id,
+        "user_id": player_user_id,
+        "slot_id": f"manual_{uuid.uuid4().hex[:8]}",
+        "booking_date": booking_data.booking_date,
+        "start_time": booking_data.start_time,
+        "end_time": booking_data.end_time,
+        "duration_hours": duration_hours,
+        "total_amount": total_amount,
+        "status": "pending",  # pending until payment
+        "payment_status": "pending",
+        "player_name": player_name,
+        "player_phone": player_mobile,
+        "sport": booking_data.sport or venue["sports_supported"][0],
+        "notes": booking_data.notes,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "created_by_owner": True,
+        "owner_id": current_owner["_id"]
+    }
+    
+    await db.bookings.insert_one(booking_record)
+    
+    # 6. Create Razorpay payment link
+    try:
+        payment_amount = int(total_amount * 100)  # Convert to paise
+        
+        payment_link_data = {
+            "amount": payment_amount,
+            "currency": "INR",
+            "accept_partial": False,
+            "description": f"PlayOn Booking - {venue['name']}",
+            "customer": {
+                "name": player_name,
+                "contact": player_mobile.replace('+91', ''),
+            },
+            "notify": {
+                "sms": True,
+                "email": False
+            },
+            "reminder_enable": True,
+            "notes": {
+                "booking_id": booking_id,
+                "venue_id": booking_data.venue_id,
+                "owner_id": current_owner["_id"]
+            },
+            "callback_url": f"https://your-frontend-domain.com/booking-success/{booking_id}",
+            "callback_method": "get"
+        }
+        
+        payment_link = razorpay_client.payment_link.create(payment_link_data)
+        payment_link_url = payment_link["short_url"]
+        
+        # Update booking with payment link details
+        await db.bookings.update_one(
+            {"_id": booking_id},
+            {
+                "$set": {
+                    "payment_link_id": payment_link["id"],
+                    "payment_link_url": payment_link_url,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to create payment link: {str(e)}")
+        # Delete the booking if payment link creation fails
+        await db.bookings.delete_one({"_id": booking_id})
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create payment link"
+        )
+    
+    # 7. Send SMS notification
+    sms_details = {
+        "venue_name": venue["name"],
+        "booking_date": booking_data.booking_date,
+        "start_time": booking_data.start_time,
+        "end_time": booking_data.end_time,
+        "total_amount": total_amount,
+        "payment_link": payment_link_url,
+        "venue_contact": venue["contact_phone"]
+    }
+    
+    sms_result = await SMSService.send_booking_sms(player_mobile, sms_details)
+    
+    # 8. Update venue booking count
+    await db.venues.update_one(
+        {"_id": booking_data.venue_id},
+        {"$inc": {"total_bookings": 1}}
+    )
+    
+    return VenueOwnerBookingResponse(
+        booking_id=booking_id,
+        payment_link=payment_link_url,
+        message="Booking created successfully. Payment link sent via SMS.",
+        player_mobile=player_mobile,
+        total_amount=total_amount,
+        sms_status="sent" if sms_result["success"] else "failed"
+    )
+
+# Webhook endpoint for payment verification
+@api_router.post("/webhook/razorpay")
+async def handle_razorpay_webhook(request: dict):
+    """Handle Razorpay webhook for payment confirmation"""
+    try:
+        # In production, verify webhook signature
+        webhook_secret = os.environ.get('RAZORPAY_WEBHOOK_SECRET')
+        
+        # For now, just process the payment
+        event = request.get("event")
+        payload = request.get("payload", {})
+        
+        if event == "payment_link.paid":
+            payment = payload.get("payment", {})
+            payment_link = payload.get("payment_link", {})
+            
+            # Find booking by payment link ID
+            booking = await db.bookings.find_one({
+                "payment_link_id": payment_link.get("id")
+            })
+            
+            if booking:
+                # Update booking status
+                await db.bookings.update_one(
+                    {"_id": booking["_id"]},
+                    {
+                        "$set": {
+                            "payment_status": "paid",
+                            "status": "confirmed",
+                            "payment_id": payment.get("id"),
+                            "updated_at": datetime.utcnow()
+                        }
+                    }
+                )
+                
+                logger.info(f"Payment confirmed for booking {booking['_id']}")
+        
+        return {"status": "success"}
+        
+    except Exception as e:
+        logger.error(f"Webhook processing failed: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
 @api_router.get("/")
 async def root():
     """API Root endpoint"""
