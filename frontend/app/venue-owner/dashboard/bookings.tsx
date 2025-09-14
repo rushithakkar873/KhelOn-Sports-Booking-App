@@ -22,6 +22,7 @@ import { useRouter } from 'expo-router';
 import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
 import VenueOwnerService from '../../../services/venueOwnerService';
 import AuthService from '../../../services/authService';
+import EnhancedBookingFlow from '../../../components/EnhancedBookingFlow';
 
 const { width } = Dimensions.get('window');
 
