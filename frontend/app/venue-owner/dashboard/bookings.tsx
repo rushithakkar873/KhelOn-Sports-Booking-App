@@ -380,40 +380,6 @@ export default function BookingsScreen() {
     return Math.max(1, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
   };
 
-  // Generate time slots from venue data
-  const generateTimeSlots = (venue: any): any[] => {
-    if (!venue || !venue.slots || !Array.isArray(venue.slots)) return [];
-    
-    const slots: any[] = [];
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    
-    // Find slots for current day of week
-    const todaySlots = venue.slots.filter((slot: any) => slot.day_of_week === dayOfWeek);
-    
-    todaySlots.forEach((slot: any) => {
-      const startHour = parseInt(slot.start_time.split(':')[0]);
-      const endHour = parseInt(slot.end_time.split(':')[0]);
-      
-      // Generate hourly slots
-      for (let hour = startHour; hour < endHour; hour++) {
-        const startTime = `${hour.toString().padStart(2, '0')}:00`;
-        const endTimeHour = hour + 1;
-        const endTime = `${endTimeHour.toString().padStart(2, '0')}:00`;
-        
-        slots.push({
-          start_time: startTime,
-          end_time: endTime,
-          price_per_hour: slot.price_per_hour || venue.base_price_per_hour,
-          is_peak_hour: slot.is_peak_hour || false,
-          duration: 1
-        });
-      }
-    });
-    
-    return slots;
-  };
-
   // Calculate total amount based on selected time and venue
   const calculateTotalAmount = (venue: any, startTime: string, endTime: string): number => {
     if (!venue || !startTime || !endTime) return 0;
@@ -439,21 +405,6 @@ export default function BookingsScreen() {
       totalAmount: ''
     });
     setShowVenuePickerModal(false);
-  };
-
-  // Handle time selection
-  const handleTimeSelection = (startTime: string, endTime: string) => {
-    if (!newBooking.selectedVenue) return;
-    
-    const amount = calculateTotalAmount(newBooking.selectedVenue, startTime, endTime);
-    
-    setNewBooking({
-      ...newBooking,
-      startTime,
-      endTime,
-      calculatedAmount: amount,
-      totalAmount: amount.toString()
-    });
   };
 
   // Handle date selection
