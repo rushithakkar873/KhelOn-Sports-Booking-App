@@ -658,7 +658,20 @@ export default function BookingsScreen() {
                   <Text style={styles.modalCancel}>Cancel</Text>
                 </TouchableOpacity>
                 <Text style={styles.modalTitle}>Add Booking</Text>
-                <TouchableOpacity onPress={handleSubmitBooking} disabled={isSubmitting}>
+                <TouchableOpacity onPress={() => {
+                  // Show confirmation before submitting
+                  if (newBooking.type === 'manual') {
+                    // Validate required fields first
+                    if (!newBooking.venueId || !newBooking.playerName.trim() || 
+                        !newBooking.bookingDate || !newBooking.startTime || !newBooking.endTime || !newBooking.playerPhone.trim()) {
+                      Alert.alert('Error', 'Please fill in all required fields');
+                      return;
+                    }
+                    setShowConfirmationModal(true);
+                  } else {
+                    handleSubmitBooking();
+                  }
+                }} disabled={isSubmitting}>
                   <Text style={[styles.modalSave, isSubmitting && styles.modalSaveDisabled]}>
                     {isSubmitting ? 'Creating...' : 'Save'}
                   </Text>
