@@ -692,25 +692,47 @@ export default function BookingsScreen() {
                       styles.typeButtonText,
                       newBooking.type === 'block' && styles.typeButtonTextActive
                     ]}>
-                      Block Slot
+                      Block Time Slot
                     </Text>
                   </TouchableOpacity>
                 </View>
 
+                {/* Block slot explanation */}
+                {newBooking.type === 'block' && (
+                  <View style={styles.explanationBox}>
+                    <Text style={styles.explanationTitle}>Block Time Slot</Text>
+                    <Text style={styles.explanationText}>
+                      Use this to temporarily block time slots for maintenance, private events, or to reserve slots for regular customers. Blocked slots won't be available for booking by players.
+                    </Text>
+                  </View>
+                )}
+
+                {/* Venue Selection */}
                 <View style={styles.formGroup}>
                   <Text style={styles.formLabel}>Venue *</Text>
-                  <TouchableOpacity
-                    style={[styles.formInput, styles.venueSelector]}
-                    onPress={() => setShowVenuePickerModal(true)}
-                  >
-                    <Text style={[
-                      styles.venueSelectorText, 
-                      !newBooking.venueName && styles.venuePlaceholder
-                    ]}>
-                      {newBooking.venueName || 'Select a venue'}
-                    </Text>
-                    <Ionicons name="chevron-down" size={20} color="#9ca3af" />
-                  </TouchableOpacity>
+                  {venues.length === 1 ? (
+                    // Single venue - show disabled field with venue name
+                    <View style={[styles.formInput, styles.disabledInput]}>
+                      <Text style={styles.disabledInputText}>
+                        {newBooking.venueName}
+                      </Text>
+                      <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                    </View>
+                  ) : (
+                    // Multiple venues - show dropdown
+                    <TouchableOpacity
+                      style={[styles.formInput, styles.venueSelector]}
+                      onPress={() => setShowVenuePickerModal(true)}
+                    >
+                      <Text style={[
+                        styles.venueSelectorText, 
+                        !newBooking.venueName && styles.venuePlaceholder
+                      ]}>
+                        {newBooking.venueName || 'Select a venue'}
+                      </Text>
+                      <Ionicons name="chevron-down" size={20} color="#9ca3af" />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 {newBooking.type === 'manual' && (
@@ -727,12 +749,12 @@ export default function BookingsScreen() {
                     </View>
 
                     <View style={styles.formGroup}>
-                      <Text style={styles.formLabel}>Phone Number</Text>
+                      <Text style={styles.formLabel}>Phone Number *</Text>
                       <TextInput
                         style={styles.formInput}
                         value={newBooking.playerPhone}
                         onChangeText={(text) => setNewBooking({ ...newBooking, playerPhone: text })}
-                        placeholder="Enter phone number"
+                        placeholder="+91XXXXXXXXXX"
                         placeholderTextColor="#9ca3af"
                         keyboardType="phone-pad"
                       />
@@ -740,63 +762,134 @@ export default function BookingsScreen() {
                   </>
                 )}
 
+                {/* Sport Selection - Dropdown based on selected venue */}
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Sport</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    value={newBooking.sport}
-                    onChangeText={(text) => setNewBooking({ ...newBooking, sport: text })}
-                    placeholder="Enter sport"
-                    placeholderTextColor="#9ca3af"
-                  />
+                  <Text style={styles.formLabel}>Sport {newBooking.type === 'manual' ? '*' : ''}</Text>
+                  {newBooking.selectedVenue?.sports_supported?.length > 1 ? (
+                    <View style={styles.sportSelector}>
+                      {newBooking.selectedVenue.sports_supported.map((sport: string, index: number) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.sportOption,
+                            newBooking.sport === sport && styles.sportOptionSelected
+                          ]}
+                          onPress={() => setNewBooking({ ...newBooking, sport })}
+                        >
+                          <Text style={[
+                            styles.sportOptionText,
+                            newBooking.sport === sport && styles.sportOptionTextSelected
+                          ]}>
+                            {sport}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  ) : (
+                    <View style={[styles.formInput, styles.disabledInput]}>
+                      <Text style={styles.disabledInputText}>
+                        {newBooking.sport || 'Select venue first'}
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
+                {/* Date Selection */}
                 <View style={styles.formGroup}>
                   <Text style={styles.formLabel}>Booking Date *</Text>
-                  <TextInput
-                    style={styles.formInput}
-                    value={newBooking.bookingDate}
-                    onChangeText={(text) => setNewBooking({ ...newBooking, bookingDate: text })}
-                    placeholder="YYYY-MM-DD"
-                    placeholderTextColor="#9ca3af"
-                  />
-                </View>
-
-                <View style={styles.timeRow}>
-                  <View style={styles.timeInput}>
-                    <Text style={styles.formLabel}>Start Time *</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      value={newBooking.startTime}
-                      onChangeText={(text) => setNewBooking({ ...newBooking, startTime: text })}
-                      placeholder="HH:MM"
-                      placeholderTextColor="#9ca3af"
-                    />
-                  </View>
+                  <TouchableOpacity
+                    style={[styles.formInput, styles.dateSelector]}
+                    onPress={() => setNewBooking({ ...newBooking, showDatePicker: true })}
+                  >
+                    <Text style={[
+                      styles.dateSelectorText,
+                      !newBooking.bookingDate && styles.datePlaceholder
+                    ]}>
+                      {newBooking.bookingDate ? 
+                        new Date(newBooking.bookingDate).toLocaleDateString('en-IN', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        }) : 
+                        'Select date'
+                      }
+                    </Text>
+                    <Ionicons name="calendar-outline" size={20} color="#9ca3af" />
+                  </TouchableOpacity>
                   
-                  <View style={styles.timeInput}>
-                    <Text style={styles.formLabel}>End Time *</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      value={newBooking.endTime}
-                      onChangeText={(text) => setNewBooking({ ...newBooking, endTime: text })}
-                      placeholder="HH:MM"
-                      placeholderTextColor="#9ca3af"
+                  {newBooking.showDatePicker && (
+                    <DateTimePicker
+                      value={newBooking.selectedDate}
+                      mode="date"
+                      display="default"
+                      minimumDate={new Date()}
+                      onChange={handleDateChange}
                     />
-                  </View>
+                  )}
                 </View>
 
-                {newBooking.type === 'manual' && (
-                  <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Total Amount</Text>
-                    <TextInput
-                      style={styles.formInput}
-                      value={newBooking.totalAmount}
-                      onChangeText={(text) => setNewBooking({ ...newBooking, totalAmount: text })}
-                      placeholder="Enter amount"
-                      placeholderTextColor="#9ca3af"
-                      keyboardType="numeric"
-                    />
+                {/* Time Slot Selection */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Time Slot *</Text>
+                  {newBooking.availableSlots.length > 0 ? (
+                    <View style={styles.timeSlotGrid}>
+                      {newBooking.availableSlots.map((slot: any, index: number) => {
+                        const isSelected = newBooking.startTime === slot.start_time && newBooking.endTime === slot.end_time;
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            style={[
+                              styles.timeSlotOption,
+                              isSelected && styles.timeSlotOptionSelected,
+                              slot.is_peak_hour && styles.peakTimeSlot
+                            ]}
+                            onPress={() => handleTimeSelection(slot.start_time, slot.end_time)}
+                          >
+                            <Text style={[
+                              styles.timeSlotText,
+                              isSelected && styles.timeSlotTextSelected
+                            ]}>
+                              {slot.start_time} - {slot.end_time}
+                            </Text>
+                            <Text style={[
+                              styles.timeSlotPrice,
+                              isSelected && styles.timeSlotPriceSelected
+                            ]}>
+                              ₹{slot.price_per_hour}/hr{slot.is_peak_hour ? ' (Peak)' : ''}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  ) : (
+                    <View style={styles.noSlotsContainer}>
+                      <Text style={styles.noSlotsText}>
+                        {newBooking.selectedVenue ? 'No slots available for selected date' : 'Select venue first'}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Auto-calculated Amount Display */}
+                {newBooking.type === 'manual' && newBooking.calculatedAmount > 0 && (
+                  <View style={styles.amountDisplay}>
+                    <View style={styles.amountRow}>
+                      <Text style={styles.amountLabel}>Duration:</Text>
+                      <Text style={styles.amountValue}>
+                        {calculateDurationHours(newBooking.startTime, newBooking.endTime)} hour(s)
+                      </Text>
+                    </View>
+                    <View style={styles.amountRow}>
+                      <Text style={styles.amountLabel}>Rate:</Text>
+                      <Text style={styles.amountValue}>
+                        ₹{newBooking.selectedVenue?.base_price_per_hour || 0}/hour
+                      </Text>
+                    </View>
+                    <View style={[styles.amountRow, styles.totalAmountRow]}>
+                      <Text style={styles.totalAmountLabel}>Total Amount:</Text>
+                      <Text style={styles.totalAmountValue}>₹{newBooking.calculatedAmount}</Text>
+                    </View>
                   </View>
                 )}
               </ScrollView>
