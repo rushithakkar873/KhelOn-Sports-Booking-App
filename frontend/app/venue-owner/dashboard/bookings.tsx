@@ -1651,4 +1651,168 @@ const styles = StyleSheet.create({
     color: '#1e40af',
     lineHeight: 20,
   },
+  // Enhanced booking form styles
+  explanationBox: {
+    backgroundColor: '#fef3c7',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#fbbf24',
+  },
+  explanationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#92400e',
+    marginBottom: 8,
+  },
+  explanationText: {
+    fontSize: 14,
+    color: '#92400e',
+    lineHeight: 20,
+  },
+  disabledInput: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#cbd5e1',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  disabledInputText: {
+    fontSize: 16,
+    color: '#64748b',
+    fontWeight: '500',
+    flex: 1,
+  },
+  sportSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  sportOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    backgroundColor: '#ffffff',
+  },
+  sportOptionSelected: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  sportOptionText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  sportOptionTextSelected: {
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  dateSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dateSelectorText: {
+    fontSize: 16,
+    color: '#374151',
+    flex: 1,
+  },
+  datePlaceholder: {
+    color: '#9ca3af',
+  },
+  timeSlotGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  timeSlotOption: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    padding: 12,
+    minWidth: '45%',
+    alignItems: 'center',
+  },
+  timeSlotOptionSelected: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  peakTimeSlot: {
+    borderColor: '#f59e0b',
+    backgroundColor: '#fef3c7',
+  },
+  timeSlotText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  timeSlotTextSelected: {
+    color: '#ffffff',
+  },
+  timeSlotPrice: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  timeSlotPriceSelected: {
+    color: '#e5e7eb',
+  },
+  noSlotsContainer: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  noSlotsText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  amountDisplay: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  amountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  amountLabel: {
+    fontSize: 14,
+    color: '#0369a1',
+    fontWeight: '500',
+  },
+  amountValue: {
+    fontSize: 14,
+    color: '#0c4a6e',
+    fontWeight: '600',
+  },
+  totalAmountRow: {
+    borderTopWidth: 1,
+    borderTopColor: '#93c5fd',
+    marginTop: 8,
+    paddingTop: 8,
+  },
+  totalAmountLabel: {
+    fontSize: 16,
+    color: '#0c4a6e',
+    fontWeight: '700',
+  },
+  totalAmountValue: {
+    fontSize: 18,
+    color: '#059669',
+    fontWeight: '800',
+  },
 });
