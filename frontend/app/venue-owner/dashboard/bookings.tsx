@@ -263,7 +263,6 @@ export default function BookingsScreen() {
     
     // Auto-select venue if only one exists
     const autoSelectedVenue = venues.length === 1 ? venues[0] : null;
-    const availableSlots = autoSelectedVenue ? generateTimeSlots(autoSelectedVenue) : [];
     
     setNewBooking({
       venueId: autoSelectedVenue?.id || '',
@@ -277,7 +276,7 @@ export default function BookingsScreen() {
       totalAmount: '',
       type: 'manual',
       selectedVenue: autoSelectedVenue,
-      availableSlots,
+      availableSlots: [],
       selectedDate: new Date(),
       showDatePicker: false,
       calculatedAmount: 0,
