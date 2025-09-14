@@ -449,7 +449,7 @@ class VenueOwnerBookingTester:
         # Test 3: Missing required fields
         incomplete_booking = {
             "venue_id": self.test_venue_id,
-            "player_mobile": "+919876543210",
+            "player_mobile": "+919111000111",  # Completely new mobile
             # Missing player_name for new user
             "booking_date": (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d"),
             "start_time": "10:00",
