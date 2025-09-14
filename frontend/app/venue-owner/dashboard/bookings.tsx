@@ -910,6 +910,97 @@ export default function BookingsScreen() {
           </SafeAreaView>
         </Modal>
 
+        {/* Booking Confirmation Modal */}
+        <Modal
+          visible={showConfirmationModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowConfirmationModal(false)}>
+                <Text style={styles.modalCancel}>Back</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Confirm Booking</Text>
+              <TouchableOpacity onPress={handleSubmitBooking} disabled={isSubmitting}>
+                <Text style={[styles.modalSave, isSubmitting && styles.modalSaveDisabled]}>
+                  {isSubmitting ? 'Creating...' : 'Confirm'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.confirmationCard}>
+                <Text style={styles.confirmationTitle}>Booking Summary</Text>
+                
+                <View style={styles.confirmationRow}>
+                  <Text style={styles.confirmationLabel}>Venue:</Text>
+                  <Text style={styles.confirmationValue}>{newBooking.venueName}</Text>
+                </View>
+                
+                <View style={styles.confirmationRow}>
+                  <Text style={styles.confirmationLabel}>Player:</Text>
+                  <Text style={styles.confirmationValue}>{newBooking.playerName}</Text>
+                </View>
+                
+                <View style={styles.confirmationRow}>
+                  <Text style={styles.confirmationLabel}>Phone:</Text>
+                  <Text style={styles.confirmationValue}>{newBooking.playerPhone}</Text>
+                </View>
+                
+                <View style={styles.confirmationRow}>
+                  <Text style={styles.confirmationLabel}>Sport:</Text>
+                  <Text style={styles.confirmationValue}>{newBooking.sport}</Text>
+                </View>
+                
+                <View style={styles.confirmationRow}>
+                  <Text style={styles.confirmationLabel}>Date:</Text>
+                  <Text style={styles.confirmationValue}>
+                    {new Date(newBooking.bookingDate).toLocaleDateString('en-IN', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </Text>
+                </View>
+                
+                <View style={styles.confirmationRow}>
+                  <Text style={styles.confirmationLabel}>Time:</Text>
+                  <Text style={styles.confirmationValue}>
+                    {newBooking.startTime} - {newBooking.endTime}
+                  </Text>
+                </View>
+                
+                <View style={styles.confirmationRow}>
+                  <Text style={styles.confirmationLabel}>Duration:</Text>
+                  <Text style={styles.confirmationValue}>
+                    {calculateDurationHours(newBooking.startTime, newBooking.endTime)} hour(s)
+                  </Text>
+                </View>
+                
+                <View style={[styles.confirmationRow, styles.totalRow]}>
+                  <Text style={styles.totalLabel}>Total Amount:</Text>
+                  <Text style={styles.totalValue}>₹{newBooking.calculatedAmount}</Text>
+                </View>
+              </View>
+              
+              <View style={styles.actionInfoCard}>
+                <Ionicons name="information-circle" size={24} color="#3b82f6" />
+                <View style={styles.actionInfoContent}>
+                  <Text style={styles.actionInfoTitle}>What happens next?</Text>
+                  <Text style={styles.actionInfoText}>
+                    • Payment link will be sent to player's mobile number{'\n'}
+                    • Player will receive SMS with booking details{'\n'}
+                    • Booking will be confirmed once payment is completed{'\n'}
+                    • You can track payment status in bookings dashboard
+                  </Text>
+                </View>
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+
         {/* Booking Details Modal */}
         <Modal
           visible={showDetailsModal}
