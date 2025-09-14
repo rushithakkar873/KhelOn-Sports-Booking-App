@@ -329,6 +329,7 @@ export default function BookingsScreen() {
 
         setBookings([booking, ...bookings]);
         setShowAddBookingModal(false);
+        setShowConfirmationModal(false);
         Alert.alert('Success', 'Time slot blocked successfully!');
       } else {
         // Create real booking using API
@@ -364,6 +365,7 @@ export default function BookingsScreen() {
         // Refresh bookings list
         await loadBookings();
         setShowAddBookingModal(false);
+        setShowConfirmationModal(false);
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to create booking');
