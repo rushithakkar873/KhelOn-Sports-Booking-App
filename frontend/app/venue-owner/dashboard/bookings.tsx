@@ -43,13 +43,16 @@ interface Booking {
 
 export default function BookingsScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [venues, setVenues] = useState<any[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showAddBookingModal, setShowAddBookingModal] = useState(false);
   const [newBooking, setNewBooking] = useState({
+    venueId: '',
     venueName: '',
     playerName: '',
     playerPhone: '',
