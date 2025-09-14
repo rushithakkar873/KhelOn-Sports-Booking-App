@@ -806,14 +806,36 @@ async def create_booking_by_owner(
     
     # 3. Calculate booking duration and amount
     from datetime import datetime as dt
-    start_dt = dt.strptime(booking_data.start_time, "%H:%M")
-    end_dt = dt.strptime(booking_data.end_time, "%H:%M")
-    duration_hours = (end_dt - start_dt).seconds // 3600
-    
-    if duration_hours <= 0:
+    try:
+        start_dt = dt.strptime(booking_data.start_time, "%H:%M")
+        end_dt = dt.strptime(booking_data.end_time, "%H:%M")
+        
+        # Handle next day bookings (e.g., 22:00 to 02:00)
+        if end_dt <= start_dt:
+            # Check if this is a valid next-day booking (reasonable duration)
+            duration_seconds = (end_dt + timedelta(days=1) - start_dt).seconds
+            duration_hours = duration_seconds // 3600
+            
+            # Reject if duration is unreasonable (more than 12 hours)
+            if duration_hours > 12:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="End time must be after start time on the same day, or specify a reasonable duration for overnight bookings"
+                )
+        else:
+            duration_seconds = (end_dt - start_dt).seconds
+            duration_hours = duration_seconds // 3600
+        
+        if duration_hours <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Booking duration must be at least 1 hour"
+            )
+            
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="End time must be after start time"
+            detail="Invalid time format. Use HH:MM format"
         )
     
     # Calculate amount based on venue base price
