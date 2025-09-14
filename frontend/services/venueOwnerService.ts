@@ -60,6 +60,40 @@ export interface CreateVenueData {
   images: string[];
   rules_and_regulations?: string;
   cancellation_policy?: string;
+  slots: CreateVenueSlot[];
+}
+
+export interface CreateBookingData {
+  venue_id: string;
+  player_mobile: string;
+  player_name?: string;
+  booking_date: string; // YYYY-MM-DD format
+  start_time: string;   // HH:MM format
+  end_time: string;     // HH:MM format
+  sport?: string;
+  notes?: string;
+}
+
+export interface CreateBookingResponse {
+  booking_id: string;
+  payment_link: string;
+  message: string;
+  player_mobile: string;
+  total_amount: number;
+  sms_status: string;
+}
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  description?: string;
+  amenities: string[];
+  base_price_per_hour: number;
+  contact_phone: string;
+  whatsapp_number?: string;
+  images: string[];
+  rules_and_regulations?: string;
+  cancellation_policy?: string;
   slots: CreateSlotData[];
 }
 
