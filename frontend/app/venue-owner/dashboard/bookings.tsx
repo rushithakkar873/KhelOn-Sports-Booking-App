@@ -260,17 +260,27 @@ export default function BookingsScreen() {
 
   const handleAddBooking = () => {
     setShowAddBookingModal(true);
+    
+    // Auto-select venue if only one exists
+    const autoSelectedVenue = venues.length === 1 ? venues[0] : null;
+    const availableSlots = autoSelectedVenue ? generateTimeSlots(autoSelectedVenue) : [];
+    
     setNewBooking({
-      venueId: '',
-      venueName: '',
+      venueId: autoSelectedVenue?.id || '',
+      venueName: autoSelectedVenue?.name || '',
       playerName: '',
       playerPhone: '',
-      sport: '',
+      sport: autoSelectedVenue?.sports_supported?.[0] || '',
       bookingDate: '',
       startTime: '',
       endTime: '',
       totalAmount: '',
       type: 'manual',
+      selectedVenue: autoSelectedVenue,
+      availableSlots,
+      selectedDate: new Date(),
+      showDatePicker: false,
+      calculatedAmount: 0,
     });
   };
 
