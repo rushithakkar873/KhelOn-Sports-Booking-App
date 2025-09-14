@@ -258,34 +258,98 @@ export default function BookingsScreen() {
     });
   };
 
-  const handleSubmitBooking = () => {
+  const handleSubmitBooking = async () => {
     // Validate form
-    if (!newBooking.venueName.trim() || !newBooking.playerName.trim() || 
-        !newBooking.bookingDate || !newBooking.startTime || !newBooking.endTime) {
+    if (!newBooking.venueId || !newBooking.playerName.trim() || 
+        !newBooking.bookingDate || !newBooking.startTime || !newBooking.endTime || !newBooking.playerPhone.trim()) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
-    // Create new booking
-    const booking: Booking = {
-      id: Date.now().toString(),
-      venue_name: newBooking.venueName,
-      user_name: newBooking.playerName,
-      user_mobile: newBooking.playerPhone,
-      sport: newBooking.sport,
-      booking_date: newBooking.bookingDate,
-      start_time: newBooking.startTime,
-      end_time: newBooking.endTime,
-      duration_hours: 1, // Calculate based on time difference
-      total_amount: parseInt(newBooking.totalAmount) || 0,
-      status: newBooking.type === 'block' ? 'cancelled' : 'confirmed',
-      payment_status: newBooking.type === 'block' ? 'refunded' : 'paid',
-      created_at: new Date().toISOString(),
-    };
+    // Validate Indian mobile number format
+    const mobilePattern = /^\+91[6-9]\d{9}$/;
+    let playerMobile = newBooking.playerPhone.trim();
+    
+    // Auto-format mobile number if needed
+    if (playerMobile.match(/^[6-9]\d{9}$/)) {
+      playerMobile = `+91${playerMobile}`;
+    }
+    
+    if (!mobilePattern.test(playerMobile)) {
+      Alert.alert('Error', 'Please enter a valid Indian mobile number (+91XXXXXXXXXX or 10 digits)');
+      return;
+    }
 
-    setBookings([booking, ...bookings]);
-    setShowAddBookingModal(false);
-    Alert.alert('Success', `${newBooking.type === 'block' ? 'Time slot blocked' : 'Booking added'} successfully!`);
+    setIsSubmitting(true);
+
+    try {
+      if (newBooking.type === 'block') {
+        // For blocking slots, create a mock cancelled booking
+        const booking: Booking = {
+          id: Date.now().toString(),
+          venue_name: venues.find(v => v.id === newBooking.venueId)?.name || 'Unknown Venue',
+          user_name: 'BLOCKED',
+          user_mobile: playerMobile,
+          sport: newBooking.sport,
+          booking_date: newBooking.bookingDate,
+          start_time: newBooking.startTime,
+          end_time: newBooking.endTime,
+          duration_hours: calculateDurationHours(newBooking.startTime, newBooking.endTime),
+          total_amount: 0,
+          status: 'cancelled',
+          payment_status: 'refunded',
+          created_at: new Date().toISOString(),
+        };
+
+        setBookings([booking, ...bookings]);
+        setShowAddBookingModal(false);
+        Alert.alert('Success', 'Time slot blocked successfully!');
+      } else {
+        // Create real booking using API
+        const bookingData = {
+          venue_id: newBooking.venueId,
+          player_mobile: playerMobile,
+          player_name: newBooking.playerName,
+          booking_date: newBooking.bookingDate,
+          start_time: newBooking.startTime,
+          end_time: newBooking.endTime,
+          sport: newBooking.sport,
+          notes: `Manual booking by venue owner`
+        };
+
+        const response = await venueOwnerService.createBooking(bookingData);
+        
+        // Show success message with payment link
+        Alert.alert(
+          'Booking Created Successfully! 🎉',
+          `Payment link sent to ${playerMobile}\n\nAmount: ₹${response.total_amount}\nSMS Status: ${response.sms_status}\n\nPlayer will receive payment link via SMS to complete the booking.`,
+          [
+            {
+              text: 'Copy Payment Link',
+              onPress: () => {
+                // In a real app, you'd use Clipboard API
+                console.log('Payment Link:', response.payment_link);
+              }
+            },
+            { text: 'OK', style: 'default' }
+          ]
+        );
+
+        // Refresh bookings list
+        await loadBookings();
+        setShowAddBookingModal(false);
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to create booking');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const calculateDurationHours = (startTime: string, endTime: string): number => {
+    const start = new Date(`2000-01-01T${startTime}:00`);
+    const end = new Date(`2000-01-01T${endTime}:00`);
+    return Math.max(1, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
   };
 
   return (
