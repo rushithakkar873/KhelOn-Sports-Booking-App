@@ -45,6 +45,15 @@ export interface VenueSlot {
   created_at: string;
 }
 
+export interface CreateVenueSlot {
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  capacity: number;
+  price_per_hour: number;
+  is_peak_hour: boolean;
+}
+
 export interface CreateVenueData {
   name: string;
   sports_supported: string[];
