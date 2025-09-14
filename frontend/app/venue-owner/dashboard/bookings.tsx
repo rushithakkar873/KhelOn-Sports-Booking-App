@@ -1189,4 +1189,82 @@ const styles = StyleSheet.create({
   timeInput: {
     flex: 1,
   },
+  modalSave: {
+    fontSize: 16,
+    color: '#2563eb',
+    fontWeight: '600',
+  },
+  modalSaveDisabled: {
+    color: '#9ca3af',
+  },
+  venueSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  venueSelectorText: {
+    fontSize: 16,
+    color: '#212529',
+  },
+  venuePlaceholder: {
+    color: '#9ca3af',
+  },
+  venueOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  venueOptionSelected: {
+    backgroundColor: '#f0f9ff',
+    borderBottomColor: '#10b981',
+  },
+  venueOptionContent: {
+    flex: 1,
+  },
+  venueOptionName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  venueOptionNameSelected: {
+    color: '#10b981',
+  },
+  venueOptionDetails: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 2,
+  },
+  venueOptionDetailsSelected: {
+    color: '#059669',
+  },
+  venueOptionAddress: {
+    fontSize: 13,
+    color: '#9ca3af',
+  },
+  venueOptionAddressSelected: {
+    color: '#10b981',
+  },
+  emptyVenueState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyVenueTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyVenueText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 });
