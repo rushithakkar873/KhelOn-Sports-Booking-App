@@ -52,27 +52,7 @@ export default function BookingsScreen() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showAddBookingModal, setShowAddBookingModal] = useState(false);
-  const [showVenuePickerModal, setShowVenuePickerModal] = useState(false);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [newBooking, setNewBooking] = useState({
-    venueId: '',
-    venueName: '',
-    playerName: '',
-    playerPhone: '',
-    sport: '',
-    bookingDate: '',
-    startTime: '',
-    endTime: '',
-    totalAmount: '',
-    type: 'manual' as 'manual' | 'block',
-    // Additional fields for enhanced UX
-    selectedVenue: null as any,
-    availableSlots: [] as any[],
-    selectedDate: new Date(),
-    showDatePicker: false,
-    calculatedAmount: 0,
-  });
+  const [showEnhancedBookingFlow, setShowEnhancedBookingFlow] = useState(false);
   
   const router = useRouter();
   const venueOwnerService = VenueOwnerService.getInstance();
