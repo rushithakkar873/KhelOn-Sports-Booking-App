@@ -335,7 +335,7 @@ async def add_dummy_data():
     print(f"   3. Test creating new bookings from venue owner dashboard")
     print(f"   4. Test the payment links and SMS functionality")
     
-    await client.close()
+    client.close()
 
 if __name__ == "__main__":
     asyncio.run(add_dummy_data())
