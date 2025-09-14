@@ -301,15 +301,15 @@ class VenueOwnerBookingTester:
             return False
         
         # Try to book the same slot as the first booking
-        booking_date = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        booking_date = (datetime.now() + timedelta(days=5)).strftime("%Y-%m-%d")
         
         conflicting_booking = {
             "venue_id": self.test_venue_id,
             "player_mobile": "+919111222333",
             "player_name": "Test Conflict User",
             "booking_date": booking_date,
-            "start_time": "18:00",  # Same time as first booking
-            "end_time": "20:00",
+            "start_time": "14:00",  # Same time as first booking
+            "end_time": "16:00",
             "sport": "Cricket",
             "notes": "This should conflict"
         }
