@@ -1994,4 +1994,144 @@ const styles = StyleSheet.create({
     color: '#059669',
     fontWeight: '800',
   },
+  // Date picker styles
+  datePickerContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    overflow: 'hidden',
+  },
+  datePicker: {
+    backgroundColor: '#ffffff',
+  },
+  datePickerActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#f8fafc',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  datePickerButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  datePickerCancel: {
+    backgroundColor: '#f1f5f9',
+  },
+  datePickerConfirm: {
+    backgroundColor: '#3b82f6',
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    color: '#64748b',
+    fontWeight: '500',
+  },
+  datePickerConfirmText: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  // Time selection styles
+  timeSelectionContainer: {
+    gap: 16,
+  },
+  timeSelectGroup: {
+    gap: 8,
+  },
+  timeSelectLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginLeft: 4,
+  },
+  timeDropdownContainer: {
+    minHeight: 48,
+  },
+  timeScrollView: {
+    flexGrow: 0,
+  },
+  timeScrollContent: {
+    paddingHorizontal: 4,
+    gap: 8,
+  },
+  timeOption: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1.5,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minWidth: 80,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  timeOptionSelected: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+    shadowColor: '#3b82f6',
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  timeOptionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  timeOptionTextSelected: {
+    color: '#ffffff',
+  },
+  noTimesContainer: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderStyle: 'dashed',
+  },
+  noTimesText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  timeSelectionSummary: {
+    marginTop: 16,
+  },
+  timeSummaryCard: {
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  timeSummaryText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e40af',
+    flex: 1,
+  },
+  timeDurationText: {
+    fontSize: 14,
+    color: '#3730a3',
+    fontWeight: '500',
+  },
 });
