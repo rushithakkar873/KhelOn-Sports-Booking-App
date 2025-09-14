@@ -99,6 +99,10 @@ export default function BookingsScreen() {
       const bookingsData = await venueOwnerService.getBookings(undefined, filterStatus, undefined, undefined, 0, 50);
       setBookings(bookingsData);
 
+      // Also load venues for booking creation
+      const venuesData = await venueOwnerService.getVenues(0, 50, true); // Only active venues
+      setVenues(venuesData);
+
       // Update status counts
       statusFilters.forEach(filter => {
         if (filter.key === 'all') {
