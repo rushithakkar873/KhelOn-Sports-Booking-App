@@ -249,6 +249,16 @@ class VenueOwnerService {
   }
 
   /**
+   * Create booking by venue owner with payment link and SMS
+   */
+  async createBooking(bookingData: CreateBookingData): Promise<CreateBookingResponse> {
+    return await this.makeRequest('/venue-owner/bookings', {
+      method: 'POST',
+      body: JSON.stringify(bookingData),
+    });
+  }
+
+  /**
    * Format currency for Indian rupees
    */
   static formatCurrency(amount: number): string {
