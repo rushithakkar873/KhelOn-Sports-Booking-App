@@ -762,6 +762,78 @@ export default function BookingsScreen() {
           </SafeAreaView>
         </Modal>
 
+        {/* Venue Picker Modal */}
+        <Modal
+          visible={showVenuePickerModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowVenuePickerModal(false)}>
+                <Text style={styles.modalCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Select Venue</Text>
+              <View style={{ width: 60 }} />
+            </View>
+            
+            <ScrollView style={styles.modalContent}>
+              {venues && venues.length > 0 ? (
+                venues.map((venue, index) => (
+                  <TouchableOpacity
+                    key={venue.id || index}
+                    style={[
+                      styles.venueOption,
+                      newBooking.venueId === venue.id && styles.venueOptionSelected
+                    ]}
+                    onPress={() => {
+                      setNewBooking({
+                        ...newBooking,
+                        venueId: venue.id,
+                        venueName: venue.name,
+                        sport: venue.sports_supported?.[0] || ''
+                      });
+                      setShowVenuePickerModal(false);
+                    }}
+                  >
+                    <View style={styles.venueOptionContent}>
+                      <Text style={[
+                        styles.venueOptionName,
+                        newBooking.venueId === venue.id && styles.venueOptionNameSelected
+                      ]}>
+                        {venue.name}
+                      </Text>
+                      <Text style={[
+                        styles.venueOptionDetails,
+                        newBooking.venueId === venue.id && styles.venueOptionDetailsSelected
+                      ]}>
+                        {venue.sports_supported?.join(', ')} • ₹{venue.base_price_per_hour}/hr
+                      </Text>
+                      <Text style={[
+                        styles.venueOptionAddress,
+                        newBooking.venueId === venue.id && styles.venueOptionAddressSelected
+                      ]}>
+                        {venue.address}
+                      </Text>
+                    </View>
+                    {newBooking.venueId === venue.id && (
+                      <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+                    )}
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.emptyVenueState}>
+                  <Ionicons name="business-outline" size={48} color="#9ca3af" />
+                  <Text style={styles.emptyVenueTitle}>No Venues Found</Text>
+                  <Text style={styles.emptyVenueText}>
+                    Please create a venue first to start booking.
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+
         <VenueOwnerBottomNavigation currentRoute="bookings" />
       </SafeAreaView>
     </View>
