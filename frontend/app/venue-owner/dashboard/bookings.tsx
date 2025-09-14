@@ -51,6 +51,7 @@ export default function BookingsScreen() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showAddBookingModal, setShowAddBookingModal] = useState(false);
+  const [showVenuePickerModal, setShowVenuePickerModal] = useState(false);
   const [newBooking, setNewBooking] = useState({
     venueId: '',
     venueName: '',
