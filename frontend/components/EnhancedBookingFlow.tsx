@@ -1010,11 +1010,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  stepsContainer: {
-    flexDirection: 'row',
-    flex: 1,
-  },
-  step: {
+  stepWrapper: {
     flex: 1,
   },
   stepContainer: {
