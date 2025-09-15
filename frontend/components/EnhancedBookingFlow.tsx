@@ -992,12 +992,16 @@ const styles = StyleSheet.create({
   progressLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    alignItems: 'center',
+    paddingHorizontal: 0,
+    marginTop: 8,
   },
   progressLabel: {
     fontSize: 12,
     fontWeight: '500',
     color: '#9ca3af',
+    textAlign: 'center',
+    flex: 1,
   },
   progressLabelActive: {
     color: '#212529',
