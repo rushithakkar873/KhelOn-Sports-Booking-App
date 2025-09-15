@@ -110,7 +110,6 @@ export default function EnhancedBookingFlow({
   });
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const slideAnimation = useRef(new Animated.Value(0)).current;
   const venueOwnerService = VenueOwnerService.getInstance();
 
   // Initialize booking data when venues change
