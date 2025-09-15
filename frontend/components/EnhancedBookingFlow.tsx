@@ -13,8 +13,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
-  PanGestureHandler,
-  State,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
