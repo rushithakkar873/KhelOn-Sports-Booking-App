@@ -110,8 +110,6 @@ export default function EnhancedBookingFlow({
   });
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [dragStartIndex, setDragStartIndex] = useState<number | null>(null);
-  const [dragEndIndex, setDragEndIndex] = useState<number | null>(null);
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const venueOwnerService = VenueOwnerService.getInstance();
 
