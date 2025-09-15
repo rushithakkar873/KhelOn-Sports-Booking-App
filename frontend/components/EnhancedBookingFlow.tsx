@@ -133,16 +133,6 @@ export default function EnhancedBookingFlow({
     }
   }, [bookingData.selectedVenue, bookingData.bookingDate]);
 
-  // Animate step transitions
-  useEffect(() => {
-    Animated.spring(slideAnimation, {
-      toValue: (bookingData.currentStep - 1) * -width,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 8,
-    }).start();
-  }, [bookingData.currentStep]);
-
   const generateTimeSlots = () => {
     if (!bookingData.selectedVenue || !bookingData.bookingDate) return;
 
