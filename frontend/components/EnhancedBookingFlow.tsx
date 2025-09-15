@@ -942,6 +942,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#212529',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 40, // Compensate for left button to center the title
   },
   progressContainer: {
     paddingHorizontal: 40,
