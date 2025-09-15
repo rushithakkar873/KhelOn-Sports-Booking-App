@@ -860,7 +860,6 @@ export default function EnhancedBookingFlow({
             <Ionicons name="close" size={24} color="#6b7280" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>New Booking</Text>
-          <View style={styles.headerButton} />
         </View>
 
         {/* Progress Bar */}
