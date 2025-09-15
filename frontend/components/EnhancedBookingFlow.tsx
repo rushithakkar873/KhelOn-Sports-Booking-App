@@ -870,22 +870,11 @@ export default function EnhancedBookingFlow({
           style={styles.content}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-          <Animated.View 
-            style={[
-              styles.stepsContainer,
-              { transform: [{ translateX: slideAnimation }] }
-            ]}
-          >
-            <View style={[styles.step, { width }]}>
-              {renderStep1()}
-            </View>
-            <View style={[styles.step, { width }]}>
-              {renderStep2()}
-            </View>
-            <View style={[styles.step, { width }]}>
-              {renderStep3()}
-            </View>
-          </Animated.View>
+          <View style={styles.stepWrapper}>
+            {bookingData.currentStep === 1 && renderStep1()}
+            {bookingData.currentStep === 2 && renderStep2()}
+            {bookingData.currentStep === 3 && renderStep3()}
+          </View>
         </KeyboardAvoidingView>
 
         {/* Navigation Footer */}
