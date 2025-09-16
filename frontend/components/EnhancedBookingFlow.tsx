@@ -60,56 +60,46 @@ interface EnhancedBookingFlowProps {
 }
 
 interface BookingData {
-  // Step 1 - Booking Basics
+  // Selection data
   venueId: string;
   venueName: string;
   selectedVenue: any;
   sport: string;
   bookingDate: string;
-  selectedDate: Date;
-  showDatePicker: boolean;
+  selectedTimePeriod: string;
+  selectedTimeSlot: string;
   
-  // Step 2 - Time & Duration
+  // Player details
+  playerName: string;
+  playerPhone: string;
+  notes: string;
+  
+  // Calculated fields
   startTime: string;
   endTime: string;
   duration: number;
-  availableSlots: string[];
-  selectedSlots: string[];
-  
-  // Step 3 - Player Details
-  playerName: string;
-  playerPhone: string;
   totalAmount: number;
-  notes: string;
   
   // UI State
   currentStep: number;
   isSubmitting: boolean;
+  isLoadingSlots: boolean;
 }
 
 interface TimeSlot {
   time: string;
+  endTime: string;
+  price: number;
   available: boolean;
-  status: 'available' | 'booked' | 'selected' | 'conflict';
-  price?: number;
 }
 
-const QUICK_DURATION_OPTIONS = [
-  { label: '30min', value: 0.5, sports: ['Tennis', 'Badminton'] },
-  { label: '1hr', value: 1, sports: ['Tennis', 'Badminton', 'Basketball'] },
-  { label: '1.5hr', value: 1.5, sports: ['Football', 'Basketball'] },
-  { label: '2hr', value: 2, sports: ['Cricket', 'Football'] },
-  { label: '3hr', value: 3, sports: ['Cricket'] },
-  { label: '4hr', value: 4, sports: ['Cricket'] },
-];
-
-const SPORT_SUGGESTIONS = {
-  'Cricket': { defaultDuration: 2, color: '#10b981' },
-  'Football': { defaultDuration: 1.5, color: '#3b82f6' },
-  'Badminton': { defaultDuration: 1, color: '#f59e0b' },
-  'Tennis': { defaultDuration: 1, color: '#ef4444' },
-  'Basketball': { defaultDuration: 1.5, color: '#8b5cf6' },
-};
+interface DateOption {
+  date: string;
+  displayDate: string;
+  dayName: string;
+  isToday: boolean;
+  isTomorrow: boolean;
+}
 
 export default function EnhancedBookingFlow({ 
   visible, 
