@@ -132,34 +132,80 @@ export default function EnhancedBookingFlow({
     }
   }, [bookingData.selectedVenue, bookingData.bookingDate]);
 
-  const generateTimeSlots = () => {
+  const generateTimeSlots = async () => {
     if (!bookingData.selectedVenue || !bookingData.bookingDate) return;
 
     const selectedDate = new Date(bookingData.bookingDate);
-    const dayOfWeek = selectedDate.getDay();
+    // FIX: Convert JavaScript day (0=Sunday) to backend day (0=Monday)
+    const jsDay = selectedDate.getDay();
+    const backendDay = jsDay === 0 ? 6 : jsDay - 1; // Sunday(0) -> 6, Monday(1) -> 0, etc.
     
     const venue = bookingData.selectedVenue;
     if (!venue.slots || !Array.isArray(venue.slots)) return;
 
-    // Find slots for selected day
-    const daySlots = venue.slots.filter((slot: any) => slot.day_of_week === dayOfWeek);
+    // Find slots for selected day with correct day conversion
+    const daySlots = venue.slots.filter((slot: any) => slot.day_of_week === backendDay);
+    
+    if (daySlots.length === 0) {
+      console.log(`No slots found for day ${backendDay} (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][backendDay]})`);
+      setTimeSlots([]);
+      return;
+    }
+
+    // Get existing bookings for conflict detection
+    let existingBookings: any[] = [];
+    try {
+      existingBookings = await venueOwnerService.getBookings(
+        venue.id, 
+        undefined, // status
+        bookingData.bookingDate, 
+        bookingData.bookingDate
+      );
+    } catch (error) {
+      console.warn('Could not fetch existing bookings for conflict detection:', error);
+    }
     
     const generatedSlots: TimeSlot[] = [];
     
     daySlots.forEach((slot: any) => {
-      const startHour = parseInt(slot.start_time.split(':')[0]);
-      const endHour = parseInt(slot.end_time.split(':')[0]);
+      // FIX: Handle time parsing more robustly
+      const startParts = slot.start_time.split(':');
+      const endParts = slot.end_time.split(':');
+      const startHour = parseInt(startParts[0]);
+      const startMin = parseInt(startParts[1]) || 0;
+      const endHour = parseInt(endParts[0]);
+      const endMin = parseInt(endParts[1]) || 0;
       
-      // Generate 30-minute slots
-      for (let hour = startHour; hour < endHour; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          const timeSlot = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          generatedSlots.push({
-            time: timeSlot,
-            available: true, // TODO: Check against existing bookings
-            status: 'available',
-            price: venue.base_price_per_hour ? (venue.base_price_per_hour / 2) : 500, // 30-min slot price
-          });
+      // Generate 30-minute slots within the slot timeframe
+      let currentHour = startHour;
+      let currentMin = startMin;
+      
+      while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
+        const timeSlot = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
+        
+        // Check if this time slot conflicts with existing bookings
+        const hasConflict = existingBookings.some(booking => {
+          if (booking.status === 'cancelled') return false;
+          
+          const bookingStart = booking.start_time;
+          const bookingEnd = booking.end_time;
+          
+          // Check if current slot falls within any existing booking
+          return timeSlot >= bookingStart && timeSlot < bookingEnd;
+        });
+        
+        generatedSlots.push({
+          time: timeSlot,
+          available: !hasConflict,
+          status: hasConflict ? 'booked' : 'available',
+          price: slot.price_per_hour ? (slot.price_per_hour / 2) : (venue.base_price_per_hour / 2), // 30-min slot price
+        });
+        
+        // Increment by 30 minutes
+        currentMin += 30;
+        if (currentMin >= 60) {
+          currentMin = 0;
+          currentHour++;
         }
       }
     });
