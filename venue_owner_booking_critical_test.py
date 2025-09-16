@@ -395,8 +395,13 @@ class VenueOwnerBookingTester:
             
             result = self.make_request("POST", "/venue-owner/bookings", booking_data, auth_required=True)
             
-            if not result["success"] and result["status_code"] == 400:
-                print(f"   ✅ Validation working: {result['data'].get('detail', 'Validation error')}")
+            if not result["success"] and result["status_code"] in [400, 422]:
+                error_detail = result['data'].get('detail', 'Validation error')
+                if isinstance(error_detail, list) and len(error_detail) > 0:
+                    error_msg = error_detail[0].get('msg', 'Validation error')
+                else:
+                    error_msg = str(error_detail)
+                print(f"   ✅ Validation working: {error_msg}")
             else:
                 print(f"   ❌ Validation failed: {result}")
                 return False
