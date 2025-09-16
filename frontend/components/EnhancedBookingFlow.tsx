@@ -141,14 +141,42 @@ export default function EnhancedBookingFlow({
     const backendDay = jsDay === 0 ? 6 : jsDay - 1; // Sunday(0) -> 6, Monday(1) -> 0, etc.
     
     const venue = bookingData.selectedVenue;
-    if (!venue.slots || !Array.isArray(venue.slots)) return;
+    
+    // DEBUG: Log venue data and date info
+    console.log('=== SLOT GENERATION DEBUG ===');
+    console.log('Selected Date:', bookingData.bookingDate);
+    console.log('JavaScript Day:', jsDay, ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][jsDay]);
+    console.log('Backend Day:', backendDay, ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][backendDay]);
+    console.log('Venue:', venue?.name);
+    console.log('Venue Slots:', venue?.slots);
+    
+    if (!venue.slots || !Array.isArray(venue.slots)) {
+      console.log('❌ No venue slots array found');
+      setTimeSlots([]);
+      return;
+    }
 
     // Find slots for selected day with correct day conversion
-    const daySlots = venue.slots.filter((slot: any) => slot.day_of_week === backendDay);
+    const daySlots = venue.slots.filter((slot: any) => {
+      console.log(`Checking slot day_of_week: ${slot.day_of_week}, looking for: ${backendDay}`);
+      return slot.day_of_week === backendDay;
+    });
+    
+    console.log('Filtered Day Slots:', daySlots);
     
     if (daySlots.length === 0) {
-      console.log(`No slots found for day ${backendDay} (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][backendDay]})`);
+      console.log(`❌ No slots found for day ${backendDay} (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][backendDay]})`);
+      
+      // Show helpful message to user
       setTimeSlots([]);
+      
+      // Don't return here, let's also try to find ANY slots for debugging
+      console.log('All available venue slots for debugging:');
+      venue.slots.forEach((slot: any, index: number) => {
+        const dayName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][slot.day_of_week] || 'Unknown';
+        console.log(`  Slot ${index}: Day ${slot.day_of_week} (${dayName}), ${slot.start_time}-${slot.end_time}`);
+      });
+      
       return;
     }
 
@@ -161,6 +189,7 @@ export default function EnhancedBookingFlow({
         bookingData.bookingDate, 
         bookingData.bookingDate
       );
+      console.log('Existing bookings:', existingBookings.length);
     } catch (error) {
       console.warn('Could not fetch existing bookings for conflict detection:', error);
     }
@@ -168,6 +197,8 @@ export default function EnhancedBookingFlow({
     const generatedSlots: TimeSlot[] = [];
     
     daySlots.forEach((slot: any) => {
+      console.log(`Processing slot: ${slot.start_time} - ${slot.end_time}`);
+      
       // FIX: Handle time parsing more robustly
       const startParts = slot.start_time.split(':');
       const endParts = slot.end_time.split(':');
@@ -210,6 +241,9 @@ export default function EnhancedBookingFlow({
       }
     });
 
+    console.log('Generated slots:', generatedSlots.length);
+    console.log('Generated time slots:', generatedSlots.map(s => s.time));
+    
     setTimeSlots(generatedSlots.sort((a, b) => a.time.localeCompare(b.time)));
   };
 
