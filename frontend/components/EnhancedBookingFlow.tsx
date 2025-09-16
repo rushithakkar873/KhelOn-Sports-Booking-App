@@ -342,31 +342,57 @@ export default function EnhancedBookingFlow({
   const handleTimeSlotPress = (slotIndex: number) => {
     const slot = timeSlots[slotIndex];
     
+    // FIX: Don't allow selecting booked slots
+    if (slot.status === 'booked') {
+      Alert.alert('Slot Unavailable', 'This time slot is already booked. Please select an available slot.');
+      return;
+    }
+    
     if (!bookingData.startTime) {
       // Set start time
       setBookingData(prev => ({
         ...prev,
         startTime: slot.time,
         selectedSlots: [slot.time],
+        endTime: '', // Reset end time when selecting new start
+        duration: 0,
+        totalAmount: 0,
       }));
       updateTimeSlotSelection(slotIndex, slotIndex);
     } else if (slotIndex > timeSlots.findIndex(s => s.time === bookingData.startTime)) {
-      // Set end time
+      // Set end time - validate contiguous available slots
       const startIndex = timeSlots.findIndex(s => s.time === bookingData.startTime);
-      const selectedSlots = timeSlots.slice(startIndex, slotIndex + 1).map(s => s.time);
-      const duration = selectedSlots.length * 0.5;
+      const selectedSlots = timeSlots.slice(startIndex, slotIndex + 1);
+      
+      // FIX: Check if all slots in range are available
+      const hasBookedSlot = selectedSlots.some(s => s.status === 'booked');
+      if (hasBookedSlot) {
+        Alert.alert('Invalid Selection', 'Cannot book across unavailable time slots. Please select a continuous available time range.');
+        return;
+      }
+      
+      const selectedSlotTimes = selectedSlots.map(s => s.time);
+      const duration = selectedSlotTimes.length * 0.5;
+      
+      // FIX: Calculate proper end time (add 30 minutes to last slot)
+      const lastSlotParts = slot.time.split(':');
+      const lastHour = parseInt(lastSlotParts[0]);
+      const lastMin = parseInt(lastSlotParts[1]);
+      const endHour = lastMin === 30 ? lastHour + 1 : lastHour;
+      const endMin = lastMin === 30 ? 0 : lastMin + 30;
+      const endTime = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
       
       setBookingData(prev => ({
         ...prev,
-        endTime: timeSlots[slotIndex + 1]?.time || slot.time,
+        endTime,
         duration,
-        selectedSlots,
-        totalAmount: calculateTotalAmount(selectedSlots.length),
+        selectedSlots: selectedSlotTimes,
+        totalAmount: calculateTotalAmount(selectedSlotTimes.length),
       }));
       
       updateTimeSlotSelection(startIndex, slotIndex);
     } else {
-      // Reset selection
+      // Reset selection if clicking before start time
       setBookingData(prev => ({
         ...prev,
         startTime: slot.time,
