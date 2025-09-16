@@ -794,81 +794,122 @@ export default function EnhancedBookingFlow({
         <Text style={styles.stepTitle}>Time & Duration</Text>
         <Text style={styles.stepSubtitle}>Select your preferred time slots</Text>
 
-        {/* Quick Duration Options */}
-        <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Quick Duration</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.durationSelector}>
-            {getRelevantDurationOptions().map((option) => (
-              <TouchableOpacity
-                key={option.label}
-                style={[
-                  styles.durationChip,
-                  bookingData.duration === option.value && styles.durationChipSelected,
-                ]}
-                onPress={() => handleQuickDuration(option.value)}
-              >
-                <Text style={[
-                  styles.durationChipText,
-                  bookingData.duration === option.value && styles.durationChipTextSelected,
-                ]}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Visual Timeline */}
-        <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Available Time Slots</Text>
-          <View style={styles.timelineContainer}>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              style={styles.timeline}
-              contentContainerStyle={styles.timelineContent}
+        {/* No Slots Available Message */}
+        {timeSlots.length === 0 ? (
+          <View style={styles.noSlotsContainer}>
+            <Ionicons name="calendar-outline" size={64} color="#9ca3af" />
+            <Text style={styles.noSlotsTitle}>No Available Slots</Text>
+            <Text style={styles.noSlotsText}>
+              No time slots are available for {bookingData.sport} at {bookingData.venueName} on{'\n'}
+              {new Date(bookingData.bookingDate).toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </Text>
+            <Text style={styles.noSlotsSubtext}>
+              Please try a different date or contact the venue owner to add more time slots.
+            </Text>
+            <TouchableOpacity 
+              style={styles.backToStep1Button}
+              onPress={() => setBookingData(prev => ({ ...prev, currentStep: 1 }))}
             >
-              {timeSlots.map((slot, index) => renderTimeSlot(slot, index))}
-            </ScrollView>
+              <Ionicons name="chevron-back" size={20} color="#3b82f6" />
+              <Text style={styles.backToStep1Text}>Choose Different Date</Text>
+            </TouchableOpacity>
           </View>
-          
-          {/* Legend */}
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.legendAvailable]} />
-              <Text style={styles.legendText}>Available</Text>
+        ) : (
+          <>
+            {/* Quick Duration Options */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Quick Duration</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.durationSelector}>
+                {getRelevantDurationOptions().map((option) => (
+                  <TouchableOpacity
+                    key={option.label}
+                    style={[
+                      styles.durationChip,
+                      bookingData.duration === option.value && styles.durationChipSelected,
+                    ]}
+                    onPress={() => handleQuickDuration(option.value)}
+                  >
+                    <Text style={[
+                      styles.durationChipText,
+                      bookingData.duration === option.value && styles.durationChipTextSelected,
+                    ]}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              {!bookingData.startTime && (
+                <Text style={styles.durationHint}>
+                  👆 First, select a start time from the timeline below, then choose duration
+                </Text>
+              )}
             </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.legendSelected]} />
-              <Text style={styles.legendText}>Selected</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendDot, styles.legendBooked]} />
-              <Text style={styles.legendText}>Booked</Text>
-            </View>
-          </View>
-        </View>
 
-        {/* Selection Summary */}
-        {bookingData.startTime && bookingData.endTime && (
-          <View style={styles.selectionSummary}>
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryHeader}>
-                <Ionicons name="time-outline" size={24} color="#3b82f6" />
-                <Text style={styles.summaryTitle}>Selected Time</Text>
+            {/* Visual Timeline */}
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Available Time Slots</Text>
+              <View style={styles.timelineContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.timeline}
+                  contentContainerStyle={styles.timelineContent}
+                >
+                  {timeSlots.map((slot, index) => renderTimeSlot(slot, index))}
+                </ScrollView>
               </View>
-              <Text style={styles.summaryTime}>
-                {bookingData.startTime} - {bookingData.endTime}
-              </Text>
-              <Text style={styles.summaryDuration}>
-                Duration: {bookingData.duration} hour{bookingData.duration !== 1 ? 's' : ''}
-              </Text>
-              <View style={styles.summaryAmount}>
-                <Text style={styles.summaryAmountLabel}>Total Amount:</Text>
-                <Text style={styles.summaryAmountValue}>₹{bookingData.totalAmount}</Text>
+              
+              {/* Legend */}
+              <View style={styles.legend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, styles.legendAvailable]} />
+                  <Text style={styles.legendText}>Available</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, styles.legendSelected]} />
+                  <Text style={styles.legendText}>Selected</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, styles.legendBooked]} />
+                  <Text style={styles.legendText}>Booked</Text>
+                </View>
+              </View>
+              
+              {/* Instructions */}
+              <View style={styles.instructionsCard}>
+                <Text style={styles.instructionsText}>
+                  📝 Tap on a time slot to select start time, then tap another slot to set end time, or use quick duration buttons above.
+                </Text>
               </View>
             </View>
-          </View>
+
+            {/* Selection Summary */}
+            {bookingData.startTime && bookingData.endTime && (
+              <View style={styles.selectionSummary}>
+                <View style={styles.summaryCard}>
+                  <View style={styles.summaryHeader}>
+                    <Ionicons name="time-outline" size={24} color="#3b82f6" />
+                    <Text style={styles.summaryTitle}>Selected Time</Text>
+                  </View>
+                  <Text style={styles.summaryTime}>
+                    {bookingData.startTime} - {bookingData.endTime}
+                  </Text>
+                  <Text style={styles.summaryDuration}>
+                    Duration: {bookingData.duration} hour{bookingData.duration !== 1 ? 's' : ''}
+                  </Text>
+                  <View style={styles.summaryAmount}>
+                    <Text style={styles.summaryAmountLabel}>Total Amount:</Text>
+                    <Text style={styles.summaryAmountValue}>₹{bookingData.totalAmount}</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     </View>
