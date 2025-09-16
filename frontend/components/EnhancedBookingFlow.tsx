@@ -177,119 +177,104 @@ export default function EnhancedBookingFlow({
     }
   }, [bookingData.selectedVenue, bookingData.bookingDate, bookingData.selectedTimePeriod]);
 
-  const generateTimeSlots = async () => {
-    if (!bookingData.selectedVenue || !bookingData.bookingDate) return;
+  const generateAvailableTimeSlots = async () => {
+    if (!bookingData.selectedVenue || !bookingData.bookingDate || !bookingData.selectedTimePeriod) return;
 
-    const selectedDate = new Date(bookingData.bookingDate);
-    // FIX: Convert JavaScript day (0=Sunday) to backend day (0=Monday)
-    const jsDay = selectedDate.getDay();
-    const backendDay = jsDay === 0 ? 6 : jsDay - 1; // Sunday(0) -> 6, Monday(1) -> 0, etc.
-    
-    const venue = bookingData.selectedVenue;
-    
-    // DEBUG: Log venue data and date info
-    console.log('=== SLOT GENERATION DEBUG ===');
-    console.log('Selected Date:', bookingData.bookingDate);
-    console.log('JavaScript Day:', jsDay, ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][jsDay]);
-    console.log('Backend Day:', backendDay, ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][backendDay]);
-    console.log('Venue:', venue?.name);
-    console.log('Venue Slots:', venue?.slots);
-    
-    if (!venue.slots || !Array.isArray(venue.slots)) {
-      console.log('❌ No venue slots array found');
-      setTimeSlots([]);
-      return;
-    }
+    setBookingData(prev => ({ ...prev, isLoadingSlots: true }));
 
-    // Find slots for selected day with correct day conversion
-    const daySlots = venue.slots.filter((slot: any) => {
-      console.log(`Checking slot day_of_week: ${slot.day_of_week}, looking for: ${backendDay}`);
-      return slot.day_of_week === backendDay;
-    });
-    
-    console.log('Filtered Day Slots:', daySlots);
-    
-    if (daySlots.length === 0) {
-      console.log(`❌ No slots found for day ${backendDay} (${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][backendDay]})`);
-      
-      // Show helpful message to user
-      setTimeSlots([]);
-      
-      // Don't return here, let's also try to find ANY slots for debugging
-      console.log('All available venue slots for debugging:');
-      venue.slots.forEach((slot: any, index: number) => {
-        const dayName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][slot.day_of_week] || 'Unknown';
-        console.log(`  Slot ${index}: Day ${slot.day_of_week} (${dayName}), ${slot.start_time}-${slot.end_time}`);
-      });
-      
-      return;
-    }
-
-    // Get existing bookings for conflict detection
-    let existingBookings: any[] = [];
     try {
-      existingBookings = await venueOwnerService.getBookings(
-        venue.id, 
-        undefined, // status
-        bookingData.bookingDate, 
-        bookingData.bookingDate
-      );
-      console.log('Existing bookings:', existingBookings.length);
-    } catch (error) {
-      console.warn('Could not fetch existing bookings for conflict detection:', error);
-    }
-    
-    const generatedSlots: TimeSlot[] = [];
-    
-    daySlots.forEach((slot: any) => {
-      console.log(`Processing slot: ${slot.start_time} - ${slot.end_time}`);
+      const selectedDate = new Date(bookingData.bookingDate);
+      // Convert JavaScript day (0=Sunday) to backend day (0=Monday)
+      const jsDay = selectedDate.getDay();
+      const backendDay = jsDay === 0 ? 6 : jsDay - 1;
       
-      // FIX: Handle time parsing more robustly
-      const startParts = slot.start_time.split(':');
-      const endParts = slot.end_time.split(':');
-      const startHour = parseInt(startParts[0]);
-      const startMin = parseInt(startParts[1]) || 0;
-      const endHour = parseInt(endParts[0]);
-      const endMin = parseInt(endParts[1]) || 0;
+      const venue = bookingData.selectedVenue;
       
-      // Generate 30-minute slots within the slot timeframe
-      let currentHour = startHour;
-      let currentMin = startMin;
+      console.log('=== GENERATING 1-HOUR SLOTS ===');
+      console.log('Selected Date:', bookingData.bookingDate);
+      console.log('Time Period:', bookingData.selectedTimePeriod);
+      console.log('Backend Day:', backendDay);
       
-      while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
-        const timeSlot = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
-        
-        // Check if this time slot conflicts with existing bookings
-        const hasConflict = existingBookings.some(booking => {
-          if (booking.status === 'cancelled') return false;
-          
-          const bookingStart = booking.start_time;
-          const bookingEnd = booking.end_time;
-          
-          // Check if current slot falls within any existing booking
-          return timeSlot >= bookingStart && timeSlot < bookingEnd;
-        });
-        
-        generatedSlots.push({
-          time: timeSlot,
-          available: !hasConflict,
-          status: hasConflict ? 'booked' : 'available',
-          price: slot.price_per_hour ? (slot.price_per_hour / 2) : (venue.base_price_per_hour / 2), // 30-min slot price
-        });
-        
-        // Increment by 30 minutes
-        currentMin += 30;
-        if (currentMin >= 60) {
-          currentMin = 0;
-          currentHour++;
-        }
+      if (!venue.slots || !Array.isArray(venue.slots)) {
+        console.log('❌ No venue slots found');
+        setTimeSlots([]);
+        return;
       }
-    });
 
-    console.log('Generated slots:', generatedSlots.length);
-    console.log('Generated time slots:', generatedSlots.map(s => s.time));
-    
-    setTimeSlots(generatedSlots.sort((a, b) => a.time.localeCompare(b.time)));
+      // Find venue slots for the selected day
+      const daySlots = venue.slots.filter((slot: any) => slot.day_of_week === backendDay);
+      
+      if (daySlots.length === 0) {
+        console.log(`❌ No slots for day ${backendDay}`);
+        setTimeSlots([]);
+        return;
+      }
+
+      // Get existing bookings for conflict detection
+      let existingBookings: any[] = [];
+      try {
+        existingBookings = await venueOwnerService.getBookings(
+          venue.id, 
+          undefined,
+          bookingData.bookingDate, 
+          bookingData.bookingDate
+        );
+      } catch (error) {
+        console.warn('Could not fetch existing bookings:', error);
+      }
+
+      // Get selected time period
+      const selectedPeriod = TIME_PERIODS.find(p => p.key === bookingData.selectedTimePeriod);
+      if (!selectedPeriod) return;
+
+      const availableSlots: TimeSlot[] = [];
+      
+      daySlots.forEach((slot: any) => {
+        const startParts = slot.start_time.split(':');
+        const endParts = slot.end_time.split(':');
+        const slotStartHour = parseInt(startParts[0]);
+        const slotEndHour = parseInt(endParts[0]);
+        
+        // Generate 1-hour slots within venue slot time and selected period
+        for (let hour = Math.max(slotStartHour, selectedPeriod.startHour); 
+             hour < Math.min(slotEndHour, selectedPeriod.endHour); 
+             hour++) {
+          
+          const startTime = `${hour.toString().padStart(2, '0')}:00`;
+          const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
+          
+          // Check if this 1-hour slot conflicts with existing bookings
+          const hasConflict = existingBookings.some(booking => {
+            if (booking.status === 'cancelled') return false;
+            
+            const bookingStart = booking.start_time;
+            const bookingEnd = booking.end_time;
+            
+            // Check for any overlap between our 1-hour slot and existing booking
+            return (startTime < bookingEnd && endTime > bookingStart);
+          });
+          
+          // Only add available slots (hide booked ones completely)
+          if (!hasConflict) {
+            availableSlots.push({
+              time: startTime,
+              endTime: endTime,
+              price: slot.price_per_hour || venue.base_price_per_hour || 1000,
+              available: true,
+            });
+          }
+        }
+      });
+
+      console.log('Available 1-hour slots:', availableSlots.length);
+      setTimeSlots(availableSlots.sort((a, b) => a.time.localeCompare(b.time)));
+      
+    } catch (error) {
+      console.error('Error generating time slots:', error);
+      setTimeSlots([]);
+    } finally {
+      setBookingData(prev => ({ ...prev, isLoadingSlots: false }));
+    }
   };
 
   const handleStepNavigation = (direction: 'next' | 'back') => {
