@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timedelta
 
 # Configuration
-BASE_URL = "https://sport-connect-3.preview.emergentagent.com/api"
+BASE_URL = "https://matchfinder-7.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 def test_simple_booking_flow():
