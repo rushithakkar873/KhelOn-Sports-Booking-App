@@ -389,30 +389,14 @@ export default function EnhancedBookingFlow({
   const handleSubmitBooking = async () => {
     if (!validateCurrentStep()) return;
 
-    // FIX: Additional validation before submission
+    // Additional validation
     if (!bookingData.startTime || !bookingData.endTime) {
-      Alert.alert('Invalid Time Selection', 'Please select both start and end time.');
+      Alert.alert('Invalid Time Selection', 'Please select a valid time slot.');
       return;
     }
 
     if (bookingData.duration <= 0) {
       Alert.alert('Invalid Duration', 'Please select a valid time duration.');
-      return;
-    }
-
-    if (bookingData.selectedSlots.length === 0) {
-      Alert.alert('No Time Slots Selected', 'Please select time slots for the booking.');
-      return;
-    }
-
-    // FIX: Validate that all selected slots are still available
-    const currentlySelectedSlots = timeSlots.filter(slot => 
-      bookingData.selectedSlots.includes(slot.time)
-    );
-    
-    const hasBookedSlot = currentlySelectedSlots.some(slot => slot.status === 'booked');
-    if (hasBookedSlot) {
-      Alert.alert('Slots No Longer Available', 'Some selected time slots are no longer available. Please refresh and try again.');
       return;
     }
 
@@ -427,7 +411,7 @@ export default function EnhancedBookingFlow({
         start_time: bookingData.startTime,
         end_time: bookingData.endTime,
         sport: bookingData.sport,
-        notes: bookingData.notes || `Enhanced booking - ${bookingData.duration} hour(s)`,
+        notes: bookingData.notes || `1-hour booking for ${bookingData.sport}`,
       };
 
       console.log('Submitting booking payload:', bookingPayload);
@@ -460,31 +444,28 @@ export default function EnhancedBookingFlow({
       selectedVenue: null,
       sport: '',
       bookingDate: '',
-      selectedDate: new Date(),
-      showDatePicker: false,
-      startTime: '',
-      endTime: '',
-      duration: 0,
-      availableSlots: [],
-      selectedSlots: [],
+      selectedTimePeriod: 'morning',
+      selectedTimeSlot: '',
       playerName: '',
       playerPhone: '',
-      totalAmount: 0,
       notes: '',
+      startTime: '',
+      endTime: '',
+      duration: 1,
+      totalAmount: 0,
       currentStep: 1,
       isSubmitting: false,
+      isLoadingSlots: false,
     });
     setTimeSlots([]);
   };
 
-  const getSportColor = (sport: string) => {
-    return SPORT_SUGGESTIONS[sport as keyof typeof SPORT_SUGGESTIONS]?.color || '#6b7280';
-  };
-
-  const getRelevantDurationOptions = () => {
-    return QUICK_DURATION_OPTIONS.filter(option => 
-      option.sports.includes(bookingData.sport) || option.value <= 2
-    );
+  const formatTime12Hour = (time24: string) => {
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
   };
 
   const renderProgressBar = () => (
