@@ -19,8 +19,38 @@ import { Ionicons } from '@expo/vector-icons';
 import VenueOwnerService from '../services/venueOwnerService';
 
 const { width } = Dimensions.get('window');
-const SLOT_WIDTH = 60;
-const SLOT_HEIGHT = 50;
+
+// Time period definitions
+const TIME_PERIODS = [
+  { 
+    key: 'morning', 
+    label: '🌅 Morning', 
+    startHour: 6, 
+    endHour: 12,
+    color: '#f59e0b' 
+  },
+  { 
+    key: 'afternoon', 
+    label: '☀️ Afternoon', 
+    startHour: 12, 
+    endHour: 18,
+    color: '#3b82f6' 
+  },
+  { 
+    key: 'evening', 
+    label: '🌙 Evening', 
+    startHour: 18, 
+    endHour: 24,
+    color: '#8b5cf6' 
+  },
+  { 
+    key: 'latenight', 
+    label: '🌃 Late Night', 
+    startHour: 0, 
+    endHour: 6,
+    color: '#1f2937' 
+  },
+];
 
 interface EnhancedBookingFlowProps {
   visible: boolean;
