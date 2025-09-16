@@ -471,7 +471,7 @@ export default function EnhancedBookingFlow({
   const renderProgressBar = () => (
     <View style={styles.progressContainer}>
       <View style={styles.progressBar}>
-        {[1, 2, 3].map((step) => (
+        {[1, 2].map((step) => (
           <View key={step} style={styles.progressStep}>
             <View style={[
               styles.progressDot,
@@ -488,7 +488,7 @@ export default function EnhancedBookingFlow({
                 </Text>
               )}
             </View>
-            {step < 3 && (
+            {step < 2 && (
               <View style={[
                 styles.progressLine,
                 bookingData.currentStep > step && styles.progressLineActive,
@@ -499,13 +499,10 @@ export default function EnhancedBookingFlow({
       </View>
       <View style={styles.progressLabels}>
         <Text style={[styles.progressLabel, bookingData.currentStep === 1 && styles.progressLabelActive]}>
-          Basics
+          Select Time
         </Text>
         <Text style={[styles.progressLabel, bookingData.currentStep === 2 && styles.progressLabelActive]}>
-          Time
-        </Text>
-        <Text style={[styles.progressLabel, bookingData.currentStep === 3 && styles.progressLabelActive]}>
-          Details
+          Confirm Booking
         </Text>
       </View>
     </View>
