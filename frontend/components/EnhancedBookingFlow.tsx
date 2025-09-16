@@ -316,8 +316,17 @@ export default function EnhancedBookingFlow({
       return;
     }
 
+    // FIX: Validate that all required slots are available
+    const requiredSlots = timeSlots.slice(startIndex, endIndex + 1);
+    const hasBookedSlot = requiredSlots.some(slot => slot.status === 'booked');
+    
+    if (hasBookedSlot) {
+      Alert.alert('Slots Unavailable', 'Some time slots in the selected duration are already booked. Please choose a different time or duration.');
+      return;
+    }
+
     const endTime = timeSlots[endIndex + 1]?.time || timeSlots[endIndex].time;
-    const selectedSlots = timeSlots.slice(startIndex, endIndex + 1).map(slot => slot.time);
+    const selectedSlots = requiredSlots.map(slot => slot.time);
 
     setBookingData(prev => ({
       ...prev,
