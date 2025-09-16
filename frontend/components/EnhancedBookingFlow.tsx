@@ -854,7 +854,6 @@ export default function EnhancedBookingFlow({
           <View style={styles.stepWrapper}>
             {bookingData.currentStep === 1 && renderStep1()}
             {bookingData.currentStep === 2 && renderStep2()}
-            {bookingData.currentStep === 3 && renderStep3()}
           </View>
         </KeyboardAvoidingView>
 
@@ -872,12 +871,12 @@ export default function EnhancedBookingFlow({
           
           <View style={styles.footerSpacer} />
           
-          {bookingData.currentStep < 3 ? (
+          {bookingData.currentStep < 2 ? (
             <TouchableOpacity
               style={styles.nextButton}
               onPress={() => handleStepNavigation('next')}
             >
-              <Text style={styles.nextButtonText}>Next</Text>
+              <Text style={styles.nextButtonText}>Continue</Text>
               <Ionicons name="chevron-forward" size={20} color="#ffffff" />
             </TouchableOpacity>
           ) : (
