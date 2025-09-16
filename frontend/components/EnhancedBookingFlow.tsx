@@ -924,7 +924,7 @@ const styles = StyleSheet.create({
     color: '#212529',
     flex: 1,
     textAlign: 'center',
-    marginRight: 40, // Compensate for left button to center the title
+    marginRight: 40,
   },
   progressContainer: {
     paddingHorizontal: 40,
@@ -1011,6 +1011,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     marginBottom: 32,
+    lineHeight: 22,
   },
   formGroup: {
     marginBottom: 24,
@@ -1019,7 +1020,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   formInput: {
     borderWidth: 1,
@@ -1031,519 +1032,115 @@ const styles = StyleSheet.create({
     color: '#212529',
     backgroundColor: '#f9fafb',
   },
-  disabledInput: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#cbd5e1',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  disabledInputText: {
-    fontSize: 16,
-    color: '#64748b',
-    fontWeight: '500',
-    flex: 1,
-  },
   notesInput: {
     minHeight: 80,
     textAlignVertical: 'top',
   },
-  venueSelector: {
+
+  // Dropdown styles (replacing venue/sport selection)
+  dropdown: {
     flexDirection: 'row',
-  },
-  venueCard: {
-    backgroundColor: '#f8fafc',
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    padding: 16,
-    marginRight: 12,
-    minWidth: 140,
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  venueCardSelected: {
-    backgroundColor: '#eff6ff',
-    borderColor: '#3b82f6',
-  },
-  venueCardName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  venueCardNameSelected: {
-    color: '#1e40af',
-  },
-  venueCardDetails: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 8,
-  },
-  venueCardDetailsSelected: {
-    color: '#3730a3',
-  },
-  sportSelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  sportChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: '#ffffff',
-  },
-  sportChipSelected: {
-    borderColor: 'transparent',
-  },
-  sportChipText: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  sportChipTextSelected: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  dateSelector: {
     borderWidth: 1,
     borderColor: '#d1d5db',
     borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     backgroundColor: '#f9fafb',
   },
-  dateSelectorContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  dateSelectorText: {
-    fontSize: 16,
-    color: '#374151',
-    flex: 1,
-    marginLeft: 12,
-  },
-  datePlaceholder: {
-    color: '#9ca3af',
-  },
-  datePickerContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    overflow: 'hidden',
-  },
-  datePicker: {
-    backgroundColor: '#ffffff',
-  },
-  datePickerActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#f8fafc',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  datePickerButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 8,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  datePickerCancel: {
+  dropdownDisabled: {
     backgroundColor: '#f1f5f9',
+    borderColor: '#cbd5e1',
   },
-  datePickerConfirm: {
-    backgroundColor: '#3b82f6',
-  },
-  datePickerCancelText: {
+  dropdownText: {
     fontSize: 16,
-    color: '#64748b',
+    color: '#212529',
     fontWeight: '500',
   },
-  datePickerConfirmText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
+  dropdownPlaceholder: {
+    color: '#9ca3af',
   },
-  suggestionCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    marginTop: 8,
+
+  // Date selection styles
+  dateScrollView: {
+    flexGrow: 0,
   },
-  suggestionContent: {
-    flex: 1,
-    marginLeft: 12,
+  dateContainer: {
+    paddingRight: 20,
+    gap: 12,
   },
-  suggestionTitle: {
+  dateChip: {
+    backgroundColor: '#ffffff',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    alignItems: 'center',
+    minWidth: 80,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  dateChipSelected: {
+    backgroundColor: '#10b981',
+    borderColor: '#10b981',
+    shadowColor: '#10b981',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  dateChipLabel: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 4,
+    color: '#374151',
+    marginBottom: 2,
   },
-  suggestionText: {
-    fontSize: 13,
+  dateChipLabelSelected: {
+    color: '#ffffff',
+  },
+  dateChipDate: {
+    fontSize: 12,
     color: '#6b7280',
+    fontWeight: '500',
   },
-  durationSelector: {
-    flexDirection: 'row',
+  dateChipDateSelected: {
+    color: 'rgba(255, 255, 255, 0.9)',
   },
-  durationChip: {
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
+
+  // Time period styles
+  periodScrollView: {
+    flexGrow: 0,
+  },
+  periodContainer: {
+    paddingRight: 20,
+    gap: 12,
+  },
+  periodChip: {
+    backgroundColor: '#ffffff',
+    borderWidth: 2,
     borderColor: '#e5e7eb',
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
+    paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  durationChipSelected: {
-    backgroundColor: '#212529',
-    borderColor: '#212529',
+  periodChipSelected: {
+    borderColor: 'transparent',
   },
-  durationChipText: {
+  periodChipText: {
     fontSize: 14,
     color: '#6b7280',
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  durationChipTextSelected: {
+  periodChipTextSelected: {
     color: '#ffffff',
-    fontWeight: '600',
-  },
-  timelineContainer: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  timeline: {
-    flexGrow: 0,
-  },
-  timelineContent: {
-    paddingRight: 16,
-  },
-  timeSlot: {
-    width: SLOT_WIDTH,
-    height: SLOT_HEIGHT,
-    borderRadius: 8,
-    marginRight: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  timeSlotAvailable: {
-    backgroundColor: '#ffffff',
-    borderColor: '#d1d5db',
-  },
-  timeSlotSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
-  },
-  timeSlotBooked: {
-    backgroundColor: '#fee2e2',
-    borderColor: '#fca5a5',
-  },
-  timeSlotStart: {
-    borderTopLeftRadius: 12,
-    borderBottomLeftRadius: 12,
-  },
-  timeSlotEnd: {
-    borderTopRightRadius: 12,
-    borderBottomRightRadius: 12,
-  },
-  timeSlotText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  timeSlotTextSelected: {
-    color: '#ffffff',
-  },
-  timeSlotTextBooked: {
-    color: '#ef4444',
-  },
-  legend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 16,
-    gap: 20,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 6,
-  },
-  legendAvailable: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-  },
-  legendSelected: {
-    backgroundColor: '#3b82f6',
-  },
-  legendBooked: {
-    backgroundColor: '#fee2e2',
-  },
-  legendText: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  selectionSummary: {
-    marginTop: 24,
-  },
-  summaryCard: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e40af',
-    marginLeft: 8,
-  },
-  summaryTime: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#1e40af',
-    marginBottom: 8,
-  },
-  summaryDuration: {
-    fontSize: 14,
-    color: '#3730a3',
-    marginBottom: 12,
-  },
-  summaryAmount: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#bfdbfe',
-  },
-  summaryAmountLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e40af',
-  },
-  summaryAmountValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#059669',
-  },
-  bookingSummary: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  summaryLabel: {
-    fontSize: 14,
-    color: '#64748b',
-    fontWeight: '500',
-    flex: 1,
-  },
-  summaryValue: {
-    fontSize: 14,
-    color: '#1e293b',
-    fontWeight: '600',
-    flex: 2,
-    textAlign: 'right',
-  },
-  totalRow: {
-    borderBottomWidth: 0,
-    paddingTop: 12,
-    marginTop: 8,
-    borderTopWidth: 2,
-    borderTopColor: '#e2e8f0',
-  },
-  totalLabel: {
-    fontSize: 16,
-    color: '#1e293b',
-    fontWeight: '700',
-    flex: 1,
-  },
-  totalValue: {
-    fontSize: 18,
-    color: '#059669',
-    fontWeight: '800',
-    flex: 2,
-    textAlign: 'right',
-  },
-  actionInfo: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  actionInfoContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  actionInfoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e40af',
-    marginBottom: 8,
-  },
-  actionInfoText: {
-    fontSize: 14,
-    color: '#1e40af',
-    lineHeight: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    backgroundColor: '#ffffff',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: '#f8fafc',
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#6b7280',
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  footerSpacer: {
-    flex: 1,
-  },
-  nextButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#212529',
-  },
-  nextButtonText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
-    marginRight: 4,
-  },
-  submitButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#059669',
-    minWidth: 140,
-    alignItems: 'center',
-  },
-  submitButtonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  submitButtonText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  
-  // New styles for no slots handling
-  noSlotsContainer: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
-  },
-  noSlotsTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#374151',
-    marginTop: 16,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  noSlotsText: {
-    fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 12,
-  },
-  noSlotsSubtext: {
-    fontSize: 14,
-    color: '#9ca3af',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
-  },
-  backToStep1Button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    backgroundColor: '#eff6ff',
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  backToStep1Text: {
-    fontSize: 16,
-    color: '#3b82f6',
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  durationHint: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 8,
-    fontStyle: 'italic',
-  },
-  instructionsCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  instructionsText: {
-    fontSize: 12,
-    color: '#64748b',
-    lineHeight: 16,
   },
 });
