@@ -423,6 +423,33 @@ export default function EnhancedBookingFlow({
   const handleSubmitBooking = async () => {
     if (!validateCurrentStep()) return;
 
+    // FIX: Additional validation before submission
+    if (!bookingData.startTime || !bookingData.endTime) {
+      Alert.alert('Invalid Time Selection', 'Please select both start and end time.');
+      return;
+    }
+
+    if (bookingData.duration <= 0) {
+      Alert.alert('Invalid Duration', 'Please select a valid time duration.');
+      return;
+    }
+
+    if (bookingData.selectedSlots.length === 0) {
+      Alert.alert('No Time Slots Selected', 'Please select time slots for the booking.');
+      return;
+    }
+
+    // FIX: Validate that all selected slots are still available
+    const currentlySelectedSlots = timeSlots.filter(slot => 
+      bookingData.selectedSlots.includes(slot.time)
+    );
+    
+    const hasBookedSlot = currentlySelectedSlots.some(slot => slot.status === 'booked');
+    if (hasBookedSlot) {
+      Alert.alert('Slots No Longer Available', 'Some selected time slots are no longer available. Please refresh and try again.');
+      return;
+    }
+
     setBookingData(prev => ({ ...prev, isSubmitting: true }));
 
     try {
@@ -436,6 +463,8 @@ export default function EnhancedBookingFlow({
         sport: bookingData.sport,
         notes: bookingData.notes || `Enhanced booking - ${bookingData.duration} hour(s)`,
       };
+
+      console.log('Submitting booking payload:', bookingPayload);
 
       const response = await venueOwnerService.createBooking(bookingPayload);
       
@@ -451,7 +480,8 @@ export default function EnhancedBookingFlow({
         ]
       );
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create booking');
+      console.error('Booking creation error:', error);
+      Alert.alert('Error', error.message || 'Failed to create booking. Please check your inputs and try again.');
     } finally {
       setBookingData(prev => ({ ...prev, isSubmitting: false }));
     }
