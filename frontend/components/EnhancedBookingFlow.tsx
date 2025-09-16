@@ -1676,4 +1676,68 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '600',
   },
+  
+  // New styles for no slots handling
+  noSlotsContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  noSlotsTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  noSlotsText: {
+    fontSize: 16,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  noSlotsSubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  backToStep1Button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  backToStep1Text: {
+    fontSize: 16,
+    color: '#3b82f6',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  durationHint: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  instructionsCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  instructionsText: {
+    fontSize: 12,
+    color: '#64748b',
+    lineHeight: 16,
+  },
 });
