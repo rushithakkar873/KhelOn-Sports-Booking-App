@@ -1143,4 +1143,263 @@ const styles = StyleSheet.create({
   periodChipTextSelected: {
     color: '#ffffff',
   },
+
+  // Time slots grid styles (3-column mobile layout)
+  timeSlotsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 8,
+  },
+  timeSlotButton: {
+    backgroundColor: '#ffffff',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // 3 columns with gaps: (width - gaps) / 3
+    width: (width - 40 - 24) / 3, // container padding (40) + gaps (24)
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  timeSlotButtonSelected: {
+    backgroundColor: '#10b981',
+    borderColor: '#10b981',
+    shadowColor: '#10b981',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  timeSlotText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  timeSlotTextSelected: {
+    color: '#ffffff',
+  },
+  timeSlotPrice: {
+    fontSize: 12,
+    color: '#10b981',
+    fontWeight: '600',
+  },
+  timeSlotPriceSelected: {
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+
+  // Skeleton loading styles
+  timeSlotSkeleton: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: (width - 40 - 24) / 3,
+    height: 64,
+    overflow: 'hidden',
+  },
+  skeletonShimmer: {
+    backgroundColor: '#e2e8f0',
+    width: '80%',
+    height: 12,
+    borderRadius: 6,
+    opacity: 0.7,
+  },
+
+  // Selection summary styles
+  selectionSummary: {
+    marginTop: 24,
+  },
+  summaryCard: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0c4a6e',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  summaryDetails: {
+    gap: 8,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0f2fe',
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#0369a1',
+    fontWeight: '500',
+    flex: 1,
+  },
+  summaryValue: {
+    fontSize: 14,
+    color: '#0c4a6e',
+    fontWeight: '600',
+    flex: 2,
+    textAlign: 'right',
+  },
+  totalRow: {
+    borderBottomWidth: 0,
+    paddingTop: 12,
+    marginTop: 8,
+    borderTopWidth: 2,
+    borderTopColor: '#bae6fd',
+  },
+  totalLabel: {
+    fontSize: 16,
+    color: '#0c4a6e',
+    fontWeight: '700',
+    flex: 1,
+  },
+  totalValue: {
+    fontSize: 18,
+    color: '#059669',
+    fontWeight: '800',
+    flex: 2,
+    textAlign: 'right',
+  },
+
+  // No slots container
+  noSlotsContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  noSlotsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noSlotsText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+  // Booking summary (Step 2)
+  bookingSummary: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+
+  // Action info
+  actionInfo: {
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  actionInfoContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  actionInfoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e40af',
+    marginBottom: 8,
+  },
+  actionInfoText: {
+    fontSize: 14,
+    color: '#1e40af',
+    lineHeight: 20,
+  },
+
+  // Footer navigation
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    backgroundColor: '#ffffff',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '500',
+    marginLeft: 4,
+  },
+  footerSpacer: {
+    flex: 1,
+  },
+  nextButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#212529',
+    shadowColor: '#212529',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  nextButtonText: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  submitButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#059669',
+    minWidth: 140,
+    alignItems: 'center',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#9ca3af',
+    shadowOpacity: 0.1,
+  },
+  submitButtonText: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: '600',
+  },
 });
