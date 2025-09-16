@@ -277,12 +277,72 @@ export default function EnhancedBookingFlow({
     }
   };
 
+  const handleVenueSelection = (venue: any) => {
+    setBookingData(prev => ({
+      ...prev,
+      venueId: venue.id,
+      venueName: venue.name,
+      selectedVenue: venue,
+      sport: venue.sports_supported?.[0] || '',
+      selectedTimeSlot: '', // Reset time slot when venue changes
+      startTime: '',
+      endTime: '',
+      totalAmount: 0,
+    }));
+  };
+
+  const handleSportSelection = (sport: string) => {
+    setBookingData(prev => ({
+      ...prev,
+      sport,
+      selectedTimeSlot: '', // Reset time slot when sport changes
+      startTime: '',
+      endTime: '',
+      totalAmount: 0,
+    }));
+  };
+
+  const handleDateSelection = (date: string) => {
+    setBookingData(prev => ({
+      ...prev,
+      bookingDate: date,
+      selectedTimeSlot: '', // Reset time slot when date changes
+      startTime: '',
+      endTime: '',
+      totalAmount: 0,
+    }));
+  };
+
+  const handleTimePeriodSelection = (period: string) => {
+    setBookingData(prev => ({
+      ...prev,
+      selectedTimePeriod: period,
+      selectedTimeSlot: '', // Reset time slot when period changes
+      startTime: '',
+      endTime: '',
+      totalAmount: 0,
+    }));
+  };
+
+  const handleTimeSlotSelection = (slot: TimeSlot) => {
+    const totalAmount = slot.price;
+    
+    setBookingData(prev => ({
+      ...prev,
+      selectedTimeSlot: slot.time,
+      startTime: slot.time,
+      endTime: slot.endTime,
+      duration: 1, // 1 hour slots
+      totalAmount,
+    }));
+  };
+
   const handleStepNavigation = (direction: 'next' | 'back') => {
     if (direction === 'next') {
       if (validateCurrentStep()) {
         setBookingData(prev => ({
           ...prev,
-          currentStep: Math.min(prev.currentStep + 1, 3),
+          currentStep: Math.min(prev.currentStep + 1, 2), // Only 2 steps now
         }));
       }
     } else {
@@ -296,18 +356,12 @@ export default function EnhancedBookingFlow({
   const validateCurrentStep = (): boolean => {
     switch (bookingData.currentStep) {
       case 1:
-        if (!bookingData.venueId || !bookingData.sport || !bookingData.bookingDate) {
-          Alert.alert('Required Fields', 'Please select venue, sport, and date');
+        if (!bookingData.venueId || !bookingData.sport || !bookingData.bookingDate || !bookingData.selectedTimeSlot) {
+          Alert.alert('Required Fields', 'Please select venue, sport, date and time slot');
           return false;
         }
         return true;
       case 2:
-        if (!bookingData.startTime || !bookingData.endTime) {
-          Alert.alert('Required Fields', 'Please select time slot');
-          return false;
-        }
-        return true;
-      case 3:
         if (!bookingData.playerName.trim() || !bookingData.playerPhone.trim()) {
           Alert.alert('Required Fields', 'Please enter player details');
           return false;
@@ -330,158 +384,6 @@ export default function EnhancedBookingFlow({
       default:
         return false;
     }
-  };
-
-  const handleVenueSelection = (venue: any) => {
-    setBookingData(prev => ({
-      ...prev,
-      venueId: venue.id,
-      venueName: venue.name,
-      selectedVenue: venue,
-      sport: venue.sports_supported?.[0] || '',
-      startTime: '',
-      endTime: '',
-      selectedSlots: [],
-    }));
-  };
-
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    if (Platform.OS === 'android') {
-      setBookingData(prev => ({ ...prev, showDatePicker: false }));
-    }
-    
-    if (selectedDate) {
-      setBookingData(prev => ({
-        ...prev,
-        selectedDate: selectedDate,
-        bookingDate: selectedDate.toISOString().split('T')[0],
-        showDatePicker: Platform.OS === 'ios' ? false : prev.showDatePicker,
-        startTime: '',
-        endTime: '',
-        selectedSlots: [],
-      }));
-    }
-  };
-
-  const handleQuickDuration = (duration: number) => {
-    if (!bookingData.startTime) {
-      Alert.alert('Select Start Time', 'Please select a start time first');
-      return;
-    }
-
-    const startIndex = timeSlots.findIndex(slot => slot.time === bookingData.startTime);
-    if (startIndex === -1) return;
-
-    const slotsNeeded = duration * 2; // 30-minute slots
-    const endIndex = startIndex + slotsNeeded - 1;
-
-    if (endIndex >= timeSlots.length) {
-      Alert.alert('Duration Too Long', 'Selected duration extends beyond available hours');
-      return;
-    }
-
-    // FIX: Validate that all required slots are available
-    const requiredSlots = timeSlots.slice(startIndex, endIndex + 1);
-    const hasBookedSlot = requiredSlots.some(slot => slot.status === 'booked');
-    
-    if (hasBookedSlot) {
-      Alert.alert('Slots Unavailable', 'Some time slots in the selected duration are already booked. Please choose a different time or duration.');
-      return;
-    }
-
-    const endTime = timeSlots[endIndex + 1]?.time || timeSlots[endIndex].time;
-    const selectedSlots = requiredSlots.map(slot => slot.time);
-
-    setBookingData(prev => ({
-      ...prev,
-      endTime,
-      duration,
-      selectedSlots,
-      totalAmount: calculateTotalAmount(selectedSlots.length),
-    }));
-
-    updateTimeSlotSelection(startIndex, endIndex);
-  };
-
-  const handleTimeSlotPress = (slotIndex: number) => {
-    const slot = timeSlots[slotIndex];
-    
-    // FIX: Don't allow selecting booked slots
-    if (slot.status === 'booked') {
-      Alert.alert('Slot Unavailable', 'This time slot is already booked. Please select an available slot.');
-      return;
-    }
-    
-    if (!bookingData.startTime) {
-      // Set start time
-      setBookingData(prev => ({
-        ...prev,
-        startTime: slot.time,
-        selectedSlots: [slot.time],
-        endTime: '', // Reset end time when selecting new start
-        duration: 0,
-        totalAmount: 0,
-      }));
-      updateTimeSlotSelection(slotIndex, slotIndex);
-    } else if (slotIndex > timeSlots.findIndex(s => s.time === bookingData.startTime)) {
-      // Set end time - validate contiguous available slots
-      const startIndex = timeSlots.findIndex(s => s.time === bookingData.startTime);
-      const selectedSlots = timeSlots.slice(startIndex, slotIndex + 1);
-      
-      // FIX: Check if all slots in range are available
-      const hasBookedSlot = selectedSlots.some(s => s.status === 'booked');
-      if (hasBookedSlot) {
-        Alert.alert('Invalid Selection', 'Cannot book across unavailable time slots. Please select a continuous available time range.');
-        return;
-      }
-      
-      const selectedSlotTimes = selectedSlots.map(s => s.time);
-      const duration = selectedSlotTimes.length * 0.5;
-      
-      // FIX: Calculate proper end time (add 30 minutes to last slot)
-      const lastSlotParts = slot.time.split(':');
-      const lastHour = parseInt(lastSlotParts[0]);
-      const lastMin = parseInt(lastSlotParts[1]);
-      const endHour = lastMin === 30 ? lastHour + 1 : lastHour;
-      const endMin = lastMin === 30 ? 0 : lastMin + 30;
-      const endTime = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
-      
-      setBookingData(prev => ({
-        ...prev,
-        endTime,
-        duration,
-        selectedSlots: selectedSlotTimes,
-        totalAmount: calculateTotalAmount(selectedSlotTimes.length),
-      }));
-      
-      updateTimeSlotSelection(startIndex, slotIndex);
-    } else {
-      // Reset selection if clicking before start time
-      setBookingData(prev => ({
-        ...prev,
-        startTime: slot.time,
-        endTime: '',
-        duration: 0,
-        selectedSlots: [slot.time],
-        totalAmount: 0,
-      }));
-      updateTimeSlotSelection(slotIndex, slotIndex);
-    }
-  };
-
-  const updateTimeSlotSelection = (startIndex: number, endIndex: number) => {
-    const updatedSlots = timeSlots.map((slot, index) => ({
-      ...slot,
-      status: (index >= startIndex && index <= endIndex) ? 'selected' as const : 'available' as const,
-    }));
-    setTimeSlots(updatedSlots);
-  };
-
-  const calculateTotalAmount = (slotsCount: number): number => {
-    if (!bookingData.selectedVenue) return 0;
-    const pricePerSlot = bookingData.selectedVenue.base_price_per_hour ? 
-      (bookingData.selectedVenue.base_price_per_hour / 2) : 500;
-    return slotsCount * pricePerSlot;
   };
 
   const handleSubmitBooking = async () => {
