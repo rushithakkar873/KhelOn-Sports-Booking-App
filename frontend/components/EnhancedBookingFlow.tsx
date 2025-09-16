@@ -511,156 +511,213 @@ export default function EnhancedBookingFlow({
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
       <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.stepTitle}>Booking Basics</Text>
-        <Text style={styles.stepSubtitle}>Select venue, sport, and date for your booking</Text>
+        <Text style={styles.stepTitle}>Book Your Slot</Text>
+        <Text style={styles.stepSubtitle}>Select venue, sport, date and time for your booking</Text>
 
         {/* Venue Selection */}
         <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Venue *</Text>
-          {venues.length === 1 ? (
-            <View style={[styles.formInput, styles.disabledInput]}>
-              <Text style={styles.disabledInputText}>{bookingData.venueName}</Text>
-              <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-            </View>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.venueSelector}>
-              {venues.map((venue) => (
-                <TouchableOpacity
-                  key={venue.id}
-                  style={[
-                    styles.venueCard,
-                    bookingData.venueId === venue.id && styles.venueCardSelected,
-                  ]}
-                  onPress={() => handleVenueSelection(venue)}
-                >
-                  <Text style={[
-                    styles.venueCardName,
-                    bookingData.venueId === venue.id && styles.venueCardNameSelected,
-                  ]}>
-                    {venue.name}
-                  </Text>
-                  <Text style={[
-                    styles.venueCardDetails,
-                    bookingData.venueId === venue.id && styles.venueCardDetailsSelected,
-                  ]}>
-                    ₹{venue.base_price_per_hour}/hr
-                  </Text>
-                  {bookingData.venueId === venue.id && (
-                    <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
+          <Text style={styles.formLabel}>Select Venue</Text>
+          <TouchableOpacity
+            style={[styles.dropdown, venues.length === 1 && styles.dropdownDisabled]}
+            onPress={() => venues.length > 1 && Alert.alert('Select Venue', 'Choose your venue', venues.map(venue => ({ text: venue.name, onPress: () => handleVenueSelection(venue) })))}
+            disabled={venues.length === 1}
+          >
+            <Text style={[styles.dropdownText, !bookingData.venueName && styles.dropdownPlaceholder]}>
+              {bookingData.venueName || 'Choose venue'}
+            </Text>
+            <Ionicons 
+              name="chevron-down" 
+              size={20} 
+              color={venues.length === 1 ? '#9ca3af' : '#6b7280'} 
+            />
+          </TouchableOpacity>
         </View>
 
         {/* Sport Selection */}
         <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Sport *</Text>
-          {bookingData.selectedVenue?.sports_supported?.length > 1 ? (
-            <View style={styles.sportSelector}>
-              {bookingData.selectedVenue.sports_supported.map((sport: string) => (
+          <Text style={styles.formLabel}>Select Sport</Text>
+          <TouchableOpacity
+            style={[styles.dropdown, (!bookingData.selectedVenue || bookingData.selectedVenue.sports_supported?.length === 1) && styles.dropdownDisabled]}
+            onPress={() => {
+              if (bookingData.selectedVenue && bookingData.selectedVenue.sports_supported?.length > 1) {
+                Alert.alert('Select Sport', 'Choose your sport', 
+                  bookingData.selectedVenue.sports_supported.map((sport: string) => ({ 
+                    text: sport, 
+                    onPress: () => handleSportSelection(sport) 
+                  }))
+                );
+              }
+            }}
+            disabled={!bookingData.selectedVenue || bookingData.selectedVenue.sports_supported?.length === 1}
+          >
+            <Text style={[styles.dropdownText, !bookingData.sport && styles.dropdownPlaceholder]}>
+              {bookingData.sport || 'Choose sport'}
+            </Text>
+            <Ionicons 
+              name="chevron-down" 
+              size={20} 
+              color={(!bookingData.selectedVenue || bookingData.selectedVenue.sports_supported?.length === 1) ? '#9ca3af' : '#6b7280'} 
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Date Selection */}
+        <View style={styles.formGroup}>
+          <Text style={styles.formLabel}>Select Date</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.dateScrollView}
+            contentContainerStyle={styles.dateContainer}
+          >
+            {dateOptions.map((dateOption) => (
+              <TouchableOpacity
+                key={dateOption.date}
+                style={[
+                  styles.dateChip,
+                  bookingData.bookingDate === dateOption.date && styles.dateChipSelected,
+                ]}
+                onPress={() => handleDateSelection(dateOption.date)}
+              >
+                <Text style={[
+                  styles.dateChipLabel,
+                  bookingData.bookingDate === dateOption.date && styles.dateChipLabelSelected,
+                ]}>
+                  {dateOption.isToday ? 'Today' : dateOption.isTomorrow ? 'Tomorrow' : dateOption.dayName}
+                </Text>
+                <Text style={[
+                  styles.dateChipDate,
+                  bookingData.bookingDate === dateOption.date && styles.dateChipDateSelected,
+                ]}>
+                  {dateOption.displayDate} {new Date(dateOption.date).toLocaleDateString('en-US', { month: 'short' })}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Time Period Selection */}
+        <View style={styles.formGroup}>
+          <Text style={styles.formLabel}>Select Time of Day</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.periodScrollView}
+            contentContainerStyle={styles.periodContainer}
+          >
+            {TIME_PERIODS.map((period) => (
+              <TouchableOpacity
+                key={period.key}
+                style={[
+                  styles.periodChip,
+                  bookingData.selectedTimePeriod === period.key && [
+                    styles.periodChipSelected,
+                    { backgroundColor: period.color }
+                  ],
+                ]}
+                onPress={() => handleTimePeriodSelection(period.key)}
+              >
+                <Text style={[
+                  styles.periodChipText,
+                  bookingData.selectedTimePeriod === period.key && styles.periodChipTextSelected,
+                ]}>
+                  {period.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Time Slots Grid */}
+        <View style={styles.formGroup}>
+          <Text style={styles.formLabel}>Available Time Slots</Text>
+          
+          {bookingData.isLoadingSlots ? (
+            <View style={styles.timeSlotsGrid}>
+              {/* Skeleton Loading */}
+              {Array.from({ length: 6 }).map((_, index) => (
+                <View key={index} style={[styles.timeSlotSkeleton]}>
+                  <View style={styles.skeletonShimmer} />
+                </View>
+              ))}
+            </View>
+          ) : timeSlots.length > 0 ? (
+            <View style={styles.timeSlotsGrid}>
+              {timeSlots.map((slot, index) => (
                 <TouchableOpacity
-                  key={sport}
+                  key={`${slot.time}-${index}`}
                   style={[
-                    styles.sportChip,
-                    bookingData.sport === sport && [
-                      styles.sportChipSelected,
-                      { backgroundColor: getSportColor(sport) }
-                    ],
+                    styles.timeSlotButton,
+                    bookingData.selectedTimeSlot === slot.time && styles.timeSlotButtonSelected,
                   ]}
-                  onPress={() => setBookingData(prev => ({ ...prev, sport }))}
+                  onPress={() => handleTimeSlotSelection(slot)}
                 >
                   <Text style={[
-                    styles.sportChipText,
-                    bookingData.sport === sport && styles.sportChipTextSelected,
+                    styles.timeSlotText,
+                    bookingData.selectedTimeSlot === slot.time && styles.timeSlotTextSelected,
                   ]}>
-                    {sport}
+                    {formatTime12Hour(slot.time)}
+                  </Text>
+                  <Text style={[
+                    styles.timeSlotPrice,
+                    bookingData.selectedTimeSlot === slot.time && styles.timeSlotPriceSelected,
+                  ]}>
+                    ₹{slot.price}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
           ) : (
-            <View style={[styles.formInput, styles.disabledInput]}>
-              <Text style={styles.disabledInputText}>
-                {bookingData.sport || 'Select venue first'}
+            <View style={styles.noSlotsContainer}>
+              <Ionicons name="time-outline" size={48} color="#9ca3af" />
+              <Text style={styles.noSlotsTitle}>No Available Slots</Text>
+              <Text style={styles.noSlotsText}>
+                No time slots available for {bookingData.selectedTimePeriod} period.
+                Try selecting a different date or time period.
               </Text>
             </View>
           )}
         </View>
 
-        {/* Date Selection */}
-        <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Booking Date *</Text>
-          <TouchableOpacity
-            style={styles.dateSelector}
-            onPress={() => setBookingData(prev => ({ ...prev, showDatePicker: true }))}
-          >
-            <View style={styles.dateSelectorContent}>
-              <Ionicons name="calendar-outline" size={20} color="#9ca3af" />
-              <Text style={[
-                styles.dateSelectorText,
-                !bookingData.bookingDate && styles.datePlaceholder
-              ]}>
-                {bookingData.bookingDate ? 
-                  new Date(bookingData.bookingDate).toLocaleDateString('en-IN', {
-                    weekday: 'short',
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  }) : 
-                  'Select date'
-                }
-              </Text>
-              <Ionicons name="chevron-down" size={16} color="#9ca3af" />
-            </View>
-          </TouchableOpacity>
-          
-          {bookingData.showDatePicker && (
-            <View style={styles.datePickerContainer}>
-              <DateTimePicker
-                value={bookingData.selectedDate}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                minimumDate={new Date()}
-                maximumDate={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
-                onChange={handleDateChange}
-                style={styles.datePicker}
-              />
-              {Platform.OS === 'ios' && (
-                <View style={styles.datePickerActions}>
-                  <TouchableOpacity
-                    style={[styles.datePickerButton, styles.datePickerCancel]}
-                    onPress={() => setBookingData(prev => ({ ...prev, showDatePicker: false }))}
-                  >
-                    <Text style={styles.datePickerCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.datePickerButton, styles.datePickerConfirm]}
-                    onPress={() => setBookingData(prev => ({ ...prev, showDatePicker: false }))}
-                  >
-                    <Text style={styles.datePickerConfirmText}>Done</Text>
-                  </TouchableOpacity>
+        {/* Selection Summary */}
+        {bookingData.selectedTimeSlot && (
+          <View style={styles.selectionSummary}>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryTitle}>Selected Booking</Text>
+              <View style={styles.summaryDetails}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Venue:</Text>
+                  <Text style={styles.summaryValue}>{bookingData.venueName}</Text>
                 </View>
-              )}
-            </View>
-          )}
-        </View>
-
-        {/* Smart Suggestions */}
-        {bookingData.sport && SPORT_SUGGESTIONS[bookingData.sport as keyof typeof SPORT_SUGGESTIONS] && (
-          <View style={[styles.suggestionCard, { borderColor: getSportColor(bookingData.sport) }]}>
-            <Ionicons name="bulb-outline" size={20} color={getSportColor(bookingData.sport)} />
-            <View style={styles.suggestionContent}>
-              <Text style={[styles.suggestionTitle, { color: getSportColor(bookingData.sport) }]}>
-                {bookingData.sport} Suggestion
-              </Text>
-              <Text style={styles.suggestionText}>
-                Typical duration: {SPORT_SUGGESTIONS[bookingData.sport as keyof typeof SPORT_SUGGESTIONS].defaultDuration} hour(s)
-              </Text>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Sport:</Text>
+                  <Text style={styles.summaryValue}>{bookingData.sport}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Date:</Text>
+                  <Text style={styles.summaryValue}>
+                    {new Date(bookingData.bookingDate).toLocaleDateString('en-IN', {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Time:</Text>
+                  <Text style={styles.summaryValue}>
+                    {formatTime12Hour(bookingData.startTime)} - {formatTime12Hour(bookingData.endTime)}
+                  </Text>
+                </View>
+                <View style={[styles.summaryRow, styles.totalRow]}>
+                  <Text style={styles.totalLabel}>Total:</Text>
+                  <Text style={styles.totalValue}>₹{bookingData.totalAmount}</Text>
+                </View>
+              </View>
             </View>
           </View>
         )}
+
       </ScrollView>
     </View>
   );
