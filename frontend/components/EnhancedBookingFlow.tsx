@@ -17,6 +17,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import VenueOwnerService from '../services/venueOwnerService';
+import AuthService from '@/services/authService';
 
 const { width } = Dimensions.get('window');
 
@@ -400,12 +401,21 @@ export default function EnhancedBookingFlow({
       return;
     }
 
-    setBookingData(prev => ({ ...prev, isSubmitting: true }));
+    // Format and validate player mobile
+    const playerMobile = AuthService.formatIndianMobile(bookingData.playerPhone.trim());
+    
+    // Validate Indian mobile format
+    if (!AuthService.validateIndianMobile(playerMobile)) {
+      Alert.alert('Error', 'Please enter a valid Indian mobile number\nFormat: +91XXXXXXXXXX');
+      return;
+    }
+
+    setBookingData(prev => ({ ...prev, isSubmitting: true, playerPhone: playerMobile }));
 
     try {
       const bookingPayload = {
         venue_id: bookingData.venueId,
-        player_mobile: bookingData.playerPhone,
+        player_mobile: playerMobile,
         player_name: bookingData.playerName,
         booking_date: bookingData.bookingDate,
         start_time: bookingData.startTime,
@@ -420,7 +430,7 @@ export default function EnhancedBookingFlow({
       
       Alert.alert(
         'Booking Created Successfully! 🎉',
-        `Payment link sent to ${bookingData.playerPhone}\n\nAmount: ₹${response.total_amount}\nSMS Status: ${response.sms_status}\n\nPlayer will receive payment link via SMS.`,
+        `Payment link sent to ${playerMobile}\n\nAmount: ₹${response.total_amount}\nSMS Status: ${response.sms_status}\n\nPlayer will receive payment link via SMS.`,
         [
           { text: 'OK', onPress: () => {
             onBookingCreated();
