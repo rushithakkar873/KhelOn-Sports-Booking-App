@@ -113,25 +113,50 @@ export default function EnhancedBookingFlow({
     selectedVenue: null,
     sport: '',
     bookingDate: '',
-    selectedDate: new Date(),
-    showDatePicker: false,
-    startTime: '',
-    endTime: '',
-    duration: 0,
-    availableSlots: [],
-    selectedSlots: [],
+    selectedTimePeriod: 'morning', // Default to morning
+    selectedTimeSlot: '',
     playerName: '',
     playerPhone: '',
-    totalAmount: 0,
     notes: '',
+    startTime: '',
+    endTime: '',
+    duration: 1, // 1 hour slots
+    totalAmount: 0,
     currentStep: 1,
     isSubmitting: false,
+    isLoadingSlots: false,
   });
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
   const venueOwnerService = VenueOwnerService.getInstance();
 
-  // Initialize booking data when venues change
+  // Initialize date options (7 days from today)
+  useEffect(() => {
+    const dates: DateOption[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      const dateString = date.toISOString().split('T')[0];
+      
+      dates.push({
+        date: dateString,
+        displayDate: date.getDate().toString(),
+        dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        isToday: i === 0,
+        isTomorrow: i === 1,
+      });
+    }
+    setDateOptions(dates);
+    
+    // Auto-select today's date
+    setBookingData(prev => ({
+      ...prev,
+      bookingDate: dates[0].date,
+    }));
+  }, [visible]);
+
+  // Auto-select venue if only one available
   useEffect(() => {
     if (venues.length === 1 && visible) {
       const autoSelectedVenue = venues[0];
@@ -145,12 +170,12 @@ export default function EnhancedBookingFlow({
     }
   }, [venues, visible]);
 
-  // Generate time slots when venue and date are selected
+  // Generate time slots when venue, date, or time period changes
   useEffect(() => {
-    if (bookingData.selectedVenue && bookingData.bookingDate) {
-      generateTimeSlots();
+    if (bookingData.selectedVenue && bookingData.bookingDate && bookingData.selectedTimePeriod) {
+      generateAvailableTimeSlots();
     }
-  }, [bookingData.selectedVenue, bookingData.bookingDate]);
+  }, [bookingData.selectedVenue, bookingData.bookingDate, bookingData.selectedTimePeriod]);
 
   const generateTimeSlots = async () => {
     if (!bookingData.selectedVenue || !bookingData.bookingDate) return;
