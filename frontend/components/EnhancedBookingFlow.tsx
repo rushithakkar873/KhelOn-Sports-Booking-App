@@ -839,22 +839,29 @@ export default function EnhancedBookingFlow({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.headerButton}>
-            <Ionicons name="close" size={24} color="#6b7280" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Booking</Text>
-        </View>
+        <SafeAreaView style={styles.safeArea}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={styles.headerCancel}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>New Booking</Text>
+            <View style={styles.stepIndicator}>
+              <Text style={styles.stepText}>{bookingData.currentStep}/2</Text>
+            </View>
+          </View>
 
-        {/* Progress Bar */}
-        {renderProgressBar()}
+          {/* Progress Bar */}
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${(bookingData.currentStep / 2) * 100}%` }]} />
+            </View>
+          </View>
 
         {/* Step Content */}
         <KeyboardAvoidingView 
