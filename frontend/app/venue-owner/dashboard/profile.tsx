@@ -334,14 +334,14 @@ export default function ProfileScreen() {
                   <Ionicons name="business" size={20} color="#3b82f6" />
                 </View>
                 <Text style={styles.statValue}>{profile.total_venues || 0}</Text>
-                <Text style={styles.statLabel}>Venues</Text>
+                <Text style={styles.statLabel}>Total Venues</Text>
               </View>
               <View style={styles.statCard}>
                 <View style={styles.statIcon}>
                   <Ionicons name="calendar" size={20} color="#10b981" />
                 </View>
                 <Text style={styles.statValue}>{0}</Text>
-                <Text style={styles.statLabel}>Bookings</Text>
+                <Text style={styles.statLabel}>Total Bookings</Text>
               </View>
             </View>
             <View style={styles.statsBottomRow}>
@@ -360,19 +360,23 @@ export default function ProfileScreen() {
             {menuItems.map((item, index) => (
               <TouchableOpacity 
                 key={index}
-                style={styles.menuItem}
+                style={[
+                  styles.menuItem,
+                  index === menuItems.length - 1 && styles.lastMenuItem
+                ]}
                 onPress={item.onPress}
+                activeOpacity={0.7}
               >
                 <View style={styles.menuItemLeft}>
                   <View style={styles.menuItemIcon}>
-                    <Ionicons name={item.icon as any} size={24} color="#6b7280" />
+                    <Ionicons name={item.icon as any} size={22} color="#6b7280" />
                   </View>
                   <View style={styles.menuItemContent}>
                     <Text style={styles.menuItemText}>{item.title}</Text>
                     <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
                   </View>
                 </View>
-                <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+                <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
               </TouchableOpacity>
             ))}
           </View>
@@ -382,14 +386,15 @@ export default function ProfileScreen() {
             <TouchableOpacity 
               style={styles.logoutButton}
               onPress={handleLogout}
+              activeOpacity={0.8}
             >
               <Ionicons name="log-out-outline" size={20} color="#ef4444" />
               <Text style={styles.logoutButtonText}>Logout</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Add some bottom padding */}
-          <View style={{ height: 100 }} />
+          {/* Bottom Padding for Navigation */}
+          <View style={styles.bottomPadding} />
         </ScrollView>
 
         {/* Edit Profile Modal */}
