@@ -906,82 +906,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#212529',
     borderRadius: 2,
   },
-  headerButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f8fafc',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#212529',
     flex: 1,
     textAlign: 'center',
-    marginRight: 40,
-  },
-  progressContainer: {
-    paddingHorizontal: 40,
-    paddingVertical: 20,
-    backgroundColor: '#f8fafc',
-  },
-  progressBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  progressStep: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  progressDot: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#e5e7eb',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  progressDotActive: {
-    backgroundColor: '#212529',
-  },
-  progressDotText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#9ca3af',
-  },
-  progressDotTextActive: {
-    color: '#ffffff',
-  },
-  progressLine: {
-    width: 40,
-    height: 2,
-    backgroundColor: '#e5e7eb',
-    marginHorizontal: 8,
-  },
-  progressLineActive: {
-    backgroundColor: '#212529',
-  },
-  progressLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 0,
-    marginTop: 8,
-  },
-  progressLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#9ca3af',
-    textAlign: 'center',
-    flex: 1,
-  },
-  progressLabelActive: {
-    color: '#212529',
-    fontWeight: '600',
   },
   content: {
     flex: 1,
