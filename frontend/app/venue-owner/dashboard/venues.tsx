@@ -694,7 +694,7 @@ export default function VenuesScreen() {
           animationType="slide"
           presentationStyle="fullScreen"
         >
-          <SafeAreaView style={styles.modalContainer}>
+          <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
             <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
             <KeyboardAvoidingView 
               style={styles.modalContainer}
