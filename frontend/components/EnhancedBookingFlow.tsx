@@ -478,45 +478,7 @@ export default function EnhancedBookingFlow({
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  const renderProgressBar = () => (
-    <View style={styles.progressContainer}>
-      <View style={styles.progressBar}>
-        {[1, 2].map((step) => (
-          <View key={step} style={styles.progressStep}>
-            <View style={[
-              styles.progressDot,
-              bookingData.currentStep >= step && styles.progressDotActive,
-            ]}>
-              {bookingData.currentStep > step ? (
-                <Ionicons name="checkmark" size={12} color="#ffffff" />
-              ) : (
-                <Text style={[
-                  styles.progressDotText,
-                  bookingData.currentStep >= step && styles.progressDotTextActive,
-                ]}>
-                  {step}
-                </Text>
-              )}
-            </View>
-            {step < 2 && (
-              <View style={[
-                styles.progressLine,
-                bookingData.currentStep > step && styles.progressLineActive,
-              ]} />
-            )}
-          </View>
-        ))}
-      </View>
-      <View style={styles.progressLabels}>
-        <Text style={[styles.progressLabel, bookingData.currentStep === 1 && styles.progressLabelActive]}>
-          Select Time
-        </Text>
-        <Text style={[styles.progressLabel, bookingData.currentStep === 2 && styles.progressLabelActive]}>
-          Confirm Booking
-        </Text>
-      </View>
-    </View>
-  );
+  // Removed renderProgressBar function - progress is now in header
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
