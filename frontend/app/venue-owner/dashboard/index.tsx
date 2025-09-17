@@ -389,8 +389,6 @@ export default function VenueOwnerDashboard() {
           {/* Add some bottom padding */}
           <View style={{ height: 100 }} />
         </ScrollView>
-        
-        <VenueOwnerBottomNavigation currentRoute="overview" />
       </SafeAreaView>
     </View>
   );
