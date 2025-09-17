@@ -789,7 +789,6 @@ export default function EnhancedBookingFlow({
             </Text>
           </View>
         </View>
-      </ScrollView>
     </View>
   );
 
