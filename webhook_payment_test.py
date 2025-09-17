@@ -6,7 +6,7 @@ Test webhook payment confirmation functionality
 import requests
 import json
 
-BASE_URL = "https://matchfinder-7.preview.emergentagent.com/api"
+BASE_URL = "https://tourneymate-2.preview.emergentagent.com/api"
 
 def test_payment_webhook():
     """Test payment webhook with mock payment confirmation"""

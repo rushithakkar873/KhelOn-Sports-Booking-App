@@ -6,7 +6,7 @@ Setup script to create venue owner Rajesh Kumar for testing
 import requests
 import json
 
-BASE_URL = "https://matchfinder-7.preview.emergentagent.com/api"
+BASE_URL = "https://tourneymate-2.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 def setup_venue_owner():
