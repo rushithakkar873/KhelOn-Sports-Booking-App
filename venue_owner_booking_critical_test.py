@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 # Configuration - Use the correct backend URL from frontend/.env
-BASE_URL = "https://tourneymate-2.preview.emergentagent.com/api"
+BASE_URL = "https://playonapp.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class VenueOwnerBookingTester:
