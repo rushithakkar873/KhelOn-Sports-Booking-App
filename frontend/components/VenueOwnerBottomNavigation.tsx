@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
@@ -7,13 +7,13 @@ interface VenueOwnerBottomNavigationProps {
   currentRoute?: string;
 }
 
-export default function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigationProps) {
+function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   const getActiveRoute = () => {
     if (currentRoute) return currentRoute;
-    if (pathname.includes('/dashboard/index') || pathname === '/venue-owner/dashboard') return 'overview';
+    if (pathname.includes('/dashboard/index') || pathname === '/venue-owner/dashboard' || pathname.endsWith('/dashboard')) return 'overview';
     if (pathname.includes('/dashboard/venues')) return 'venues';
     if (pathname.includes('/dashboard/bookings')) return 'bookings';
     if (pathname.includes('/dashboard/analytics')) return 'analytics';
