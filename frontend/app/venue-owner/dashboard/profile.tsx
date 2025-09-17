@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
     color: '#ef4444',
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 120, // More space for bottom navigation
   },
   header: {
     flexDirection: 'row',
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 32,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f6f7', // Match container background
   },
   headerContent: {
     flex: 1,
