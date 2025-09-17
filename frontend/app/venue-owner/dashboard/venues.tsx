@@ -1095,6 +1095,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  modalSafeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
