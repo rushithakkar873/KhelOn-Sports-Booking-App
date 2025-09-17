@@ -986,16 +986,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  stepWrapper: {
+  modalContent: {
     flex: 1,
-  },
-  stepContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
+    padding: 20,
   },
   stepContent: {
     flex: 1,
-    paddingTop: 20,
   },
   stepTitle: {
     fontSize: 24,
