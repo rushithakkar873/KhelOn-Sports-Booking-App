@@ -37,6 +37,7 @@ interface VenueForm {
 }
 
 export default function VenuesScreen() {
+  const insets = useSafeAreaInsets();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
