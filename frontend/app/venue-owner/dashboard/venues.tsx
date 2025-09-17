@@ -836,7 +836,6 @@ export default function VenuesScreen() {
           </SafeAreaView>
         </Modal>
 
-        <VenueOwnerBottomNavigation currentRoute="venues" />
       </SafeAreaView>
     </View>
   );
