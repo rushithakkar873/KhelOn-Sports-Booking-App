@@ -799,19 +799,18 @@ export default function EnhancedBookingFlow({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-        <SafeAreaView style={styles.safeArea}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={styles.headerCancel}>Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>New Booking</Text>
-            <View style={styles.stepIndicator}>
-              <Text style={styles.stepText}>{bookingData.currentStep}/2</Text>
-            </View>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose}>
+            <Text style={styles.headerCancel}>Cancel</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>New Booking</Text>
+          <View style={styles.stepIndicator}>
+            <Text style={styles.stepText}>{bookingData.currentStep}/2</Text>
           </View>
+        </View>
 
           {/* Progress Bar */}
           <View style={styles.progressContainer}>
