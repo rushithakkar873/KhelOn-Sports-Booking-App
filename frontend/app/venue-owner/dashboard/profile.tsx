@@ -561,7 +561,6 @@ export default function ProfileScreen() {
           </SafeAreaView>
         </Modal>
 
-        <VenueOwnerBottomNavigation currentRoute="profile" />
       </SafeAreaView>
     </View>
   );
