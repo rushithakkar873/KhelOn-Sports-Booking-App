@@ -863,6 +863,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
   },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -870,7 +874,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
+    borderBottomColor: '#e5e7eb',
+  },
+  headerCancel: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  stepIndicator: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  stepText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  progressContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 2,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#212529',
+    borderRadius: 2,
   },
   headerButton: {
     width: 40,
