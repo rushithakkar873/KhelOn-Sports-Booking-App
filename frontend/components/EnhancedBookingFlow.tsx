@@ -1326,72 +1326,39 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Footer navigation
-  footer: {
+  // Modal Footer (matching add venue modal)
+  modalFooter: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    gap: 12,
+    padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    backgroundColor: '#ffffff',
+    borderTopColor: '#e5e7eb',
   },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: '#f8fafc',
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#6b7280',
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  footerSpacer: {
+  primaryButton: {
     flex: 1,
-  },
-  nextButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
     backgroundColor: '#212529',
-    shadowColor: '#212529',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  nextButtonText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
-    marginRight: 4,
-  },
-  submitButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 12,
-    backgroundColor: '#059669',
-    minWidth: 140,
     alignItems: 'center',
-    shadowColor: '#059669',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  submitButtonDisabled: {
-    backgroundColor: '#9ca3af',
-    shadowOpacity: 0.1,
-  },
-  submitButtonText: {
+  primaryButtonText: {
     fontSize: 16,
-    color: '#ffffff',
     fontWeight: '600',
+    color: '#ffffff',
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  fullWidthButton: {
+    marginLeft: 0,
   },
 });
