@@ -863,52 +863,40 @@ export default function EnhancedBookingFlow({
             </View>
           </View>
 
-        {/* Step Content */}
-        <KeyboardAvoidingView 
-          style={styles.content}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <View style={styles.stepWrapper}>
-            {bookingData.currentStep === 1 && renderStep1()}
-            {bookingData.currentStep === 2 && renderStep2()}
-          </View>
-        </KeyboardAvoidingView>
+          {/* Step Content */}
+          <KeyboardAvoidingView 
+            style={styles.content}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {bookingData.currentStep === 1 && renderStep1()}
+              {bookingData.currentStep === 2 && renderStep2()}
+            </ScrollView>
+          </KeyboardAvoidingView>
 
-        {/* Navigation Footer */}
-        <View style={styles.footer}>
-          {bookingData.currentStep > 1 && (
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => handleStepNavigation('back')}
-            >
-              <Ionicons name="chevron-back" size={20} color="#6b7280" />
-              <Text style={styles.backButtonText}>Back</Text>
-            </TouchableOpacity>
-          )}
-          
-          <View style={styles.footerSpacer} />
-          
-          {bookingData.currentStep < 2 ? (
-            <TouchableOpacity
-              style={styles.nextButton}
-              onPress={() => handleStepNavigation('next')}
-            >
-              <Text style={styles.nextButtonText}>Continue</Text>
-              <Ionicons name="chevron-forward" size={20} color="#ffffff" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[styles.submitButton, bookingData.isSubmitting && styles.submitButtonDisabled]}
-              onPress={handleSubmitBooking}
+          {/* Navigation Footer */}
+          <View style={styles.modalFooter}>
+            {bookingData.currentStep > 1 && (
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => handleStepNavigation('back')}>
+                <Text style={styles.secondaryButtonText}>Previous</Text>
+              </TouchableOpacity>
+            )}
+            
+            <TouchableOpacity 
+              style={[styles.primaryButton, bookingData.currentStep === 1 && styles.fullWidthButton]}
+              onPress={bookingData.currentStep === 2 ? handleSubmitBooking : () => handleStepNavigation('next')}
               disabled={bookingData.isSubmitting}
             >
-              <Text style={styles.submitButtonText}>
-                {bookingData.isSubmitting ? 'Creating...' : 'Create Booking'}
+              <Text style={styles.primaryButtonText}>
+                {bookingData.currentStep === 2 
+                  ? (bookingData.isSubmitting ? 'Creating...' : 'Create Booking')
+                  : 'Next'
+                }
               </Text>
             </TouchableOpacity>
-          )}
-        </View>
-      </SafeAreaView>
+          </View>
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 }
