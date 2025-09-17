@@ -851,8 +851,7 @@ export default function EnhancedBookingFlow({
               </Text>
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 }
