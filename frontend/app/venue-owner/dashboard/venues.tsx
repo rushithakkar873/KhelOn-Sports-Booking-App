@@ -693,21 +693,23 @@ export default function VenuesScreen() {
           animationType="slide"
           presentationStyle="fullScreen"
         >
-          <SafeAreaView style={styles.modalContainer}>
-            <KeyboardAvoidingView 
-              style={styles.modalContainer}
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            >
-              {/* Modal Header */}
-              <View style={styles.modalHeader}>
-                <TouchableOpacity onPress={handleCloseAddModal}>
-                  <Text style={styles.modalCancel}>Cancel</Text>
-                </TouchableOpacity>
-                <Text style={styles.modalTitle}>Add New Venue</Text>
-                <View style={styles.stepIndicator}>
-                  <Text style={styles.stepText}>{currentStep}/4</Text>
+          <View style={styles.modalContainer}>
+            <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+            <SafeAreaView style={styles.modalSafeArea}>
+              <KeyboardAvoidingView 
+                style={styles.modalContainer}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              >
+                {/* Modal Header */}
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={handleCloseAddModal}>
+                    <Text style={styles.modalCancel}>Cancel</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Add New Venue</Text>
+                  <View style={styles.stepIndicator}>
+                    <Text style={styles.stepText}>{currentStep}/4</Text>
+                  </View>
                 </View>
-              </View>
 
               {/* Step Progress */}
               <View style={styles.progressContainer}>
