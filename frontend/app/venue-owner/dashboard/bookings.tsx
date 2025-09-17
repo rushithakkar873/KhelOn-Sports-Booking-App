@@ -10,23 +10,21 @@ import {
   Alert,
   Dimensions,
   StatusBar,
-  ImageBackground,
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  FlatList,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
 import VenueOwnerService from '../../../services/venueOwnerService';
 import AuthService from '../../../services/authService';
 import EnhancedBookingFlow from '../../../components/EnhancedBookingFlow';
 
 const { width } = Dimensions.get('window');
 
-// Use API booking interface instead of custom one
 interface Booking {
   id: string;
   venue_name?: string;
@@ -40,42 +38,81 @@ interface Booking {
   total_amount: number;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   payment_status: 'pending' | 'paid' | 'refunded';
+  player_name: string;
+  player_phone: string;
+  notes?: string;
   created_at: string;
 }
 
-export default function BookingsScreen() {
+interface FilterOptions {
+  status: string;
+  venue: string;
+  dateRange: 'today' | 'week' | 'month' | 'all';
+  sport: string;
+  paymentStatus: string;
+}
+
+export default function EnhancedBookingsScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [venues, setVenues] = useState<any[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [selectedBookings, setSelectedBookings] = useState<string[]>([]);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showEnhancedBookingFlow, setShowEnhancedBookingFlow] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  
+  const [filters, setFilters] = useState<FilterOptions>({
+    status: 'all',
+    venue: 'all',
+    dateRange: 'all',
+    sport: 'all',
+    paymentStatus: 'all',
+  });
   
   const router = useRouter();
   const venueOwnerService = VenueOwnerService.getInstance();
   const authService = AuthService.getInstance();
 
-  const statusFilters = [
-    { key: 'all', label: 'All', count: 0, color: '#6b7280' },
-    { key: 'pending', label: 'Pending', count: 0, color: '#f59e0b' },
-    { key: 'confirmed', label: 'Confirmed', count: 0, color: '#3b82f6' },
-    { key: 'completed', label: 'Completed', count: 0, color: '#10b981' },
-    { key: 'cancelled', label: 'Cancelled', count: 0, color: '#ef4444' },
+  const statusOptions = [
+    { key: 'all', label: 'All Status', color: '#6b7280' },
+    { key: 'pending', label: 'Pending', color: '#f59e0b' },
+    { key: 'confirmed', label: 'Confirmed', color: '#3b82f6' },
+    { key: 'completed', label: 'Completed', color: '#10b981' },
+    { key: 'cancelled', label: 'Cancelled', color: '#ef4444' },
   ];
+
+  const paymentStatusOptions = [
+    { key: 'all', label: 'All Payments' },
+    { key: 'pending', label: 'Payment Pending' },
+    { key: 'paid', label: 'Paid' },
+    { key: 'refunded', label: 'Refunded' },
+  ];
+
+  const dateRangeOptions = [
+    { key: 'today', label: 'Today' },
+    { key: 'week', label: 'This Week' },
+    { key: 'month', label: 'This Month' },
+    { key: 'all', label: 'All Time' },
+  ];
+
+  const sportsOptions = ['Cricket', 'Football', 'Badminton', 'Tennis', 'Basketball'];
 
   useEffect(() => {
     loadBookings();
   }, []);
 
   useEffect(() => {
-    loadBookings();
-  }, [selectedStatus]);
+    applyFilters();
+  }, [bookings, searchQuery, filters]);
 
   const loadBookings = async () => {
     try {
-      // Check if user is authenticated and is venue owner
       if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
         Alert.alert('Authentication Error', 'Please log in as a venue owner', [
           { text: 'OK', onPress: () => router.replace('/auth/login') }
@@ -83,45 +120,80 @@ export default function BookingsScreen() {
         return;
       }
 
-      // Fetch bookings from API
-      const filterStatus = selectedStatus === 'all' ? undefined : selectedStatus;
-      const bookingsData = await venueOwnerService.getBookings(undefined, filterStatus, undefined, undefined, 0, 50);
-      setBookings(bookingsData);
-
-      // Also load venues for booking creation
-      const venuesData = await venueOwnerService.getVenues(0, 50, true); // Only active venues
+      // Fetch bookings and venues
+      const [bookingsData, venuesData] = await Promise.all([
+        venueOwnerService.getBookings(undefined, undefined, undefined, undefined, 0, 100),
+        venueOwnerService.getVenues(0, 50, true)
+      ]);
       
-      // Sort venues alphabetically
-      const sortedVenues = Array.isArray(venuesData) ? venuesData.sort((a, b) => 
-        (a.name || '').localeCompare(b.name || '')
-      ) : [];
-      
-      setVenues(sortedVenues);
-
-      // Update status counts
-      statusFilters.forEach(filter => {
-        if (filter.key === 'all') {
-          filter.count = bookingsData.length;
-        } else {
-          filter.count = bookingsData.filter(booking => booking.status === filter.key).length;
-        }
-      });
+      setBookings(Array.isArray(bookingsData) ? bookingsData : []);
+      setVenues(Array.isArray(venuesData) ? venuesData : []);
     } catch (error) {
       console.error('Error loading bookings:', error);
-      
-      Alert.alert(
-        'Error', 
-        'Failed to load bookings. Please check your connection and try again.',
-        [
-          { text: 'Retry', onPress: () => loadBookings() },
-          { text: 'Cancel' }
-        ]
-      );
-      
+      Alert.alert('Error', 'Failed to load bookings. Please try again.');
       setBookings([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...bookings];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(booking => 
+        booking.player_name.toLowerCase().includes(query) ||
+        booking.player_phone.includes(query) ||
+        booking.venue_name?.toLowerCase().includes(query) ||
+        booking.sport?.toLowerCase().includes(query)
+      );
+    }
+
+    // Status filter
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(booking => booking.status === filters.status);
+    }
+
+    // Venue filter
+    if (filters.venue !== 'all') {
+      filtered = filtered.filter(booking => booking.venue_name === filters.venue);
+    }
+
+    // Payment status filter
+    if (filters.paymentStatus !== 'all') {
+      filtered = filtered.filter(booking => booking.payment_status === filters.paymentStatus);
+    }
+
+    // Sport filter
+    if (filters.sport !== 'all') {
+      filtered = filtered.filter(booking => booking.sport === filters.sport);
+    }
+
+    // Date range filter
+    if (filters.dateRange !== 'all') {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      filtered = filtered.filter(booking => {
+        const bookingDate = new Date(booking.booking_date);
+        switch (filters.dateRange) {
+          case 'today':
+            return bookingDate >= today && bookingDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+          case 'week':
+            const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return bookingDate >= weekStart;
+          case 'month':
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            return bookingDate >= monthStart;
+          default:
+            return true;
+        }
+      });
+    }
+
+    setFilteredBookings(filtered);
   };
 
   const onRefresh = async () => {
@@ -130,50 +202,63 @@ export default function BookingsScreen() {
     setIsRefreshing(false);
   };
 
-  const getFilteredBookings = () => {
-    if (!bookings || !Array.isArray(bookings)) {
-      return [];
-    }
-    if (selectedStatus === 'all') {
-      return bookings;
-    }
-    return bookings.filter(booking => booking?.status === selectedStatus);
+  const toggleBookingSelection = (bookingId: string) => {
+    setSelectedBookings(prev => 
+      prev.includes(bookingId) 
+        ? prev.filter(id => id !== bookingId)
+        : [...prev, bookingId]
+    );
   };
 
-  const handleBookingAction = (booking: Booking, action: string) => {
-    switch (action) {
-      case 'confirm':
-        updateBookingStatus(booking.id, 'confirmed');
-        break;
-      case 'complete':
-        updateBookingStatus(booking.id, 'completed');
-        break;
-      case 'cancel':
-        Alert.alert(
-          'Cancel Booking',
-          'Are you sure you want to cancel this booking?',
-          [
-            { text: 'No', style: 'cancel' },
-            { text: 'Yes', onPress: () => updateBookingStatus(booking.id, 'cancelled') }
-          ]
-        );
-        break;
-      case 'details':
-        setSelectedBooking(booking);
-        setShowDetailsModal(true);
-        break;
+  const handleBulkAction = async (action: string) => {
+    if (selectedBookings.length === 0) {
+      Alert.alert('No Selection', 'Please select bookings to perform bulk actions.');
+      return;
     }
+
+    const actionName = action === 'confirm' ? 'confirm' : action === 'cancel' ? 'cancel' : 'complete';
+    
+    Alert.alert(
+      `Bulk ${actionName.charAt(0).toUpperCase() + actionName.slice(1)}`,
+      `Are you sure you want to ${actionName} ${selectedBookings.length} booking(s)?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Confirm', 
+          onPress: async () => {
+            try {
+              // Update each selected booking
+              await Promise.all(
+                selectedBookings.map(bookingId => 
+                  venueOwnerService.updateBookingStatus(bookingId, action as any)
+                )
+              );
+              
+              // Update local state
+              setBookings(bookings.map(booking => 
+                selectedBookings.includes(booking.id) 
+                  ? { ...booking, status: action as any }
+                  : booking
+              ));
+              
+              setSelectedBookings([]);
+              setShowBulkActions(false);
+              Alert.alert('Success', `${selectedBookings.length} booking(s) ${actionName}ed successfully`);
+            } catch (error) {
+              Alert.alert('Error', `Failed to ${actionName} bookings. Please try again.`);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const updateBookingStatus = async (bookingId: string, newStatus: Booking['status']) => {
     try {
       await venueOwnerService.updateBookingStatus(bookingId, newStatus);
       
-      // Update local state
       setBookings(bookings.map(booking =>
-        booking.id === bookingId
-          ? { ...booking, status: newStatus }
-          : booking
+        booking.id === bookingId ? { ...booking, status: newStatus } : booking
       ));
 
       Alert.alert('Success', `Booking ${newStatus} successfully`);
@@ -183,17 +268,9 @@ export default function BookingsScreen() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return VenueOwnerService.formatCurrency(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return VenueOwnerService.formatDate(dateString);
-  };
-
   const getStatusColor = (status: string) => {
-    const filter = statusFilters.find(f => f.key === status);
-    return filter?.color || '#6b7280';
+    const statusOption = statusOptions.find(s => s.key === status);
+    return statusOption?.color || '#6b7280';
   };
 
   const getStatusBgColor = (status: string) => {
@@ -206,21 +283,133 @@ export default function BookingsScreen() {
     }
   };
 
-  const getBookingActions = (booking: Booking) => {
-    switch (booking.status) {
-      case 'pending':
-        return [
-          { key: 'confirm', label: 'Confirm', color: '#3b82f6', icon: 'checkmark-circle' },
-          { key: 'cancel', label: 'Cancel', color: '#ef4444', icon: 'close-circle' },
-        ];
-      case 'confirmed':
-        return [
-          { key: 'complete', label: 'Complete', color: '#10b981', icon: 'checkmark-done' },
-          { key: 'cancel', label: 'Cancel', color: '#ef4444', icon: 'close-circle' },
-        ];
-      default:
-        return [];
-    }
+  const formatCurrency = (amount: number) => {
+    return VenueOwnerService.formatCurrency(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return VenueOwnerService.formatDate(dateString);
+  };
+
+  const renderBookingCard = ({ item: booking }: { item: Booking }) => (
+    <TouchableOpacity
+      style={[
+        styles.bookingCard,
+        selectedBookings.includes(booking.id) && styles.bookingCardSelected
+      ]}
+      onPress={() => {
+        if (showBulkActions) {
+          toggleBookingSelection(booking.id);
+        } else {
+          setSelectedBooking(booking);
+          setShowDetailsModal(true);
+        }
+      }}
+      onLongPress={() => {
+        setShowBulkActions(true);
+        toggleBookingSelection(booking.id);
+      }}
+      activeOpacity={0.7}
+    >
+      {showBulkActions && (
+        <View style={styles.selectionCircle}>
+          {selectedBookings.includes(booking.id) && (
+            <Ionicons name="checkmark" size={16} color="#ffffff" />
+          )}
+        </View>
+      )}
+      
+      <View style={styles.bookingHeader}>
+        <View style={styles.bookingMainInfo}>
+          <Text style={styles.playerName}>{booking.player_name}</Text>
+          <Text style={styles.venueInfo}>{booking.venue_name} • {booking.sport}</Text>
+        </View>
+        <View style={[
+          styles.statusBadge,
+          { backgroundColor: getStatusBgColor(booking.status) }
+        ]}>
+          <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
+            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.bookingDetails}>
+        <View style={styles.detailRow}>
+          <Ionicons name="calendar" size={16} color="#6b7280" />
+          <Text style={styles.detailText}>
+            {formatDate(booking.booking_date)} • {booking.start_time} - {booking.end_time}
+          </Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Ionicons name="call" size={16} color="#6b7280" />
+          <Text style={styles.detailText}>{booking.player_phone}</Text>
+        </View>
+        
+        <View style={styles.detailRow}>
+          <Ionicons name="cash" size={16} color="#6b7280" />
+          <Text style={styles.detailText}>
+            {formatCurrency(booking.total_amount)} • {booking.payment_status}
+          </Text>
+        </View>
+      </View>
+
+      {!showBulkActions && (
+        <View style={styles.bookingActions}>
+          {booking.status === 'pending' && (
+            <>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.confirmButton]}
+                onPress={() => updateBookingStatus(booking.id, 'confirmed')}
+              >
+                <Ionicons name="checkmark" size={16} color="#ffffff" />
+                <Text style={styles.actionButtonText}>Confirm</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.cancelButton]}
+                onPress={() => updateBookingStatus(booking.id, 'cancelled')}
+              >
+                <Ionicons name="close" size={16} color="#ffffff" />
+                <Text style={styles.actionButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          
+          {booking.status === 'confirmed' && (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.completeButton]}
+              onPress={() => updateBookingStatus(booking.id, 'completed')}
+            >
+              <Ionicons name="checkmark-done" size={16} color="#ffffff" />
+              <Text style={styles.actionButtonText}>Complete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+
+  const clearFilters = () => {
+    setFilters({
+      status: 'all',
+      venue: 'all',
+      dateRange: 'all',
+      sport: 'all',
+      paymentStatus: 'all',
+    });
+    setSearchQuery('');
+  };
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    if (filters.status !== 'all') count++;
+    if (filters.venue !== 'all') count++;
+    if (filters.dateRange !== 'all') count++;
+    if (filters.sport !== 'all') count++;
+    if (filters.paymentStatus !== 'all') count++;
+    if (searchQuery.trim()) count++;
+    return count;
   };
 
   if (isLoading) {
@@ -236,198 +425,291 @@ export default function BookingsScreen() {
     );
   }
 
-  const filteredBookings = getFilteredBookings();
-
-  const handleAddBooking = () => {
-    setShowEnhancedBookingFlow(true);
-  };
-
-  const handleBookingCreated = () => {
-    loadBookings(); // Refresh the bookings list
-  };
-
-
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-          }
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <Text style={styles.greeting}>Bookings</Text>
-              <Text style={styles.subtitle}>{bookings.length} total bookings</Text>
-            </View>
+        {/* Enhanced Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.greeting}>Bookings</Text>
+            <Text style={styles.subtitle}>
+              {filteredBookings.length} of {bookings.length} bookings
+            </Text>
+          </View>
+          
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.headerButton}
+              onPress={() => setShowFilterModal(true)}
+            >
+              <Ionicons name="funnel" size={20} color="#212529" />
+              {getActiveFilterCount() > 0 && (
+                <View style={styles.filterBadge}>
+                  <Text style={styles.filterBadgeText}>{getActiveFilterCount()}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            
             <TouchableOpacity 
               style={styles.addButton}
-              onPress={handleAddBooking}
+              onPress={() => setShowEnhancedBookingFlow(true)}
             >
               <Ionicons name="add" size={24} color="#ffffff" />
             </TouchableOpacity>
           </View>
+        </View>
 
-          {/* Quick Stats */}
-          <View style={styles.statsSection}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statsContainer}>
-              {statusFilters.map((filter, index) => (
-                <TouchableOpacity
-                  key={filter.key}
-                  style={[
-                    styles.statCard,
-                    selectedStatus === filter.key && styles.statCardActive,
-                    index === 0 && styles.firstStat
-                  ]}
-                  onPress={() => setSelectedStatus(filter.key)}
-                >
-                  <View style={styles.statContent}>
-                    <Text style={[
-                      styles.statCount,
-                      { color: selectedStatus === filter.key ? '#ffffff' : filter.color }
-                    ]}>
-                      {filter.count}
-                    </Text>
-                    <Text style={[
-                      styles.statLabel,
-                      { color: selectedStatus === filter.key ? 'rgba(255,255,255,0.8)' : '#6b7280' }
-                    ]}>
-                      {filter.label}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Bookings List */}
-          <View style={styles.bookingsSection}>
-            {filteredBookings && Array.isArray(filteredBookings) && filteredBookings.length > 0 ? (
-              filteredBookings.map((booking, index) => (
-                <TouchableOpacity
-                  key={booking?.id || index}
-                  style={styles.bookingCard}
-                  onPress={() => handleBookingAction(booking, 'details')}
-                  activeOpacity={0.8}
-                >
-                <ImageBackground
-                  source={{ uri: 'https://images.unsplash.com/photo-1705593136686-d5f32b611aa9' }}
-                  style={styles.bookingImageBackground}
-                  imageStyle={styles.bookingImage}
-                >
-                  <View style={styles.bookingOverlay} />
-                  
-                  {/* Status Badge */}
-                  <View style={styles.statusBadgeContainer}>
-                    <View style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusBgColor(booking.status), borderColor: getStatusColor(booking.status) }
-                    ]}>
-                      <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
-                        {booking.status.toUpperCase()}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Booking Header */}
-                  <View style={styles.bookingHeader}>
-                    <View style={styles.bookingInfo}>
-                      <Text style={styles.venueName} numberOfLines={1}>{booking.venue_name}</Text>
-                      <Text style={styles.playerName} numberOfLines={1}>{booking.user_name}</Text>
-                    </View>
-                    
-                    <View style={styles.bookingAmount}>
-                      <Text style={styles.amountText}>{formatCurrency(booking.total_amount)}</Text>
-                    </View>
-                  </View>
-                </ImageBackground>
-
-                {/* Booking Details */}
-                <View style={styles.bookingDetails}>
-                  <View style={styles.bookingMeta}>
-                    <View style={styles.metaItem}>
-                      <Ionicons name="calendar" size={16} color="#6b7280" />
-                      <Text style={styles.metaText}>{formatDate(booking.booking_date)}</Text>
-                    </View>
-                    <View style={styles.metaItem}>
-                      <Ionicons name="time" size={16} color="#6b7280" />
-                      <Text style={styles.metaText}>{booking.start_time} - {booking.end_time}</Text>
-                    </View>
-                    <View style={styles.metaItem}>
-                      <Ionicons name="basketball" size={16} color="#6b7280" />
-                      <Text style={styles.metaText}>{booking.sport}</Text>
-                    </View>
-                  </View>
-
-                  {/* Payment Status */}
-                  <View style={styles.paymentRow}>
-                    <View style={styles.paymentStatus}>
-                      <Ionicons 
-                        name={booking.payment_status === 'paid' ? 'checkmark-circle' : 'time'} 
-                        size={16} 
-                        color={booking.payment_status === 'paid' ? '#10b981' : '#f59e0b'} 
-                      />
-                      <Text style={[
-                        styles.paymentText,
-                        { color: booking.payment_status === 'paid' ? '#10b981' : '#f59e0b' }
-                      ]}>
-                        {booking.payment_status === 'paid' ? 'Paid' : 'Payment Pending'}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Action Buttons */}
-                  {getBookingActions(booking) && Array.isArray(getBookingActions(booking)) && getBookingActions(booking).length > 0 && (
-                    <View style={styles.actionsContainer}>
-                      {getBookingActions(booking).map((action) => (
-                        <TouchableOpacity
-                          key={action?.key || Math.random()}
-                          style={[styles.actionButton, { borderColor: action?.color || '#9ca3af' }]}
-                          onPress={() => handleBookingAction(booking, action?.key)}
-                        >
-                          <Ionicons name={action?.icon as any} size={16} color={action?.color || '#9ca3af'} />
-                          <Text style={[styles.actionText, { color: action?.color || '#9ca3af' }]}>
-                            {action?.label || 'Action'}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
-                </View>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Ionicons name="search" size={20} color="#9ca3af" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by name, phone, venue, or sport..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor="#9ca3af"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close-circle" size={20} color="#9ca3af" />
               </TouchableOpacity>
-            ))
-            ) : null}
-
-            {(!filteredBookings || filteredBookings.length === 0) && (
-              <View style={styles.emptyState}>
-                <Ionicons name="calendar-outline" size={64} color="#9ca3af" />
-                <Text style={styles.emptyStateTitle}>No bookings found</Text>
-                <Text style={styles.emptyStateText}>
-                  {selectedStatus === 'all' 
-                    ? 'You haven\'t received any bookings yet'
-                    : `No ${selectedStatus} bookings found`
-                  }
-                </Text>
-              </View>
             )}
           </View>
+        </View>
 
-          {/* Add some bottom padding */}
-          <View style={{ height: 100 }} />
+        {/* Bulk Actions Bar */}
+        {showBulkActions && (
+          <View style={styles.bulkActionsBar}>
+            <TouchableOpacity 
+              style={styles.bulkActionCancel}
+              onPress={() => {
+                setShowBulkActions(false);
+                setSelectedBookings([]);
+              }}
+            >
+              <Text style={styles.bulkActionCancelText}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.bulkActionCount}>
+              {selectedBookings.length} selected
+            </Text>
+            
+            <View style={styles.bulkActionButtons}>
+              <TouchableOpacity
+                style={[styles.bulkActionButton, styles.confirmBulkButton]}
+                onPress={() => handleBulkAction('confirmed')}
+              >
+                <Text style={styles.bulkActionButtonText}>Confirm</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.bulkActionButton, styles.cancelBulkButton]}
+                onPress={() => handleBulkAction('cancelled')}
+              >
+                <Text style={styles.bulkActionButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Quick Stats */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.statsContainer}
+        >
+          {statusOptions.map((status, index) => {
+            const count = status.key === 'all' 
+              ? filteredBookings.length 
+              : filteredBookings.filter(b => b.status === status.key).length;
+            
+            return (
+              <TouchableOpacity
+                key={status.key}
+                style={[
+                  styles.statCard,
+                  filters.status === status.key && styles.statCardActive,
+                  index === 0 && styles.firstStat
+                ]}
+                onPress={() => setFilters({...filters, status: status.key})}
+              >
+                <Text style={[
+                  styles.statCount,
+                  { color: filters.status === status.key ? '#ffffff' : status.color }
+                ]}>
+                  {count}
+                </Text>
+                <Text style={[
+                  styles.statLabel,
+                  { color: filters.status === status.key ? 'rgba(255,255,255,0.8)' : '#6b7280' }
+                ]}>
+                  {status.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
 
-        {/* Enhanced Booking Flow */}
-        <EnhancedBookingFlow
-          visible={showEnhancedBookingFlow}
-          onClose={() => setShowEnhancedBookingFlow(false)}
-          venues={venues}
-          onBookingCreated={handleBookingCreated}
+        {/* Bookings List */}
+        <FlatList
+          data={filteredBookings}
+          renderItem={renderBookingCard}
+          keyExtractor={(item) => item.id}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons name="calendar-outline" size={64} color="#9ca3af" />
+              <Text style={styles.emptyStateTitle}>No bookings found</Text>
+              <Text style={styles.emptyStateText}>
+                {searchQuery || getActiveFilterCount() > 0 
+                  ? 'Try adjusting your search or filters' 
+                  : 'Create your first booking to get started'
+                }
+              </Text>
+              {(searchQuery || getActiveFilterCount() > 0) && (
+                <TouchableOpacity style={styles.clearFiltersButton} onPress={clearFilters}>
+                  <Text style={styles.clearFiltersText}>Clear Filters</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          }
         />
+
+        {/* Filter Modal */}
+        <Modal
+          visible={showFilterModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+                <Text style={styles.modalCancel}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Filter Bookings</Text>
+              <TouchableOpacity onPress={clearFilters}>
+                <Text style={styles.modalClear}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <ScrollView style={styles.modalContent}>
+              {/* Status Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterTitle}>Booking Status</Text>
+                <View style={styles.filterOptions}>
+                  {statusOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option.key}
+                      style={[
+                        styles.filterOption,
+                        filters.status === option.key && styles.filterOptionActive
+                      ]}
+                      onPress={() => setFilters({...filters, status: option.key})}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        filters.status === option.key && styles.filterOptionTextActive
+                      ]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Venue Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterTitle}>Venue</Text>
+                <View style={styles.filterOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterOption,
+                      filters.venue === 'all' && styles.filterOptionActive
+                    ]}
+                    onPress={() => setFilters({...filters, venue: 'all'})}
+                  >
+                    <Text style={[
+                      styles.filterOptionText,
+                      filters.venue === 'all' && styles.filterOptionTextActive
+                    ]}>
+                      All Venues
+                    </Text>
+                  </TouchableOpacity>
+                  {venues.map((venue) => (
+                    <TouchableOpacity
+                      key={venue.id}
+                      style={[
+                        styles.filterOption,
+                        filters.venue === venue.name && styles.filterOptionActive
+                      ]}
+                      onPress={() => setFilters({...filters, venue: venue.name})}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        filters.venue === venue.name && styles.filterOptionTextActive
+                      ]}>
+                        {venue.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Date Range Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterTitle}>Date Range</Text>
+                <View style={styles.filterOptions}>
+                  {dateRangeOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option.key}
+                      style={[
+                        styles.filterOption,
+                        filters.dateRange === option.key && styles.filterOptionActive
+                      ]}
+                      onPress={() => setFilters({...filters, dateRange: option.key as any})}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        filters.dateRange === option.key && styles.filterOptionTextActive
+                      ]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Payment Status Filter */}
+              <View style={styles.filterSection}>
+                <Text style={styles.filterTitle}>Payment Status</Text>
+                <View style={styles.filterOptions}>
+                  {paymentStatusOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option.key}
+                      style={[
+                        styles.filterOption,
+                        filters.paymentStatus === option.key && styles.filterOptionActive
+                      ]}
+                      onPress={() => setFilters({...filters, paymentStatus: option.key})}
+                    >
+                      <Text style={[
+                        styles.filterOptionText,
+                        filters.paymentStatus === option.key && styles.filterOptionTextActive
+                      ]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
 
         {/* Booking Details Modal */}
         <Modal
@@ -441,68 +723,94 @@ export default function BookingsScreen() {
                 <Text style={styles.modalCancel}>Close</Text>
               </TouchableOpacity>
               <Text style={styles.modalTitle}>Booking Details</Text>
-              <TouchableOpacity>
-                <Text style={styles.modalSave}>Actions</Text>
-              </TouchableOpacity>
+              <View style={{ width: 60 }} />
             </View>
+            
             {selectedBooking && (
               <ScrollView style={styles.modalContent}>
-                <View style={styles.detailsSection}>
+                <View style={styles.detailsCard}>
+                  <Text style={styles.detailsTitle}>Player Information</Text>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Name:</Text>
+                    <Text style={styles.detailValue}>{selectedBooking.player_name}</Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Phone:</Text>
+                    <Text style={styles.detailValue}>{selectedBooking.player_phone}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.detailsCard}>
                   <Text style={styles.detailsTitle}>Booking Information</Text>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Venue:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.venue_name}</Text>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Venue:</Text>
+                    <Text style={styles.detailValue}>{selectedBooking.venue_name}</Text>
                   </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Player:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.user_name}</Text>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Sport:</Text>
+                    <Text style={styles.detailValue}>{selectedBooking.sport}</Text>
                   </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Phone:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.user_mobile}</Text>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Date:</Text>
+                    <Text style={styles.detailValue}>{formatDate(selectedBooking.booking_date)}</Text>
                   </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Sport:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.sport}</Text>
-                  </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Date:</Text>
-                    <Text style={styles.detailsValue}>{formatDate(selectedBooking.booking_date)}</Text>
-                  </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Time:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.start_time} - {selectedBooking.end_time}</Text>
-                  </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Duration:</Text>
-                    <Text style={styles.detailsValue}>{selectedBooking.duration_hours} hours</Text>
-                  </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Amount:</Text>
-                    <Text style={styles.detailsValue}>{formatCurrency(selectedBooking.total_amount)}</Text>
-                  </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Status:</Text>
-                    <Text style={[styles.detailsValue, { color: getStatusColor(selectedBooking.status) }]}>
-                      {selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)}
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Time:</Text>
+                    <Text style={styles.detailValue}>
+                      {selectedBooking.start_time} - {selectedBooking.end_time}
                     </Text>
                   </View>
-                  <View style={styles.detailsRow}>
-                    <Text style={styles.detailsLabel}>Payment:</Text>
-                    <Text style={[
-                      styles.detailsValue, 
-                      { color: selectedBooking.payment_status === 'paid' ? '#10b981' : '#f59e0b' }
-                    ]}>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Duration:</Text>
+                    <Text style={styles.detailValue}>{selectedBooking.duration_hours} hours</Text>
+                  </View>
+                </View>
+
+                <View style={styles.detailsCard}>
+                  <Text style={styles.detailsTitle}>Payment Information</Text>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Amount:</Text>
+                    <Text style={styles.detailValue}>{formatCurrency(selectedBooking.total_amount)}</Text>
+                  </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Payment Status:</Text>
+                    <Text style={[styles.detailValue, { 
+                      color: selectedBooking.payment_status === 'paid' ? '#10b981' : '#f59e0b' 
+                    }]}>
                       {selectedBooking.payment_status.charAt(0).toUpperCase() + selectedBooking.payment_status.slice(1)}
                     </Text>
                   </View>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Booking Status:</Text>
+                    <Text style={[styles.detailValue, { 
+                      color: getStatusColor(selectedBooking.status)
+                    }]}>
+                      {selectedBooking.status.charAt(0).toUpperCase() + selectedBooking.status.slice(1)}
+                    </Text>
+                  </View>
                 </View>
+
+                {selectedBooking.notes && (
+                  <View style={styles.detailsCard}>
+                    <Text style={styles.detailsTitle}>Notes</Text>
+                    <Text style={styles.notesText}>{selectedBooking.notes}</Text>
+                  </View>
+                )}
               </ScrollView>
             )}
           </SafeAreaView>
         </Modal>
 
-        <VenueOwnerBottomNavigation currentRoute="bookings" />
+        {/* Enhanced Booking Flow Modal */}
+        <EnhancedBookingFlow
+          visible={showEnhancedBookingFlow}
+          onClose={() => setShowEnhancedBookingFlow(false)}
+          onBookingCreated={() => {
+            setShowEnhancedBookingFlow(false);
+            loadBookings();
+          }}
+          venues={venues}
+        />
       </SafeAreaView>
     </View>
   );
@@ -525,16 +833,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9ca3af',
   },
-  scrollContent: {
-    paddingBottom: 20,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 20,
-    paddingBottom: 32,
+    paddingBottom: 16,
     backgroundColor: '#f5f6f7',
   },
   headerContent: {
@@ -551,188 +856,261 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontWeight: '500',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#ef4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterBadgeText: {
+    fontSize: 12,
+    color: '#ffffff',
+    fontWeight: '600',
+  },
   addButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#212529',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#212529',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  statsSection: {
-    paddingVertical: 24,
-    backgroundColor: '#f5f6f7',
+  searchContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#212529',
+  },
+  bulkActionsBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#212529',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    marginHorizontal: 24,
+    marginBottom: 16,
+    borderRadius: 16,
+  },
+  bulkActionCancel: {
+    paddingVertical: 4,
+  },
+  bulkActionCancelText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  bulkActionCount: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bulkActionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  bulkActionButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  confirmBulkButton: {
+    backgroundColor: '#10b981',
+  },
+  cancelBulkButton: {
+    backgroundColor: '#ef4444',
+  },
+  bulkActionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   statsContainer: {
-    paddingHorizontal: 24,
-    gap: 12,
+    paddingLeft: 24,
+    paddingBottom: 20,
   },
   statCard: {
     backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    minWidth: 75,
+    marginRight: 12,
+    alignItems: 'center',
+    minWidth: 80,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statCardActive: {
+    backgroundColor: '#212529',
+  },
+  firstStat: {
+    marginLeft: 0,
+  },
+  statCount: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  listContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 120,
+  },
+  bookingCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 3,
   },
-  statCardActive: {
-    backgroundColor: '#212529',
-    borderColor: '#212529',
+  bookingCardSelected: {
+    borderWidth: 2,
+    borderColor: '#3b82f6',
+    backgroundColor: '#fafbff',
   },
-  firstStat: {
-    marginLeft: 0,
-  },
-  statContent: {
-    alignItems: 'center',
-  },
-  statCount: {
-    fontSize: 20,
-    fontWeight: '700',
-    lineHeight: 24,
-  },
-  statLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  bookingsSection: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-  },
-  bookingCard: {
-    marginBottom: 24,
-    borderRadius: 20,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 6,
-    overflow: 'hidden',
-  },
-  bookingImageBackground: {
-    height: 120,
-    justifyContent: 'space-between',
-  },
-  bookingImage: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  bookingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  statusBadgeContainer: {
+  selectionCircle: {
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: 12,
+    right: 12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#3b82f6',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  bookingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  bookingMainInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  playerName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 4,
+  },
+  venueInfo: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
-    borderWidth: 1,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  bookingHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    padding: 16,
-  },
-  bookingInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  venueName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 4,
-  },
-  playerName: {
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
-  },
-  bookingAmount: {
-    alignItems: 'flex-end',
-  },
-  amountText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   bookingDetails: {
-    padding: 20,
-  },
-  bookingMeta: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
+    gap: 8,
     marginBottom: 16,
   },
-  metaItem: {
+  detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  metaText: {
-    fontSize: 13,
-    color: '#6b7280',
-    fontWeight: '500',
-    marginLeft: 6,
-  },
-  paymentRow: {
-    marginBottom: 16,
-  },
-  paymentStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  paymentText: {
+  detailText: {
     fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
+    color: '#6b7280',
+    marginLeft: 8,
+    fontWeight: '500',
   },
-  actionsContainer: {
+  bookingActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
     paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 12,
-    borderWidth: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    gap: 4,
   },
-  actionText: {
-    fontSize: 13,
+  confirmButton: {
+    backgroundColor: '#3b82f6',
+  },
+  cancelButton: {
+    backgroundColor: '#ef4444',
+  },
+  completeButton: {
+    backgroundColor: '#10b981',
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
     fontWeight: '600',
-    marginLeft: 6,
   },
   emptyState: {
-    alignItems: 'center',
     paddingVertical: 60,
-    paddingHorizontal: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyStateTitle: {
     fontSize: 20,
@@ -745,7 +1123,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6b7280',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  clearFiltersButton: {
+    backgroundColor: '#212529',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+  },
+  clearFiltersText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   modalContainer: {
     flex: 1,
@@ -770,501 +1160,74 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#212529',
   },
-  modalSave: {
+  modalClear: {
     fontSize: 16,
-    color: '#212529',
+    color: '#ef4444',
     fontWeight: '600',
   },
   modalContent: {
     flex: 1,
     padding: 20,
   },
-  detailsSection: {
+  filterSection: {
     marginBottom: 32,
   },
-  detailsTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#212529',
-    marginBottom: 20,
-  },
-  detailsRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  detailsLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-    width: 100,
-    fontWeight: '500',
-  },
-  detailsValue: {
-    fontSize: 14,
-    color: '#212529',
-    flex: 1,
-    fontWeight: '500',
-  },
-  bookingTypeSelector: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  typeButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-  },
-  typeButtonActive: {
-    backgroundColor: '#212529',
-  },
-  typeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-  typeButtonTextActive: {
-    color: '#ffffff',
-  },
-  formGroup: {
-    marginBottom: 20,
-  },
-  formLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
-  },
-  formInput: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#212529',
-    backgroundColor: '#f9fafb',
-  },
-  timeRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
-  },
-  timeInput: {
-    flex: 1,
-  },
-  modalSave: {
-    fontSize: 16,
-    color: '#2563eb',
-    fontWeight: '600',
-  },
-  modalSaveDisabled: {
-    color: '#9ca3af',
-  },
-  venueSelector: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  venueSelectorText: {
-    fontSize: 16,
-    color: '#212529',
-  },
-  venuePlaceholder: {
-    color: '#9ca3af',
-  },
-  venueOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  venueOptionSelected: {
-    backgroundColor: '#f0f9ff',
-    borderBottomColor: '#10b981',
-  },
-  venueOptionContent: {
-    flex: 1,
-  },
-  venueOptionName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  venueOptionNameSelected: {
-    color: '#10b981',
-  },
-  venueOptionDetails: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 2,
-  },
-  venueOptionDetailsSelected: {
-    color: '#059669',
-  },
-  venueOptionAddress: {
-    fontSize: 13,
-    color: '#9ca3af',
-  },
-  venueOptionAddressSelected: {
-    color: '#10b981',
-  },
-  emptyVenueState: {
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
-  },
-  emptyVenueTitle: {
+  filterTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyVenueText: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  confirmationCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  confirmationTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1e293b',
+    color: '#212529',
     marginBottom: 16,
-    textAlign: 'center',
   },
-  confirmationRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  confirmationLabel: {
-    fontSize: 14,
-    color: '#64748b',
-    fontWeight: '500',
-    flex: 1,
-  },
-  confirmationValue: {
-    fontSize: 14,
-    color: '#1e293b',
-    fontWeight: '600',
-    flex: 2,
-    textAlign: 'right',
-  },
-  totalRow: {
-    borderBottomWidth: 0,
-    paddingTop: 12,
-    marginTop: 8,
-    borderTopWidth: 2,
-    borderTopColor: '#e2e8f0',
-  },
-  totalLabel: {
-    fontSize: 16,
-    color: '#1e293b',
-    fontWeight: '700',
-    flex: 1,
-  },
-  totalValue: {
-    fontSize: 18,
-    color: '#059669',
-    fontWeight: '800',
-    flex: 2,
-    textAlign: 'right',
-  },
-  actionInfoCard: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  actionInfoContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  actionInfoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1e40af',
-    marginBottom: 8,
-  },
-  actionInfoText: {
-    fontSize: 14,
-    color: '#1e40af',
-    lineHeight: 20,
-  },
-  // Enhanced booking form styles
-  explanationBox: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#fbbf24',
-  },
-  explanationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#92400e',
-    marginBottom: 8,
-  },
-  explanationText: {
-    fontSize: 14,
-    color: '#92400e',
-    lineHeight: 20,
-  },
-  disabledInput: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#cbd5e1',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  disabledInputText: {
-    fontSize: 16,
-    color: '#64748b',
-    fontWeight: '500',
-    flex: 1,
-  },
-  sportSelector: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  filterOptions: {
     gap: 8,
   },
-  sportOption: {
+  filterOption: {
+    backgroundColor: '#f8fafc',
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: '#ffffff',
-  },
-  sportOptionSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
-  },
-  sportOptionText: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  sportOptionTextSelected: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  dateSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dateSelectorText: {
-    fontSize: 16,
-    color: '#374151',
-    flex: 1,
-  },
-  datePlaceholder: {
-    color: '#9ca3af',
-  },
-  amountDisplay: {
-    backgroundColor: '#f0f9ff',
+    paddingVertical: 12,
     borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#bae6fd',
-  },
-  amountRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  amountLabel: {
-    fontSize: 14,
-    color: '#0369a1',
-    fontWeight: '500',
-  },
-  amountValue: {
-    fontSize: 14,
-    color: '#0c4a6e',
-    fontWeight: '600',
-  },
-  totalAmountRow: {
-    borderTopWidth: 1,
-    borderTopColor: '#93c5fd',
-    marginTop: 8,
-    paddingTop: 8,
-  },
-  totalAmountLabel: {
-    fontSize: 16,
-    color: '#0c4a6e',
-    fontWeight: '700',
-  },
-  totalAmountValue: {
-    fontSize: 18,
-    color: '#059669',
-    fontWeight: '800',
-  },
-  // Date picker styles
-  datePickerContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    marginTop: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    overflow: 'hidden',
   },
-  datePicker: {
-    backgroundColor: '#ffffff',
+  filterOptionActive: {
+    backgroundColor: '#212529',
+    borderColor: '#212529',
   },
-  datePickerActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#f8fafc',
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  datePickerButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 8,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  datePickerCancel: {
-    backgroundColor: '#f1f5f9',
-  },
-  datePickerConfirm: {
-    backgroundColor: '#3b82f6',
-  },
-  datePickerCancelText: {
+  filterOptionText: {
     fontSize: 16,
-    color: '#64748b',
+    color: '#374151',
     fontWeight: '500',
   },
-  datePickerConfirmText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  // Time selection styles
-  timeSelectionContainer: {
-    gap: 16,
-  },
-  timeSelectGroup: {
-    gap: 8,
-  },
-  timeSelectLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginLeft: 4,
-  },
-  timeDropdownContainer: {
-    minHeight: 48,
-  },
-  timeScrollView: {
-    flexGrow: 0,
-  },
-  timeScrollContent: {
-    paddingHorizontal: 4,
-    gap: 8,
-  },
-  timeOption: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1.5,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minWidth: 80,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  timeOptionSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
-    shadowColor: '#3b82f6',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  timeOptionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#374151',
-  },
-  timeOptionTextSelected: {
+  filterOptionTextActive: {
     color: '#ffffff',
   },
-  noTimesContainer: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
+  detailsCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
     padding: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderStyle: 'dashed',
+    marginBottom: 16,
   },
-  noTimesText: {
+  detailsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 16,
+  },
+  detailLabel: {
     fontSize: 14,
     color: '#6b7280',
-    textAlign: 'center',
-    fontStyle: 'italic',
+    fontWeight: '500',
+    minWidth: 100,
   },
-  timeSelectionSummary: {
-    marginTop: 16,
-  },
-  timeSummaryCard: {
-    backgroundColor: '#eff6ff',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-  },
-  timeSummaryText: {
+  detailValue: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#1e40af',
+    color: '#212529',
+    fontWeight: '500',
     flex: 1,
   },
-  timeDurationText: {
-    fontSize: 14,
-    color: '#3730a3',
-    fontWeight: '500',
+  notesText: {
+    fontSize: 16,
+    color: '#374151',
+    lineHeight: 24,
   },
 });
