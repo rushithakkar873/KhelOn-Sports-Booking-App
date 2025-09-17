@@ -740,9 +740,8 @@ export default function VenuesScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-              </KeyboardAvoidingView>
-            </SafeAreaView>
-          </View>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
         </Modal>
 
         {/* Venue Details Modal */}
