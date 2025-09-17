@@ -108,6 +108,7 @@ export default function EnhancedBookingFlow({
   venues, 
   onBookingCreated 
 }: EnhancedBookingFlowProps) {
+  const insets = useSafeAreaInsets();
   const [bookingData, setBookingData] = useState<BookingData>({
     venueId: '',
     venueName: '',
