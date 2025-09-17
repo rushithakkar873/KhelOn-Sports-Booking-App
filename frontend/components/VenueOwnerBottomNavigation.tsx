@@ -31,6 +31,10 @@ function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigation
     { key: 'profile', icon: 'person', route: '/venue-owner/dashboard/profile' },
   ];
 
+  const handleNavigation = (route: string) => {
+    router.push(route as any);
+  };
+
   return (
     <View style={styles.bottomNavContainer}>
       <View style={styles.bottomNav}>
@@ -41,12 +45,13 @@ function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigation
               styles.navItem,
               activeRoute === item.key && styles.navItemActive
             ]}
-            onPress={() => router.push(item.route as any)}
+            onPress={() => handleNavigation(item.route)}
+            activeOpacity={0.7}
           >
             <Ionicons 
               name={activeRoute === item.key ? item.icon as any : `${item.icon}-outline` as any} 
-              size={20} 
-              color="#ffffff" 
+              size={22} 
+              color={activeRoute === item.key ? "#ffffff" : "rgba(255,255,255,0.6)"} 
             />
           </TouchableOpacity>
         ))}
@@ -54,6 +59,9 @@ function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigation
     </View>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(VenueOwnerBottomNavigation);
 
 const styles = StyleSheet.create({
   bottomNavContainer: {
