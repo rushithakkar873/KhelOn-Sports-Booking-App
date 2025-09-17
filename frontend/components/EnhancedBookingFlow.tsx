@@ -800,7 +800,7 @@ export default function EnhancedBookingFlow({
       presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
         {/* Header */}
         <View style={styles.header}>
