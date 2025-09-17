@@ -481,10 +481,9 @@ export default function EnhancedBookingFlow({
   // Removed renderProgressBar function - progress is now in header
 
   const renderStep1 = () => (
-    <View style={styles.stepContainer}>
-      <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.stepTitle}>Book Your Slot</Text>
-        <Text style={styles.stepSubtitle}>Select venue, sport, date and time for your booking</Text>
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Book Your Slot</Text>
+      <Text style={styles.stepSubtitle}>Select venue, sport, date and time for your booking</Text>
 
         {/* Venue Selection */}
         <View style={styles.formGroup}>
