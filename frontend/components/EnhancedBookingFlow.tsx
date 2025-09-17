@@ -692,10 +692,9 @@ export default function EnhancedBookingFlow({
   );
 
   const renderStep2 = () => (
-    <View style={styles.stepContainer}>
-      <ScrollView style={styles.stepContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.stepTitle}>Confirm Booking</Text>
-        <Text style={styles.stepSubtitle}>Enter player details and confirm your booking</Text>
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Confirm Booking</Text>
+      <Text style={styles.stepSubtitle}>Enter player details and confirm your booking</Text>
 
         {/* Player Information */}
         <View style={styles.formGroup}>
