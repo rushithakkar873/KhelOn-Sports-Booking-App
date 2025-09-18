@@ -294,21 +294,21 @@ export default function ProfileScreen() {
           <View style={styles.profileCard}>
             <View style={styles.profileHeader}>
               <View style={styles.profileAvatar}>
-                <Ionicons name="person" size={40} color="#212529" />
+                <Ionicons name="person" size={isTablet ? 48 : 40} color="#212529" />
               </View>
               <View style={styles.profileInfo}>
                 <View style={styles.nameRow}>
-                  <Text style={styles.profileName}>{profile.name}</Text>
+                  <Text style={styles.profileName} numberOfLines={2}>{profile.name}</Text>
                   {profile.is_verified && (
                     <View style={styles.verifiedBadge}>
-                      <Ionicons name="checkmark-circle" size={18} color="#10b981" />
+                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
                       <Text style={styles.verifiedText}>Verified</Text>
                     </View>
                   )}
                 </View>
-                <Text style={styles.profileEmail}>{profile.email || 'Not provided'}</Text>
-                <Text style={styles.profileMobile}>{profile.mobile}</Text>
-                <Text style={styles.joinDate}>Member since {VenueOwnerService.formatDate(profile.created_at)}</Text>
+                <Text style={styles.profileEmail} numberOfLines={2}>{profile.email || 'Not provided'}</Text>
+                <Text style={styles.profileMobile} numberOfLines={1}>{profile.mobile}</Text>
+                <Text style={styles.joinDate} numberOfLines={1}>Member since {VenueOwnerService.formatDate(profile.created_at)}</Text>
               </View>
             </View>
 
@@ -318,45 +318,43 @@ export default function ProfileScreen() {
               <View style={styles.businessGrid}>
                 <View style={styles.businessItem}>
                   <Text style={styles.businessLabel}>Business Name</Text>
-                  <Text style={styles.businessValue}>{profile.business_name || 'Not provided'}</Text>
+                  <Text style={styles.businessValue} numberOfLines={3}>{profile.business_name || 'Not provided'}</Text>
                 </View>
                 <View style={styles.businessItem}>
                   <Text style={styles.businessLabel}>GST Number</Text>
-                  <Text style={styles.businessValue}>{profile.gst_number || 'Not provided'}</Text>
+                  <Text style={styles.businessValue} numberOfLines={2}>{profile.gst_number || 'Not provided'}</Text>
                 </View>
               </View>
               <View style={styles.businessItem}>
                 <Text style={styles.businessLabel}>Business Address</Text>
-                <Text style={styles.businessValue}>{profile.business_address || 'Not provided'}</Text>
+                <Text style={styles.businessValue} numberOfLines={4}>{profile.business_address || 'Not provided'}</Text>
               </View>
             </View>
           </View>
 
-          {/* Stats Cards - 2-1 Layout */}
+          {/* Stats Cards - Responsive Layout */}
           <View style={styles.statsSection}>
-            <View style={styles.statsTopRow}>
-              <View style={styles.statCard}>
+            <View style={[styles.statsGrid, isTablet && styles.statsGridTablet]}>
+              <View style={[styles.statCard, isTablet && styles.statCardTablet]}>
                 <View style={styles.statIcon}>
-                  <Ionicons name="business" size={20} color="#3b82f6" />
+                  <Ionicons name="business" size={isTablet ? 24 : 20} color="#3b82f6" />
                 </View>
-                <Text style={styles.statValue}>{profile.total_venues || 0}</Text>
-                <Text style={styles.statLabel}>Total Venues</Text>
+                <Text style={[styles.statValue, isTablet && styles.statValueTablet]}>{profile.total_venues || 0}</Text>
+                <Text style={[styles.statLabel, isTablet && styles.statLabelTablet]}>Total Venues</Text>
               </View>
-              <View style={styles.statCard}>
+              <View style={[styles.statCard, isTablet && styles.statCardTablet]}>
                 <View style={styles.statIcon}>
-                  <Ionicons name="calendar" size={20} color="#10b981" />
+                  <Ionicons name="calendar" size={isTablet ? 24 : 20} color="#10b981" />
                 </View>
-                <Text style={styles.statValue}>{0}</Text>
-                <Text style={styles.statLabel}>Total Bookings</Text>
+                <Text style={[styles.statValue, isTablet && styles.statValueTablet]}>{0}</Text>
+                <Text style={[styles.statLabel, isTablet && styles.statLabelTablet]}>Total Bookings</Text>
               </View>
-            </View>
-            <View style={styles.statsBottomRow}>
-              <View style={styles.statCardFull}>
+              <View style={[styles.statCard, styles.statCardFull, isTablet && styles.statCardTablet]}>
                 <View style={styles.statIcon}>
-                  <Ionicons name="cash" size={20} color="#f59e0b" />
+                  <Ionicons name="cash" size={isTablet ? 24 : 20} color="#f59e0b" />
                 </View>
-                <Text style={styles.statValue}>{formatCurrency(profile.total_revenue || 0)}</Text>
-                <Text style={styles.statLabel}>Total Revenue</Text>
+                <Text style={[styles.statValue, isTablet && styles.statValueTablet]}>{formatCurrency(profile.total_revenue || 0)}</Text>
+                <Text style={[styles.statLabel, isTablet && styles.statLabelTablet]}>Total Revenue</Text>
               </View>
             </View>
           </View>
