@@ -11,6 +11,8 @@ import {
   Alert,
   Switch,
   StatusBar,
+  Dimensions,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +20,10 @@ import { useRouter } from 'expo-router';
 import VenueOwnerService from '../../../services/venueOwnerService';
 import AuthService from '../../../services/authService';
 import AnimatedLoader from '../../../components/AnimatedLoader';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const isTablet = screenWidth >= 768;
+const isLargeScreen = screenWidth >= 1024;
 
 interface VenueOwnerProfile {
   id: string;
