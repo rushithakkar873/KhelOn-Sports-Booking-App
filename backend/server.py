@@ -271,22 +271,41 @@ class BookingResponse(BaseModel):
 
 @api_router.post("/venue-owner/venues")
 async def create_venue_by_owner(venue_data: VenueCreate, current_owner: dict = Depends(get_current_venue_owner)):
-    """Create venue by venue owner"""
+    """Create venue by venue owner with multiple arenas"""
     venue_id = str(uuid.uuid4())
     
-    # Process slots
-    processed_slots = []
-    for slot_data in venue_data.slots:
-        slot_id = str(uuid.uuid4())
-        processed_slots.append({
-            "_id": slot_id,
-            "day_of_week": slot_data.day_of_week,
-            "start_time": slot_data.start_time,
-            "end_time": slot_data.end_time,
-            "capacity": slot_data.capacity,
-            "price_per_hour": slot_data.price_per_hour,
-            "is_peak_hour": slot_data.is_peak_hour,
-            "is_active": True,
+    # Process arenas
+    processed_arenas = []
+    for arena_data in venue_data.arenas:
+        arena_id = str(uuid.uuid4())
+        
+        # Process slots for this arena
+        processed_slots = []
+        for slot_data in arena_data.slots:
+            slot_id = str(uuid.uuid4())
+            processed_slots.append({
+                "_id": slot_id,
+                "day_of_week": slot_data.day_of_week,
+                "start_time": slot_data.start_time,
+                "end_time": slot_data.end_time,
+                "capacity": slot_data.capacity,
+                "price_per_hour": slot_data.price_per_hour,
+                "is_peak_hour": slot_data.is_peak_hour,
+                "is_active": True,
+                "created_at": datetime.utcnow()
+            })
+        
+        processed_arenas.append({
+            "_id": arena_id,
+            "name": arena_data.name,
+            "sport": arena_data.sport,
+            "capacity": arena_data.capacity,
+            "description": arena_data.description,
+            "amenities": arena_data.amenities,
+            "base_price_per_hour": arena_data.base_price_per_hour,
+            "images": arena_data.images,
+            "slots": processed_slots,
+            "is_active": arena_data.is_active,
             "created_at": datetime.utcnow()
         })
     
@@ -308,7 +327,7 @@ async def create_venue_by_owner(venue_data: VenueCreate, current_owner: dict = D
         "images": venue_data.images,
         "rules_and_regulations": venue_data.rules_and_regulations,
         "cancellation_policy": venue_data.cancellation_policy,
-        "slots": processed_slots,
+        "arenas": processed_arenas,
         "rating": 0.0,
         "total_bookings": 0,
         "total_reviews": 0,
