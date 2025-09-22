@@ -7,6 +7,20 @@ import AuthService from './authService';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
+export interface Arena {
+  id: string;
+  name: string;
+  sport: string;
+  capacity: number;
+  description?: string;
+  amenities: string[];
+  base_price_per_hour: number;
+  images: string[];
+  slots: VenueSlot[];
+  is_active: boolean;
+  created_at?: string;
+}
+
 export interface Venue {
   id: string;
   name: string;
@@ -29,7 +43,7 @@ export interface Venue {
   total_bookings: number;
   total_reviews: number;
   is_active: boolean;
-  slots: VenueSlot[];
+  arenas: Arena[]; // Changed from slots to arenas
   created_at: string;
 }
 
