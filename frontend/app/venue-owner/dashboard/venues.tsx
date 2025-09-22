@@ -19,8 +19,10 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import VenueOwnerService, { Venue, CreateVenueData } from '../../../services/venueOwnerService';
+import VenueOwnerService, { Venue, CreateVenueData, CreateArena, Arena } from '../../../services/venueOwnerService';
 import AuthService from '../../../services/authService';
+import ArenaFormModal from '../../../components/ArenaFormModal';
+import ArenaCard from '../../../components/ArenaCard';
 
 const { width } = Dimensions.get('window');
 
