@@ -473,8 +473,16 @@ async def get_analytics_dashboard(
     paid_bookings = [b for b in bookings if b.get("payment_status") == "paid"]
     total_revenue = sum(booking["total_amount"] for booking in paid_bookings)
     
-    # Calculate occupancy rate (simplified)
-    total_slots = sum(len(venue.get("slots", [])) for venue in venues) * 7  # per week
+    # Calculate occupancy rate (simplified) - now based on arenas
+    total_arenas = 0
+    total_arena_slots = 0
+    for venue in venues:
+        arenas = venue.get("arenas", venue.get("slots", []))  # Backward compatibility
+        total_arenas += len(arenas)
+        for arena in arenas:
+            total_arena_slots += len(arena.get("slots", [arena] if "day_of_week" in arena else []))
+    
+    total_slots = total_arena_slots * 7  # per week
     occupancy_rate = (total_bookings / max(total_slots, 1)) * 100 if total_slots > 0 else 0
     
     # Recent bookings (last 10)
