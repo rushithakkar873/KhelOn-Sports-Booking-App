@@ -404,6 +404,168 @@ export default function RegisterScreen() {
                   />
                 </View>
               </View>
+
+              {/* Venue Information Section */}
+              <View style={styles.sectionDivider}>
+                <Text style={styles.sectionTitle}>Venue Information</Text>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Venue Name *</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="business-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter venue name"
+                    value={formData.venueName}
+                    onChangeText={(value) => updateField('venueName', value)}
+                    editable={!otpSent}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Venue Address *</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="location-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter complete venue address"
+                    value={formData.venueAddress}
+                    onChangeText={(value) => updateField('venueAddress', value)}
+                    multiline
+                    numberOfLines={2}
+                    editable={!otpSent}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                  <Text style={styles.label}>City</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="City"
+                      value={formData.venueCity}
+                      onChangeText={(value) => updateField('venueCity', value)}
+                      editable={!otpSent}
+                    />
+                  </View>
+                </View>
+                <View style={styles.halfWidth}>
+                  <Text style={styles.label}>State</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="State"
+                      value={formData.venueState}
+                      onChangeText={(value) => updateField('venueState', value)}
+                      editable={!otpSent}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                  <Text style={styles.label}>Pincode *</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Pincode"
+                      value={formData.venuePincode}
+                      onChangeText={(value) => updateField('venuePincode', value)}
+                      keyboardType="numeric"
+                      editable={!otpSent}
+                    />
+                  </View>
+                </View>
+                <View style={styles.halfWidth}>
+                  <Text style={styles.label}>Base Price/Hour *</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="₹ per hour"
+                      value={formData.basePricePerHour}
+                      onChangeText={(value) => updateField('basePricePerHour', value)}
+                      keyboardType="numeric"
+                      editable={!otpSent}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Venue Description</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons name="document-text-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Brief description of your venue"
+                    value={formData.venueDescription}
+                    onChangeText={(value) => updateField('venueDescription', value)}
+                    multiline
+                    numberOfLines={3}
+                    editable={!otpSent}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.row}>
+                <View style={styles.halfWidth}>
+                  <Text style={styles.label}>Contact Phone</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Contact number"
+                      value={formData.contactPhone}
+                      onChangeText={(value) => updateField('contactPhone', value)}
+                      keyboardType="phone-pad"
+                      editable={!otpSent}
+                    />
+                  </View>
+                </View>
+                <View style={styles.halfWidth}>
+                  <Text style={styles.label}>WhatsApp Number</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="WhatsApp number"
+                      value={formData.whatsappNumber}
+                      onChangeText={(value) => updateField('whatsappNumber', value)}
+                      keyboardType="phone-pad"
+                      editable={!otpSent}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>General Amenities</Text>
+                <View style={styles.facilitiesGrid}>
+                  {facilityOptions.map((facility) => (
+                    <TouchableOpacity
+                      key={facility}
+                      style={[
+                        styles.facilityButton,
+                        formData.venueAmenities.includes(facility) && styles.facilityButtonSelected,
+                      ]}
+                      onPress={() => toggleFacility(facility)}
+                      disabled={otpSent}
+                    >
+                      <Text
+                        style={[
+                          styles.facilityText,
+                          formData.venueAmenities.includes(facility) && styles.facilityTextSelected,
+                        ]}
+                      >
+                        {facility}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
             </>
           )}
 
