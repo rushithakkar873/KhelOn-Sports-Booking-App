@@ -1117,7 +1117,7 @@ async def create_booking_by_owner(
         # For testing, create a mock payment link instead of failing
         logger.info("Creating mock payment link for testing")
         payment_link_id = f"plink_mock_{uuid.uuid4().hex[:12]}"
-        payment_link_url = f"https://mock-payment.playon.com/pay/{payment_link_id}?amount={int(total_amount * 100)}"
+        payment_link_url = f"https://mock-payment.khelon.com/pay/{payment_link_id}?amount={int(total_amount * 100)}"
         
         # Update booking with mock payment link details
         await db.bookings.update_one(
