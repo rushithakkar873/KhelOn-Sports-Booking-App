@@ -1208,7 +1208,7 @@ async def handle_razorpay_webhook(request: dict):
 async def root():
     """API Root endpoint"""
     return {
-        "message": "Playon API v2.0.0 - Unified Auth System", 
+        "message": "KhelOn API v2.0.0 - Unified Auth System", 
         "status": "running",
         "auth_type": "mobile_otp"
     }
