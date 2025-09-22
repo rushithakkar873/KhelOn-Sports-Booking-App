@@ -633,7 +633,7 @@ async def get_owner_venue(venue_id: str, current_owner: dict = Depends(get_curre
         total_bookings=venue.get("total_bookings", 0),
         total_reviews=venue.get("total_reviews", 0),
         is_active=venue.get("is_active", True),
-        slots=venue.get("slots", []),
+        arenas=[],  # Will be populated by separate arena responses
         created_at=venue["created_at"]
     )
 
