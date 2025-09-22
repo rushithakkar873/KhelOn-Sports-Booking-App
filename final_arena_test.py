@@ -220,10 +220,10 @@ def test_arena_system():
             "arena_id": arena_ids[0],  # Cricket arena
             "player_mobile": "+919888777666",  # Existing user from test history
             "booking_date": tomorrow,
-            "start_time": "18:00",
-            "end_time": "20:00",
+            "start_time": "16:00",
+            "end_time": "18:00",
             "sport": "Cricket",
-            "notes": "Evening cricket practice session"
+            "notes": "Afternoon cricket practice session"
         }
         
         booking_response = requests.post(f"{BASE_URL}/venue-owner/bookings", 
