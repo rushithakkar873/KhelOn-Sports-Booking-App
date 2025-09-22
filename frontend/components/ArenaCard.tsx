@@ -149,12 +149,12 @@ export default function ArenaCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#e5e7eb',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   inactiveContainer: {
     opacity: 0.7,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#f9fafb',
   },
   header: {
     flexDirection: 'row',
