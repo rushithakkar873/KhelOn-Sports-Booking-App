@@ -222,36 +222,58 @@ export default function VenuesScreen() {
 
   const handleSubmitVenue = async () => {
     try {
+      // Validation
+      if (!venueForm.name.trim()) {
+        Alert.alert('Error', 'Venue name is required');
+        return;
+      }
+      if (!venueForm.address.trim()) {
+        Alert.alert('Error', 'Address is required');
+        return;
+      }
+      if (!venueForm.pincode.trim()) {
+        Alert.alert('Error', 'Pincode is required');
+        return;
+      }
+      if (venueForm.arenas.length === 0) {
+        Alert.alert('Error', 'At least one arena is required');
+        return;
+      }
+      if (!venueForm.base_price_per_hour || parseFloat(venueForm.base_price_per_hour) <= 0) {
+        Alert.alert('Error', 'Valid base price is required');
+        return;
+      }
+
+      // Extract sports from arenas
+      const sports_supported = [...new Set(venueForm.arenas.map(arena => arena.sport))];
+
       // Create venue data object for API
       const venueData: CreateVenueData = {
         name: venueForm.name,
-        sports_supported: venueForm.sports,
-        address: venueForm.location,
-        city: 'Mumbai', // TODO: Extract from location or add separate field
-        state: 'Maharashtra', // TODO: Extract from location or add separate field  
-        pincode: '400001', // TODO: Extract from location or add separate field
+        sports_supported,
+        address: venueForm.address,
+        city: venueForm.city,
+        state: venueForm.state,
+        pincode: venueForm.pincode,
         description: venueForm.description,
-        amenities: venueForm.facilities,
-        base_price_per_hour: parseInt(venueForm.pricePerHour),
+        amenities: venueForm.amenities,
+        base_price_per_hour: parseFloat(venueForm.base_price_per_hour),
         contact_phone: authService.getCurrentUser()?.mobile || '',
-        images: venueForm.imageUrl ? [venueForm.imageUrl] : [],
-        slots: venueForm.timeSlots.map((slot, index) => ({
-          day_of_week: 0, // TODO: Add day selection in form or default to all days
-          start_time: slot.startTime,
-          end_time: slot.endTime,
-          capacity: 20, // TODO: Add capacity field to form
-          price_per_hour: parseInt(slot.price),
-          is_peak_hour: false, // TODO: Add peak hour logic
-        })),
+        whatsapp_number: venueForm.whatsapp_number || undefined,
+        images: venueForm.images,
+        rules_and_regulations: venueForm.rules_and_regulations || undefined,
+        cancellation_policy: venueForm.cancellation_policy || undefined,
+        arenas: venueForm.arenas,
       };
 
+      console.log('Creating venue with data:', venueData);
       const result = await venueOwnerService.createVenue(venueData);
       
       if (result.success) {
         // Refresh venues list
         await loadVenues();
         handleCloseAddModal();
-        Alert.alert('Success', 'Venue added successfully!');
+        Alert.alert('Success', 'Venue with arenas added successfully!');
       } else {
         Alert.alert('Error', result.message || 'Failed to add venue');
       }
