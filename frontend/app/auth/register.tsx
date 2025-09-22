@@ -190,6 +190,13 @@ export default function RegisterScreen() {
     await handleSendOTP();
   };
 
+  const toggleFacility = (facility: string) => {
+    const newFacilities = formData.venueAmenities.includes(facility)
+      ? formData.venueAmenities.filter(f => f !== facility)
+      : [...formData.venueAmenities, facility];
+    setFormData({ ...formData, venueAmenities: newFacilities });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
