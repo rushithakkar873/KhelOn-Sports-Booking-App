@@ -210,6 +210,19 @@ class VenueCreate(BaseModel):
     cancellation_policy: Optional[str] = Field(None, max_length=1000)
     arenas: List[ArenaCreate] = Field(..., min_items=1)  # At least one arena required
 
+class ArenaResponse(BaseModel):
+    id: str
+    name: str
+    sport: str
+    capacity: int
+    description: Optional[str]
+    amenities: List[str]
+    base_price_per_hour: float
+    images: List[str]
+    slots: List[Dict] = []
+    is_active: bool = True
+    created_at: datetime
+
 class VenueResponse(BaseModel):
     id: str
     name: str
@@ -232,7 +245,7 @@ class VenueResponse(BaseModel):
     total_bookings: int = 0
     total_reviews: int = 0
     is_active: bool = True
-    slots: List[Dict] = []
+    arenas: List[ArenaResponse] = []  # Changed from slots to arenas
     created_at: datetime
 
 class BookingResponse(BaseModel):
