@@ -6,7 +6,7 @@ Simple Arena Testing Script for KhelON Backend
 import requests
 import json
 
-BASE_URL = "https://playonapp.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:8001/api"
 
 def test_conflict_detection():
     """Test arena-specific conflict detection"""
