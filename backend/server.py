@@ -182,22 +182,33 @@ class SlotCreate(BaseModel):
     price_per_hour: float = Field(..., ge=0)
     is_peak_hour: bool = False
 
+class ArenaCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=200)  # e.g., "Cricket Ground A", "Football Field 1"
+    sport: str = Field(..., min_length=2, max_length=50)  # e.g., "Cricket", "Football"
+    capacity: int = Field(default=1, ge=1, le=100)  # Number of courts/fields in this arena
+    description: Optional[str] = Field(None, max_length=500)
+    amenities: List[str] = []  # Arena-specific amenities
+    base_price_per_hour: float = Field(..., ge=0)  # Arena-specific pricing
+    images: List[str] = []  # Arena-specific images
+    slots: List[SlotCreate] = []  # Time slots for this arena
+    is_active: bool = True
+
 class VenueCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=200)
-    sports_supported: List[str] = Field(..., min_items=1)
+    sports_supported: List[str] = Field(..., min_items=1)  # Overall venue sports
     address: str = Field(..., min_length=10, max_length=500)
     city: str = Field(..., min_length=2, max_length=100)
     state: str = Field(..., min_length=2, max_length=100)
     pincode: str = Field(..., min_length=6, max_length=6)
     description: Optional[str] = Field(None, max_length=1000)
-    amenities: List[str] = []
-    base_price_per_hour: float = Field(..., ge=0)
+    amenities: List[str] = []  # General venue amenities
+    base_price_per_hour: float = Field(..., ge=0)  # Default pricing (can be overridden by arena)
     contact_phone: str = Field(..., min_length=10, max_length=15)
     whatsapp_number: Optional[str] = Field(None, min_length=10, max_length=15)
-    images: List[str] = []
+    images: List[str] = []  # General venue images
     rules_and_regulations: Optional[str] = Field(None, max_length=2000)
     cancellation_policy: Optional[str] = Field(None, max_length=1000)
-    slots: List[SlotCreate] = []
+    arenas: List[ArenaCreate] = Field(..., min_items=1)  # At least one arena required
 
 class VenueResponse(BaseModel):
     id: str
