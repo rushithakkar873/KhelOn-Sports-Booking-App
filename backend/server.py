@@ -495,13 +495,11 @@ async def get_analytics_dashboard(
     for booking in paid_bookings:
         daily_revenue[booking["booking_date"]] += booking["total_amount"]
     
-    # Top sports
+    # Top sports - now uses booking-specific sport data
     sport_counts = defaultdict(int)
     for booking in bookings:
-        venue = next((v for v in venues if v["_id"] == booking["venue_id"]), None)
-        if venue:
-            for sport in venue.get("sports_supported", []):
-                sport_counts[sport] += 1
+        sport = booking.get("sport", "General")
+        sport_counts[sport] += 1
     
     top_sports = sorted(sport_counts.items(), key=lambda x: x[1], reverse=True)[:5]
     
