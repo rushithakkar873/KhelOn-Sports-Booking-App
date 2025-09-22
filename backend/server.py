@@ -27,7 +27,7 @@ security = HTTPBearer()
 
 # Create the main app
 app = FastAPI(
-    title="Playon API - Unified Auth System", 
+    title="KhelOn API - Unified Auth System", 
     version="2.0.0",
     description="Sports venue booking platform with mobile OTP authentication"
 )
