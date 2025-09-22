@@ -51,17 +51,26 @@ export default function VenuesScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showArenaModal, setShowArenaModal] = useState(false);
+  const [selectedArena, setSelectedArena] = useState<CreateArena | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [venueForm, setVenueForm] = useState<VenueForm>({
     name: '',
-    sports: [],
-    location: '',
+    address: '',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    pincode: '',
     description: '',
-    facilities: [],
-    pricePerHour: '',
-    timeSlots: [{ startTime: '', endTime: '', price: '' }],
-    imageUrl: '',
+    amenities: [],
+    base_price_per_hour: '',
+    contact_phone: '',
+    whatsapp_number: '',
+    images: [],
+    rules_and_regulations: '',
+    cancellation_policy: '',
+    arenas: [],
   });
+  const [expandedVenues, setExpandedVenues] = useState<Set<string>>(new Set());
   
   const router = useRouter();
   const venueOwnerService = VenueOwnerService.getInstance();
