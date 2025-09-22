@@ -13,9 +13,9 @@ def test_enhanced_registration():
     print("🚀 TESTING ENHANCED VENUE OWNER REGISTRATION")
     print("=" * 50)
     
-    # Generate random mobile number
-    random_suffix = str(random.randint(100000, 999999))
-    mobile = f"+9195{random_suffix}"
+    # Generate proper Indian mobile number
+    random_suffix = str(random.randint(1000000, 9999999))
+    mobile = f"+919{random_suffix}"
     
     # Step 1: Send OTP
     print(f"\n1. Testing with mobile: {mobile}")
@@ -25,6 +25,7 @@ def test_enhanced_registration():
     
     if otp_response.status_code != 200:
         print(f"❌ OTP send failed: {otp_response.status_code}")
+        print(otp_response.text)
         return
     
     otp_data = otp_response.json()
