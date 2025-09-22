@@ -774,6 +774,7 @@ razorpay_client = razorpay.Client(auth=(
 
 class VenueOwnerBookingCreate(BaseModel):
     venue_id: str
+    arena_id: str  # Required field for arena selection
     player_mobile: str = Field(..., min_length=13, max_length=13)
     player_name: Optional[str] = None
     booking_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")  # YYYY-MM-DD
