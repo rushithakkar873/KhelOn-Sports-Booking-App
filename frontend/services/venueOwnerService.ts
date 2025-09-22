@@ -68,6 +68,18 @@ export interface CreateVenueSlot {
   is_peak_hour: boolean;
 }
 
+export interface CreateArena {
+  name: string;
+  sport: string;
+  capacity?: number;
+  description?: string;
+  amenities: string[];
+  base_price_per_hour: number;
+  images: string[];
+  slots: CreateVenueSlot[];
+  is_active?: boolean;
+}
+
 export interface CreateVenueData {
   name: string;
   sports_supported: string[];
@@ -83,7 +95,7 @@ export interface CreateVenueData {
   images: string[];
   rules_and_regulations?: string;
   cancellation_policy?: string;
-  slots: CreateVenueSlot[];
+  arenas: CreateArena[]; // Changed from slots to arenas
 }
 
 export interface CreateBookingData {
