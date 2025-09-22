@@ -44,6 +44,8 @@ export default function RegisterScreen() {
   const router = useRouter();
   const authService = AuthService.getInstance();
 
+  const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen', 'WiFi', 'First Aid'];
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (countdown > 0) {
