@@ -283,39 +283,75 @@ export default function VenuesScreen() {
     }
   };
 
-  const addTimeSlot = () => {
+  // Arena management functions
+  const handleAddArena = (arena: CreateArena) => {
     setVenueForm({
       ...venueForm,
-      timeSlots: [...venueForm.timeSlots, { startTime: '', endTime: '', price: '' }]
+      arenas: [...venueForm.arenas, arena],
     });
   };
 
-  const removeTimeSlot = (index: number) => {
-    if (venueForm.timeSlots.length > 1) {
-      const newSlots = venueForm.timeSlots.filter((_, i) => i !== index);
-      setVenueForm({ ...venueForm, timeSlots: newSlots });
+  const handleEditArena = (index: number, arena: CreateArena) => {
+    const newArenas = venueForm.arenas.map((a, i) => (i === index ? arena : a));
+    setVenueForm({ ...venueForm, arenas: newArenas });
+  };
+
+  const handleRemoveArena = (index: number) => {
+    if (venueForm.arenas.length > 1) {
+      const newArenas = venueForm.arenas.filter((_, i) => i !== index);
+      setVenueForm({ ...venueForm, arenas: newArenas });
+    } else {
+      Alert.alert('Error', 'At least one arena is required');
     }
   };
 
-  const updateTimeSlot = (index: number, field: string, value: string) => {
-    const newSlots = venueForm.timeSlots.map((slot, i) => 
-      i === index ? { ...slot, [field]: value } : slot
-    );
-    setVenueForm({ ...venueForm, timeSlots: newSlots });
+  const openArenaModal = (arena?: CreateArena, index?: number) => {
+    setSelectedArena(arena || null);
+    setShowArenaModal(true);
   };
 
-  const toggleSport = (sport: string) => {
-    const newSports = venueForm.sports.includes(sport)
-      ? venueForm.sports.filter(s => s !== sport)
-      : [...venueForm.sports, sport];
-    setVenueForm({ ...venueForm, sports: newSports });
+  const closeArenaModal = () => {
+    setSelectedArena(null);
+    setShowArenaModal(false);
+  };
+
+  // Venue management functions
+  const toggleVenueExpansion = (venueId: string) => {
+    const newExpanded = new Set(expandedVenues);
+    if (newExpanded.has(venueId)) {
+      newExpanded.delete(venueId);
+    } else {
+      newExpanded.add(venueId);
+    }
+    setExpandedVenues(newExpanded);
+  };
+
+  const handleArenaToggleStatus = async (venue: Venue, arenaId: string, isActive: boolean) => {
+    try {
+      // TODO: Implement arena status toggle API call
+      console.log('Toggle arena status:', { venueId: venue.id, arenaId, isActive });
+      Alert.alert('Info', 'Arena status toggle will be implemented with API integration');
+    } catch (error) {
+      console.error('Error toggling arena status:', error);
+      Alert.alert('Error', 'Failed to update arena status');
+    }
+  };
+
+  const handleArenaEdit = (venue: Venue, arena: Arena) => {
+    // TODO: Implement arena editing
+    Alert.alert('Info', 'Arena editing will be implemented');
+  };
+
+  const handleArenaDetails = (venue: Venue, arena: Arena) => {
+    // TODO: Show arena details modal
+    Alert.alert('Arena Details', `Arena: ${arena.name}\nSport: ${arena.sport}\nPrice: ₹${arena.base_price_per_hour}/hr`);
   };
 
   const toggleFacility = (facility: string) => {
-    const newFacilities = venueForm.facilities.includes(facility)
-      ? venueForm.facilities.filter(f => f !== facility)
-      : [...venueForm.facilities, facility];
-    setVenueForm({ ...venueForm, facilities: newFacilities });
+    const newFacilities = venueForm.amenities.includes(facility)
+      ? venueForm.amenities.filter(f => f !== facility)
+      : [...venueForm.amenities, facility];
+    setVenueForm({ ...venueForm, amenities: newFacilities });
   };
 
   const formatCurrency = (amount: number) => {
