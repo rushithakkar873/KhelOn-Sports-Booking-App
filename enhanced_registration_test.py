@@ -13,9 +13,9 @@ def test_enhanced_registration():
     print("🚀 TESTING ENHANCED VENUE OWNER REGISTRATION")
     print("=" * 50)
     
-    # Generate proper Indian mobile number
-    random_suffix = str(random.randint(1000000, 9999999))
-    mobile = f"+919{random_suffix}"
+    # Generate proper Indian mobile number (13 chars: +91 + 10 digits)
+    random_suffix = str(random.randint(10000000, 99999999))
+    mobile = f"+919{random_suffix}"  # +91 + 9 + 8 digits = 13 chars
     
     # Step 1: Send OTP
     print(f"\n1. Testing with mobile: {mobile}")
