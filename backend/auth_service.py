@@ -313,13 +313,17 @@ class AuthService:
                     "business_name": registration_data.business_name,
                     "business_address": registration_data.business_address,
                     "gst_number": registration_data.gst_number,
-                    "total_venues": 0,
+                    "total_venues": 1,  # Will have one venue after creation
                     "total_bookings": 0,
                     "total_revenue": 0.0
                 })
             
             # Insert user
             await self.db.users.insert_one(user_doc)
+            
+            # Create venue automatically for venue owners
+            if registration_data.role == "venue_owner":
+                await self.create_initial_venue(user_id, registration_data)
             
             # Create access token
             access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
