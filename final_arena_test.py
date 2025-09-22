@@ -281,8 +281,8 @@ def test_arena_system():
                 "player_mobile": "+919999888777",
                 "player_name": "Rahul Verma",
                 "booking_date": tomorrow,
-                "start_time": "18:00",
-                "end_time": "20:00",
+                "start_time": "16:00",
+                "end_time": "18:00",
                 "sport": "Football"
             }
             
