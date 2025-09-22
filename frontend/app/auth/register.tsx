@@ -762,4 +762,37 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontWeight: '600',
   },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  halfWidth: {
+    flex: 1,
+  },
+  facilitiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  facilityButton: {
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f9fafb',
+  },
+  facilityButtonSelected: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
+  },
+  facilityText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6b7280',
+  },
+  facilityTextSelected: {
+    color: '#ffffff',
+  },
 });
