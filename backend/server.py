@@ -648,6 +648,8 @@ async def get_owner_bookings(
             id=booking["_id"],
             venue_id=booking["venue_id"],
             venue_name=venue_name,
+            arena_id=booking.get("arena_id", ""),
+            arena_name=booking.get("arena_name", "Main Arena"),
             slot_id=booking.get("slot_id", ""),
             user_id=booking["user_id"],
             user_name=booking.get("user_name", "Unknown User"),
@@ -661,6 +663,7 @@ async def get_owner_bookings(
             payment_id=booking.get("payment_id"),
             player_name=booking["player_name"],
             player_phone=booking["player_phone"],
+            sport=booking.get("sport", "General"),
             notes=booking.get("notes"),
             created_at=booking["created_at"],
             updated_at=booking.get("updated_at", booking["created_at"])
