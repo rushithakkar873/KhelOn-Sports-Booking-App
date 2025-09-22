@@ -362,6 +362,47 @@ class AuthService:
                 "message": "Registration failed"
             }
     
+    async def create_initial_venue(self, owner_id: str, registration_data: UserRegistrationRequest):
+        """Create initial venue for venue owner during registration"""
+        try:
+            venue_id = str(uuid.uuid4())
+            
+            # Create venue document
+            venue_doc = {
+                "_id": venue_id,
+                "name": registration_data.venue_name,
+                "owner_id": owner_id,
+                "owner_name": registration_data.name,
+                "sports_supported": [],  # Will be filled when arenas are added
+                "address": registration_data.venue_address,
+                "city": registration_data.venue_city,
+                "state": registration_data.venue_state,
+                "pincode": registration_data.venue_pincode,
+                "description": registration_data.venue_description,
+                "amenities": registration_data.venue_amenities or [],
+                "base_price_per_hour": registration_data.base_price_per_hour,
+                "contact_phone": registration_data.contact_phone or registration_data.mobile,
+                "whatsapp_number": registration_data.whatsapp_number,
+                "images": [],
+                "rules_and_regulations": None,
+                "cancellation_policy": None,
+                "rating": 0.0,
+                "total_bookings": 0,
+                "total_reviews": 0,
+                "is_active": True,
+                "arenas": [],  # Empty initially, will be populated via UI
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            # Insert venue
+            await self.db.venues.insert_one(venue_doc)
+            logger.info(f"Initial venue created for owner {owner_id}: {venue_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to create initial venue: {str(e)}")
+            # Don't fail registration if venue creation fails
+    
     async def login_user(self, mobile: str, otp: str) -> Dict[str, Any]:
         """Login existing user with mobile + OTP"""
         try:
