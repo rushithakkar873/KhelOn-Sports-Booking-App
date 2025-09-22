@@ -153,6 +153,18 @@ class UserRegistrationRequest(BaseModel):
     business_address: Optional[str] = Field(None, max_length=500)
     gst_number: Optional[str] = Field(None, max_length=20)
     
+    # Venue details for venue owners
+    venue_name: Optional[str] = Field(None, max_length=200)
+    venue_address: Optional[str] = Field(None, max_length=500)
+    venue_city: Optional[str] = Field(None, max_length=100)
+    venue_state: Optional[str] = Field(None, max_length=100)
+    venue_pincode: Optional[str] = Field(None, min_length=6, max_length=6)
+    venue_description: Optional[str] = Field(None, max_length=1000)
+    venue_amenities: Optional[list] = []
+    base_price_per_hour: Optional[float] = Field(None, ge=0)
+    contact_phone: Optional[str] = Field(None, max_length=15)
+    whatsapp_number: Optional[str] = Field(None, max_length=15)
+    
     @validator('mobile')
     def validate_mobile(cls, v):
         import re
