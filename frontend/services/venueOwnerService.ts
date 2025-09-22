@@ -100,6 +100,7 @@ export interface CreateVenueData {
 
 export interface CreateBookingData {
   venue_id: string;
+  arena_id: string; // Added arena_id for arena-specific booking
   player_mobile: string;
   player_name?: string;
   booking_date: string; // YYYY-MM-DD format
