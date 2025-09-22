@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Testing for Playon Sports Booking App
-Tests all authentication, venue, booking, and tournament endpoints
+KhelON Backend Testing Suite - Arena-Based System
+Testing major backend modifications for multiple sports arenas per venue
 """
 
 import requests
 import json
 import time
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
 
 # Configuration
-BASE_URL = "https://playonapp.preview.emergentagent.com/api"
-HEADERS = {"Content-Type": "application/json"}
+BASE_URL = "http://0.0.0.0:8001/api"
+VENUE_OWNER_MOBILE = "+919876543210"
+PLAYER_MOBILE_1 = "+919888777666"
+PLAYER_MOBILE_2 = "+919999888777"
 
 class PlayonAPITester:
     def __init__(self):
