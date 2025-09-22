@@ -1072,7 +1072,7 @@ async def create_booking_by_owner(
                 "amount": payment_amount,
                 "currency": "INR",
                 "accept_partial": False,
-                "description": f"PlayOn Booking - {venue['name']}",
+                "description": f"KhelOn Booking - {venue['name']}",
                 "customer": {
                     "name": player_name,
                     "contact": player_mobile.replace('+91', ''),
