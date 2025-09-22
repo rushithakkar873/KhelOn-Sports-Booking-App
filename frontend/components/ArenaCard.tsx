@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E8F5E8',
+    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -195,12 +195,12 @@ const styles = StyleSheet.create({
   arenaName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#212529',
     marginBottom: 2,
   },
   sportText: {
     fontSize: 12,
-    color: '#4CAF50',
+    color: '#6b7280',
     fontWeight: '500',
   },
   headerRight: {
