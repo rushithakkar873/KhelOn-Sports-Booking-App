@@ -966,6 +966,8 @@ async def create_booking_by_owner(
     booking_record = {
         "_id": booking_id,
         "venue_id": booking_data.venue_id,
+        "arena_id": booking_data.arena_id,  # New field for arena
+        "arena_name": selected_arena.get("name", "Arena"),  # Store arena name
         "user_id": player_user_id,
         "slot_id": f"manual_{uuid.uuid4().hex[:8]}",
         "booking_date": booking_data.booking_date,
@@ -977,7 +979,7 @@ async def create_booking_by_owner(
         "payment_status": "pending",
         "player_name": player_name,
         "player_phone": player_mobile,
-        "sport": booking_data.sport or venue["sports_supported"][0],
+        "sport": booking_data.sport or selected_arena.get("sport", venue["sports_supported"][0]),
         "notes": booking_data.notes,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),
