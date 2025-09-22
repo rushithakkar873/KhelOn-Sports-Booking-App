@@ -9,70 +9,36 @@ import {
   Modal,
   TextInput,
   Alert,
-  Switch,
   StatusBar,
-  ImageBackground,
-  KeyboardAvoidingView,
-  Platform,
-  Dimensions,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import VenueOwnerService, { Venue, CreateVenueData, CreateArena, Arena } from '../../../services/venueOwnerService';
+import VenueOwnerService, { Venue, Arena } from '../../../services/venueOwnerService';
 import AuthService from '../../../services/authService';
 import ArenaFormModal from '../../../components/ArenaFormModal';
 import ArenaCard from '../../../components/ArenaCard';
 
-const { width } = Dimensions.get('window');
-
-interface VenueForm {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-  description: string;
-  amenities: string[];
-  base_price_per_hour: string;
-  contact_phone: string;
-  whatsapp_number: string;
-  images: string[];
-  rules_and_regulations: string;
-  cancellation_policy: string;
-  arenas: CreateArena[];
-}
-
-export default function VenuesScreen() {
-  const insets = useSafeAreaInsets();
-  const [venues, setVenues] = useState<Venue[]>([]);
+export default function MyVenueScreen() {
+  const [venue, setVenue] = useState<Venue | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showArenaModal, setShowArenaModal] = useState(false);
-  const [selectedArena, setSelectedArena] = useState<CreateArena | null>(null);
+  const [selectedArena, setSelectedArena] = useState<any | null>(null);
   const [editingArenaIndex, setEditingArenaIndex] = useState<number | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [venueForm, setVenueForm] = useState<VenueForm>({
+  const [venueForm, setVenueForm] = useState({
     name: '',
     address: '',
-    city: 'Mumbai',
-    state: 'Maharashtra',
+    city: '',
+    state: '',
     pincode: '',
     description: '',
-    amenities: [],
+    amenities: [] as string[],
     base_price_per_hour: '',
-    contact_phone: '',
     whatsapp_number: '',
-    images: [],
-    rules_and_regulations: '',
-    cancellation_policy: '',
-    arenas: [],
   });
-  const [expandedVenues, setExpandedVenues] = useState<Set<string>>(new Set());
   
   const router = useRouter();
   const venueOwnerService = VenueOwnerService.getInstance();
@@ -81,10 +47,10 @@ export default function VenuesScreen() {
   const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen', 'WiFi', 'First Aid'];
 
   useEffect(() => {
-    loadVenues();
+    loadVenue();
   }, []);
 
-  const loadVenues = async () => {
+  const loadVenue = async () => {
     try {
       // Check if user is authenticated and is venue owner
       if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
@@ -94,23 +60,37 @@ export default function VenuesScreen() {
         return;
       }
 
-      // Fetch venues from API
-      const venuesData = await venueOwnerService.getVenues(0, 50, undefined);
-      setVenues(venuesData);
+      // Fetch venue from API - get first venue (single venue MVP)
+      const venuesData = await venueOwnerService.getVenues(0, 1, undefined);
+      if (venuesData && venuesData.length > 0) {
+        setVenue(venuesData[0]);
+        // Populate form with existing data
+        const v = venuesData[0];
+        setVenueForm({
+          name: v.name,
+          address: v.address,
+          city: v.city,
+          state: v.state,
+          pincode: v.pincode,
+          description: v.description || '',
+          amenities: v.amenities || [],
+          base_price_per_hour: v.base_price_per_hour?.toString() || '0',
+          whatsapp_number: v.whatsapp_number || '',
+        });
+      } else {
+        // No venue found - this shouldn't happen in MVP since venue is created during registration
+        Alert.alert('No Venue Found', 'Please contact support to set up your venue.');
+      }
     } catch (error) {
-      console.error('Error loading venues:', error);
-      
+      console.error('Error loading venue:', error);
       Alert.alert(
         'Error', 
-        'Failed to load venues. Please check your connection and try again.',
+        'Failed to load venue. Please check your connection and try again.',
         [
-          { text: 'Retry', onPress: () => loadVenues() },
+          { text: 'Retry', onPress: () => loadVenue() },
           { text: 'Cancel' }
         ]
       );
-      
-      // Set empty venues on error
-      setVenues([]);
     } finally {
       setIsLoading(false);
     }
@@ -118,83 +98,32 @@ export default function VenuesScreen() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await loadVenues();
+    await loadVenue();
     setIsRefreshing(false);
   };
 
-  const handleAddVenue = () => {
-    setCurrentStep(1);
-    setVenueForm({
-      name: '',
-      address: '',
-      city: 'Mumbai',
-      state: 'Maharashtra',
-      pincode: '',
-      description: '',
-      amenities: [],
-      base_price_per_hour: '',
-      contact_phone: authService.getCurrentUser()?.mobile || '',
-      whatsapp_number: '',
-      images: [],
-      rules_and_regulations: '',
-      cancellation_policy: '',
-      arenas: [],
-    });
-    setShowAddModal(true);
+  const handleEditVenue = () => {
+    setShowEditModal(true);
   };
 
-  const handleCloseAddModal = () => {
-    setShowAddModal(false);
-    setCurrentStep(1);
-    setSelectedVenue(null);
-  };
+  const handleSaveVenue = async () => {
+    try {
+      if (!venue) return;
 
-  const handleNextStep = () => {
-    if (currentStep === 1) {
-      // Validate basic info
+      // Validation
       if (!venueForm.name.trim() || !venueForm.address.trim() || !venueForm.pincode.trim()) {
         Alert.alert('Error', 'Please fill in all required fields');
         return;
       }
-    }
-    setCurrentStep(currentStep + 1);
-  };
 
-  const handlePreviousStep = () => {
-    setCurrentStep(currentStep - 1);
-  };
-
-  const handleSubmitVenue = async () => {
-    try {
-      // Validation
-      if (!venueForm.name.trim()) {
-        Alert.alert('Error', 'Venue name is required');
-        return;
-      }
-      if (!venueForm.address.trim()) {
-        Alert.alert('Error', 'Address is required');
-        return;
-      }
-      if (!venueForm.pincode.trim()) {
-        Alert.alert('Error', 'Pincode is required');
-        return;
-      }
-      if (venueForm.arenas.length === 0) {
-        Alert.alert('Error', 'At least one arena is required');
-        return;
-      }
       if (!venueForm.base_price_per_hour || parseFloat(venueForm.base_price_per_hour) <= 0) {
         Alert.alert('Error', 'Valid base price is required');
         return;
       }
 
-      // Extract sports from arenas
-      const sports_supported = [...new Set(venueForm.arenas.map(arena => arena.sport))];
-
-      // Create venue data object for API
-      const venueData: CreateVenueData = {
+      // Update venue using API
+      const updateData = {
         name: venueForm.name,
-        sports_supported,
         address: venueForm.address,
         city: venueForm.city,
         state: venueForm.state,
@@ -202,61 +131,70 @@ export default function VenuesScreen() {
         description: venueForm.description,
         amenities: venueForm.amenities,
         base_price_per_hour: parseFloat(venueForm.base_price_per_hour),
-        contact_phone: authService.getCurrentUser()?.mobile || '',
-        whatsapp_number: venueForm.whatsapp_number || undefined,
-        images: venueForm.images,
-        rules_and_regulations: venueForm.rules_and_regulations || undefined,
-        cancellation_policy: venueForm.cancellation_policy || undefined,
-        arenas: venueForm.arenas,
+        whatsapp_number: venueForm.whatsapp_number,
+        // Keep existing fields
+        sports_supported: venue.sports_supported,
+        contact_phone: venue.contact_phone,
+        images: venue.images || [],
+        rules_and_regulations: venue.rules_and_regulations,
+        cancellation_policy: venue.cancellation_policy,
+        arenas: venue.arenas || [],
       };
 
-      console.log('Creating venue with data:', venueData);
-      const result = await venueOwnerService.createVenue(venueData);
-      
-      if (result.success) {
-        // Refresh venues list
-        await loadVenues();
-        handleCloseAddModal();
-        Alert.alert('Success', 'Venue with arenas added successfully!');
-      } else {
-        Alert.alert('Error', result.message || 'Failed to add venue');
-      }
+      // For now, just update local state (API update can be implemented later)
+      setVenue({ ...venue, ...updateData });
+      setShowEditModal(false);
+      Alert.alert('Success', 'Venue details updated successfully!');
     } catch (error) {
-      console.error('Error creating venue:', error);
-      Alert.alert('Error', 'Failed to add venue. Please try again.');
+      console.error('Error updating venue:', error);
+      Alert.alert('Error', 'Failed to update venue. Please try again.');
     }
   };
 
-  // Arena management functions
-  const handleAddArena = (arena: CreateArena) => {
+  const handleAddArena = (arena: any) => {
+    if (!venue) return;
+
     console.log('Adding arena:', arena);
     if (editingArenaIndex !== null) {
       // Editing existing arena
-      const newArenas = venueForm.arenas.map((a, i) => (i === editingArenaIndex ? arena : a));
-      setVenueForm({ ...venueForm, arenas: newArenas });
+      const newArenas = (venue.arenas || []).map((a, i) => (i === editingArenaIndex ? arena : a));
+      setVenue({ ...venue, arenas: newArenas });
       setEditingArenaIndex(null);
     } else {
       // Adding new arena
-      setVenueForm({
-        ...venueForm,
-        arenas: [...venueForm.arenas, arena],
-      });
+      const newArenas = [...(venue.arenas || []), { ...arena, id: Date.now().toString() }];
+      setVenue({ ...venue, arenas: newArenas });
+    }
+    Alert.alert('Success', 'Arena added successfully!');
+  };
+
+  const handleEditArena = (arena: Arena) => {
+    const arenaIndex = venue?.arenas?.findIndex(a => a.id === arena.id) ?? -1;
+    if (arenaIndex >= 0) {
+      setSelectedArena(arena);
+      setEditingArenaIndex(arenaIndex);
+      setShowArenaModal(true);
     }
   };
 
-  const handleEditArena = (index: number) => {
-    setSelectedArena(venueForm.arenas[index]);
-    setEditingArenaIndex(index);
-    setShowArenaModal(true);
+  const handleToggleArenaStatus = async (arenaId: string, isActive: boolean) => {
+    try {
+      // TODO: Implement arena status toggle API call
+      console.log('Toggle arena status:', { arenaId, isActive });
+      Alert.alert('Info', 'Arena status toggle will be implemented with API integration');
+    } catch (error) {
+      console.error('Error toggling arena status:', error);
+      Alert.alert('Error', 'Failed to update arena status');
+    }
   };
 
-  const handleRemoveArena = (index: number) => {
-    if (venueForm.arenas.length > 1) {
-      const newArenas = venueForm.arenas.filter((_, i) => i !== index);
-      setVenueForm({ ...venueForm, arenas: newArenas });
-    } else {
-      Alert.alert('Error', 'At least one arena is required');
-    }
+  const handleArenaDetails = (arena: Arena) => {
+    const amenitiesText = arena.amenities?.length ? arena.amenities.join(', ') : 'None';
+    const slotsText = arena.slots?.length ? `${arena.slots.length} time slots` : 'No time slots';
+    Alert.alert(
+      arena.name,
+      `Sport: ${arena.sport}\nCapacity: ${arena.capacity}\nPrice: ₹${arena.base_price_per_hour}/hr\nAmenities: ${amenitiesText}\nSchedule: ${slotsText}`
+    );
   };
 
   const openArenaModal = () => {
@@ -271,38 +209,6 @@ export default function VenuesScreen() {
     setShowArenaModal(false);
   };
 
-  // Venue management functions
-  const toggleVenueExpansion = (venueId: string) => {
-    const newExpanded = new Set(expandedVenues);
-    if (newExpanded.has(venueId)) {
-      newExpanded.delete(venueId);
-    } else {
-      newExpanded.add(venueId);
-    }
-    setExpandedVenues(newExpanded);
-  };
-
-  const handleArenaToggleStatus = async (venue: Venue, arenaId: string, isActive: boolean) => {
-    try {
-      // TODO: Implement arena status toggle API call
-      console.log('Toggle arena status:', { venueId: venue.id, arenaId, isActive });
-      Alert.alert('Info', 'Arena status toggle will be implemented with API integration');
-    } catch (error) {
-      console.error('Error toggling arena status:', error);
-      Alert.alert('Error', 'Failed to update arena status');
-    }
-  };
-
-  const handleArenaEdit = (venue: Venue, arena: Arena) => {
-    // TODO: Implement arena editing
-    Alert.alert('Info', 'Arena editing will be implemented');
-  };
-
-  const handleArenaDetails = (venue: Venue, arena: Arena) => {
-    // TODO: Show arena details modal
-    Alert.alert('Arena Details', `Arena: ${arena.name}\nSport: ${arena.sport}\nPrice: ₹${arena.base_price_per_hour}/hr`);
-  };
-
   const toggleFacility = (facility: string) => {
     const newFacilities = venueForm.amenities.includes(facility)
       ? venueForm.amenities.filter(f => f !== facility)
@@ -314,8 +220,8 @@ export default function VenuesScreen() {
     return VenueOwnerService.formatCurrency(amount);
   };
 
-  const getSportsSummary = (venue: Venue) => {
-    if (!venue.arenas || venue.arenas.length === 0) return 'No arenas';
+  const getSportsSummary = () => {
+    if (!venue?.arenas || venue.arenas.length === 0) return 'No arenas';
     const sportCounts: { [key: string]: number } = {};
     venue.arenas.forEach(arena => {
       sportCounts[arena.sport] = (sportCounts[arena.sport] || 0) + 1;
@@ -325,222 +231,6 @@ export default function VenuesScreen() {
       .join(', ');
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <View style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Basic Information</Text>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Venue Name *</Text>
-              <TextInput
-                style={styles.formInput}
-                value={venueForm.name}
-                onChangeText={(text) => setVenueForm({ ...venueForm, name: text })}
-                placeholder="Enter venue name"
-                placeholderTextColor="#9ca3af"
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Address *</Text>
-              <TextInput
-                style={[styles.formInput, styles.textArea]}
-                value={venueForm.address}
-                onChangeText={(text) => setVenueForm({ ...venueForm, address: text })}
-                placeholder="Enter full address"
-                placeholderTextColor="#9ca3af"
-                multiline
-                numberOfLines={3}
-              />
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.halfWidth}>
-                <Text style={styles.formLabel}>City</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={venueForm.city}
-                  onChangeText={(text) => setVenueForm({ ...venueForm, city: text })}
-                  placeholder="City"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
-              <View style={styles.halfWidth}>
-                <Text style={styles.formLabel}>State</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={venueForm.state}
-                  onChangeText={(text) => setVenueForm({ ...venueForm, state: text })}
-                  placeholder="State"
-                  placeholderTextColor="#9ca3af"
-                />
-              </View>
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.halfWidth}>
-                <Text style={styles.formLabel}>Pincode *</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={venueForm.pincode}
-                  onChangeText={(text) => setVenueForm({ ...venueForm, pincode: text })}
-                  placeholder="Pincode"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.halfWidth}>
-                <Text style={styles.formLabel}>Base Price/Hour *</Text>
-                <TextInput
-                  style={styles.formInput}
-                  value={venueForm.base_price_per_hour}
-                  onChangeText={(text) => setVenueForm({ ...venueForm, base_price_per_hour: text })}
-                  placeholder="₹ per hour"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Description</Text>
-              <TextInput
-                style={[styles.formInput, styles.textArea]}
-                value={venueForm.description}
-                onChangeText={(text) => setVenueForm({ ...venueForm, description: text })}
-                placeholder="Brief description of your venue"
-                placeholderTextColor="#9ca3af"
-                multiline
-                numberOfLines={3}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>General Amenities</Text>
-              <View style={styles.facilitiesGrid}>
-                {facilityOptions.map((facility) => (
-                  <TouchableOpacity
-                    key={facility}
-                    style={[
-                      styles.facilityButton,
-                      venueForm.amenities.includes(facility) && styles.facilityButtonSelected,
-                    ]}
-                    onPress={() => toggleFacility(facility)}
-                  >
-                    <Text
-                      style={[
-                        styles.facilityText,
-                        venueForm.amenities.includes(facility) && styles.facilityTextSelected,
-                      ]}
-                    >
-                      {facility}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-        );
-
-      case 2:
-        return (
-          <View style={styles.stepContent}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.stepTitle}>Arena Management</Text>
-              <TouchableOpacity onPress={openArenaModal} style={styles.addArenaButton}>
-                <Ionicons name="add" size={20} color="#212529" />
-                <Text style={styles.addArenaText}>Add Arena</Text>
-              </TouchableOpacity>
-            </View>
-
-            {venueForm.arenas.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="business-outline" size={48} color="#9ca3af" />
-                <Text style={styles.emptyStateText}>No arenas added yet</Text>
-                <Text style={styles.emptyStateSubtext}>Add at least one arena to continue</Text>
-              </View>
-            ) : (
-              <ScrollView style={styles.arenasList} showsVerticalScrollIndicator={false}>
-                {venueForm.arenas.map((arena, index) => (
-                  <View key={index} style={styles.arenaPreview}>
-                    <View style={styles.arenaHeader}>
-                      <View style={styles.arenaInfo}>
-                        <Text style={styles.arenaName}>{arena.name}</Text>
-                        <Text style={styles.arenaSport}>{arena.sport}</Text>
-                      </View>
-                      <View style={styles.arenaActions}>
-                        <TouchableOpacity
-                          onPress={() => handleEditArena(index)}
-                          style={styles.editArenaButton}
-                        >
-                          <Ionicons name="create-outline" size={16} color="#212529" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => handleRemoveArena(index)}
-                          style={styles.removeArenaButton}
-                        >
-                          <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                    <View style={styles.arenaStats}>
-                      <Text style={styles.arenaStat}>Capacity: {arena.capacity || 1}</Text>
-                      <Text style={styles.arenaStat}>Price: ₹{arena.base_price_per_hour}/hr</Text>
-                      <Text style={styles.arenaStat}>Slots: {arena.slots?.length || 0}</Text>
-                    </View>
-                  </View>
-                ))}
-              </ScrollView>
-            )}
-          </View>
-        );
-
-      case 3:
-        return (
-          <View style={styles.stepContent}>
-            <Text style={styles.stepTitle}>Review & Submit</Text>
-            
-            <View style={styles.reviewSection}>
-              <Text style={styles.reviewSectionTitle}>Venue Information</Text>
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewLabel}>Name:</Text>
-                <Text style={styles.reviewValue}>{venueForm.name}</Text>
-              </View>
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewLabel}>Address:</Text>
-                <Text style={styles.reviewValue}>{venueForm.address}</Text>
-              </View>
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewLabel}>City:</Text>
-                <Text style={styles.reviewValue}>{venueForm.city}, {venueForm.state} - {venueForm.pincode}</Text>
-              </View>
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewLabel}>Base Price:</Text>
-                <Text style={styles.reviewValue}>₹{venueForm.base_price_per_hour}/hour</Text>
-              </View>
-            </View>
-
-            <View style={styles.reviewSection}>
-              <Text style={styles.reviewSectionTitle}>Arenas ({venueForm.arenas.length})</Text>
-              {venueForm.arenas.map((arena, index) => (
-                <View key={index} style={styles.reviewArena}>
-                  <Text style={styles.reviewArenaName}>{arena.name} - {arena.sport}</Text>
-                  <Text style={styles.reviewArenaDetails}>
-                    Capacity: {arena.capacity}, Price: ₹{arena.base_price_per_hour}/hr, Slots: {arena.slots?.length || 0}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        );
-
-      default:
-        return null;
-    }
-  };
-
   if (isLoading) {
     return (
       <View style={styles.container}>
@@ -548,7 +238,7 @@ export default function VenuesScreen() {
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#212529" />
-            <Text style={styles.loadingText}>Loading venues...</Text>
+            <Text style={styles.loadingText}>Loading venue...</Text>
           </View>
         </SafeAreaView>
       </View>
@@ -562,14 +252,16 @@ export default function VenuesScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
-            <Text style={styles.greeting}>My Venues</Text>
+            <Text style={styles.greeting}>My Venue</Text>
             <Text style={styles.subtitle}>
-              {venues.length} venues
+              {venue ? 'Manage your venue and arenas' : 'No venue found'}
             </Text>
           </View>
-          <TouchableOpacity onPress={handleAddVenue} style={styles.addButton}>
-            <Ionicons name="add" size={24} color="#ffffff" />
-          </TouchableOpacity>
+          {venue && (
+            <TouchableOpacity onPress={handleEditVenue} style={styles.editButton}>
+              <Ionicons name="create-outline" size={20} color="#ffffff" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Content */}
@@ -580,112 +272,235 @@ export default function VenuesScreen() {
           }
           showsVerticalScrollIndicator={false}
         >
-          {venues.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="business-outline" size={64} color="#9ca3af" />
-              <Text style={styles.emptyStateText}>No venues yet</Text>
-              <Text style={styles.emptyStateSubtext}>Add your first venue to get started</Text>
-              <TouchableOpacity onPress={handleAddVenue} style={styles.getStartedButton}>
-                <Text style={styles.getStartedButtonText}>Add Venue</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            venues.map((venue) => (
-              <View key={venue.id} style={styles.venueCard}>
-                {/* Venue Header */}
-                <TouchableOpacity
-                  style={styles.venueHeader}
-                  onPress={() => toggleVenueExpansion(venue.id)}
-                >
+          {venue ? (
+            <>
+              {/* Venue Details Card */}
+              <View style={styles.venueCard}>
+                <View style={styles.venueHeader}>
                   <View style={styles.venueHeaderLeft}>
                     <Text style={styles.venueName}>{venue.name}</Text>
                     <Text style={styles.venueLocation}>{venue.city}, {venue.state}</Text>
-                    <Text style={styles.venueArenas}>
-                      {venue.arenas?.length || 0} arenas • {getSportsSummary(venue)}
+                    <Text style={styles.venueDetails}>
+                      Base Price: {formatCurrency(venue.base_price_per_hour)}/hr
                     </Text>
                   </View>
-                  <View style={styles.venueHeaderRight}>
-                    <Switch
-                      value={venue.is_active}
-                      onValueChange={(value) => {
-                        // TODO: Implement venue status toggle
-                        console.log('Toggle venue status:', value);
-                      }}
-                      trackColor={{ false: '#e5e7eb', true: '#212529' }}
-                      thumbColor={venue.is_active ? '#fff' : '#f4f3f4'}
-                    />
-                    <Ionicons
-                      name={expandedVenues.has(venue.id) ? 'chevron-up' : 'chevron-down'}
-                      size={20}
-                      color="#6b7280"
-                      style={styles.expandIcon}
-                    />
+                </View>
+                
+                <View style={styles.venueInfo}>
+                  <Text style={styles.infoLabel}>Address:</Text>
+                  <Text style={styles.infoValue}>{venue.address}</Text>
+                </View>
+                
+                {venue.description && (
+                  <View style={styles.venueInfo}>
+                    <Text style={styles.infoLabel}>Description:</Text>
+                    <Text style={styles.infoValue}>{venue.description}</Text>
                   </View>
-                </TouchableOpacity>
+                )}
 
-                {/* Arena List (Expandable) */}
-                {expandedVenues.has(venue.id) && venue.arenas && venue.arenas.length > 0 && (
-                  <View style={styles.arenasContainer}>
-                    <Text style={styles.arenasTitle}>Arenas ({venue.arenas.length})</Text>
+                {venue.amenities && venue.amenities.length > 0 && (
+                  <View style={styles.venueInfo}>
+                    <Text style={styles.infoLabel}>General Amenities:</Text>
+                    <View style={styles.amenitiesContainer}>
+                      {venue.amenities.map((amenity, index) => (
+                        <View key={index} style={styles.amenityTag}>
+                          <Text style={styles.amenityText}>{amenity}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              {/* Arenas Section */}
+              <View style={styles.arenasSection}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>
+                    Arenas ({venue.arenas?.length || 0})
+                  </Text>
+                  <TouchableOpacity onPress={openArenaModal} style={styles.addArenaButton}>
+                    <Ionicons name="add" size={20} color="#212529" />
+                    <Text style={styles.addArenaText}>Add Arena</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {!venue.arenas || venue.arenas.length === 0 ? (
+                  <View style={styles.emptyArenas}>
+                    <Ionicons name="business-outline" size={48} color="#9ca3af" />
+                    <Text style={styles.emptyArenasText}>No arenas yet</Text>
+                    <Text style={styles.emptyArenasSubtext}>Add your first arena to start taking bookings</Text>
+                    <TouchableOpacity onPress={openArenaModal} style={styles.getStartedButton}>
+                      <Text style={styles.getStartedButtonText}>Add Arena</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.arenasList}>
                     {venue.arenas.map((arena) => (
                       <ArenaCard
                         key={arena.id}
                         arena={arena}
-                        onEdit={(arena) => handleArenaEdit(venue, arena)}
-                        onToggleStatus={(arenaId, isActive) => handleArenaToggleStatus(venue, arenaId, isActive)}
-                        onViewDetails={(arena) => handleArenaDetails(venue, arena)}
+                        onEdit={(arena) => handleEditArena(arena)}
+                        onToggleStatus={(arenaId, isActive) => handleToggleArenaStatus(arenaId, isActive)}
+                        onViewDetails={(arena) => handleArenaDetails(arena)}
                       />
                     ))}
                   </View>
                 )}
               </View>
-            ))
+            </>
+          ) : (
+            <View style={styles.noVenueContainer}>
+              <Ionicons name="business-outline" size={64} color="#9ca3af" />
+              <Text style={styles.noVenueText}>No venue found</Text>
+              <Text style={styles.noVenueSubtext}>Please contact support to set up your venue</Text>
+            </View>
           )}
         </ScrollView>
 
-        {/* Add Venue Modal */}
+        {/* Edit Venue Modal */}
         <Modal
-          visible={showAddModal}
+          visible={showEditModal}
           animationType="slide"
           presentationStyle="pageSheet"
-          onRequestClose={handleCloseAddModal}
+          onRequestClose={() => setShowEditModal(false)}
         >
-          <KeyboardAvoidingView
-            style={styles.modalContainer}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
+          <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <TouchableOpacity onPress={handleCloseAddModal} style={styles.closeButton}>
+              <TouchableOpacity onPress={() => setShowEditModal(false)} style={styles.closeButton}>
                 <Ionicons name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>Add New Venue</Text>
-              <View style={styles.stepIndicator}>
-                <Text style={styles.stepText}>{currentStep}/3</Text>
-              </View>
+              <Text style={styles.modalTitle}>Edit Venue Details</Text>
+              <TouchableOpacity onPress={handleSaveVenue} style={styles.saveButton}>
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-              {renderStepContent()}
-            </ScrollView>
+              <View style={styles.formSection}>
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Venue Name *</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={venueForm.name}
+                    onChangeText={(text) => setVenueForm({ ...venueForm, name: text })}
+                    placeholder="Enter venue name"
+                    placeholderTextColor="#9ca3af"
+                  />
+                </View>
 
-            <View style={styles.modalFooter}>
-              {currentStep > 1 && (
-                <TouchableOpacity onPress={handlePreviousStep} style={styles.secondaryButton}>
-                  <Text style={styles.secondaryButtonText}>Previous</Text>
-                </TouchableOpacity>
-              )}
-              
-              {currentStep < 3 ? (
-                <TouchableOpacity onPress={handleNextStep} style={styles.primaryButton}>
-                  <Text style={styles.primaryButtonText}>Next</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={handleSubmitVenue} style={styles.primaryButton}>
-                  <Text style={styles.primaryButtonText}>Create Venue</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </KeyboardAvoidingView>
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Address *</Text>
+                  <TextInput
+                    style={[styles.formInput, styles.textArea]}
+                    value={venueForm.address}
+                    onChangeText={(text) => setVenueForm({ ...venueForm, address: text })}
+                    placeholder="Enter full address"
+                    placeholderTextColor="#9ca3af"
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
+
+                <View style={styles.row}>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.formLabel}>City</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={venueForm.city}
+                      onChangeText={(text) => setVenueForm({ ...venueForm, city: text })}
+                      placeholder="City"
+                      placeholderTextColor="#9ca3af"
+                    />
+                  </View>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.formLabel}>State</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={venueForm.state}
+                      onChangeText={(text) => setVenueForm({ ...venueForm, state: text })}
+                      placeholder="State"
+                      placeholderTextColor="#9ca3af"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.row}>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.formLabel}>Pincode *</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={venueForm.pincode}
+                      onChangeText={(text) => setVenueForm({ ...venueForm, pincode: text })}
+                      placeholder="Pincode"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.formLabel}>Base Price/Hour *</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={venueForm.base_price_per_hour}
+                      onChangeText={(text) => setVenueForm({ ...venueForm, base_price_per_hour: text })}
+                      placeholder="₹ per hour"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Description</Text>
+                  <TextInput
+                    style={[styles.formInput, styles.textArea]}
+                    value={venueForm.description}
+                    onChangeText={(text) => setVenueForm({ ...venueForm, description: text })}
+                    placeholder="Brief description of your venue"
+                    placeholderTextColor="#9ca3af"
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>WhatsApp Number</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={venueForm.whatsapp_number}
+                    onChangeText={(text) => setVenueForm({ ...venueForm, whatsapp_number: text })}
+                    placeholder="WhatsApp number for booking inquiries"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="phone-pad"
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>General Amenities</Text>
+                  <View style={styles.facilitiesGrid}>
+                    {facilityOptions.map((facility) => (
+                      <TouchableOpacity
+                        key={facility}
+                        style={[
+                          styles.facilityButton,
+                          venueForm.amenities.includes(facility) && styles.facilityButtonSelected,
+                        ]}
+                        onPress={() => toggleFacility(facility)}
+                      >
+                        <Text
+                          style={[
+                            styles.facilityText,
+                            venueForm.amenities.includes(facility) && styles.facilityTextSelected,
+                          ]}
+                        >
+                          {facility}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
         </Modal>
 
         {/* Arena Form Modal */}
@@ -742,7 +557,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontWeight: '500',
   },
-  addButton: {
+  editButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -759,19 +574,128 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
   },
-  emptyState: {
+  venueCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  venueHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  venueHeaderLeft: {
+    flex: 1,
+  },
+  venueName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#212529',
+    marginBottom: 4,
+  },
+  venueLocation: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 4,
+  },
+  venueDetails: {
+    fontSize: 14,
+    color: '#212529',
+    fontWeight: '600',
+  },
+  venueInfo: {
+    marginBottom: 12,
+  },
+  infoLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#212529',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+  },
+  amenitiesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  amenityTag: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  amenityText: {
+    fontSize: 12,
+    color: '#212529',
+    fontWeight: '500',
+  },
+  arenasSection: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#212529',
+  },
+  addArenaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  addArenaText: {
+    color: '#212529',
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  emptyArenas: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  emptyStateText: {
+  emptyArenasText: {
     fontSize: 18,
     color: '#6b7280',
     marginTop: 16,
     marginBottom: 8,
     fontWeight: '600',
   },
-  emptyStateSubtext: {
+  emptyArenasSubtext: {
     fontSize: 14,
     color: '#9ca3af',
     textAlign: 'center',
@@ -788,62 +712,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  venueCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+  arenasList: {
+    gap: 12,
   },
-  venueHeader: {
-    flexDirection: 'row',
+  noVenueContainer: {
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 20,
+    justifyContent: 'center',
+    paddingVertical: 60,
   },
-  venueHeaderLeft: {
-    flex: 1,
-  },
-  venueName: {
+  noVenueText: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#212529',
-    marginBottom: 4,
-  },
-  venueLocation: {
-    fontSize: 14,
     color: '#6b7280',
-    marginBottom: 4,
-  },
-  venueArenas: {
-    fontSize: 12,
-    color: '#9ca3af',
-    fontWeight: '500',
-  },
-  venueHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  expandIcon: {
-    marginLeft: 8,
-  },
-  arenasContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-  },
-  arenasTitle: {
-    fontSize: 16,
+    marginTop: 16,
+    marginBottom: 8,
     fontWeight: '600',
-    color: '#212529',
-    marginBottom: 16,
+  },
+  noVenueSubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
+    textAlign: 'center',
   },
   modalContainer: {
     flex: 1,
@@ -871,32 +758,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#212529',
   },
-  stepIndicator: {
+  saveButton: {
     backgroundColor: '#212529',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 22,
   },
-  stepText: {
+  saveButtonText: {
     color: '#ffffff',
-    fontSize: 12,
     fontWeight: '600',
+    fontSize: 16,
   },
   modalContent: {
     flex: 1,
     backgroundColor: '#f5f6f7',
   },
-  stepContent: {
+  formSection: {
     backgroundColor: '#ffffff',
     margin: 12,
     padding: 24,
     borderRadius: 12,
-  },
-  stepTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#212529',
-    marginBottom: 24,
   },
   formGroup: {
     marginBottom: 20,
@@ -953,160 +834,5 @@ const styles = StyleSheet.create({
   },
   facilityTextSelected: {
     color: '#ffffff',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  addArenaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  addArenaText: {
-    color: '#212529',
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  arenasList: {
-    maxHeight: 400,
-  },
-  arenaPreview: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  arenaHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  arenaInfo: {
-    flex: 1,
-  },
-  arenaName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#212529',
-  },
-  arenaSport: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
-  },
-  arenaActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  editArenaButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeArenaButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#fef2f2',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  arenaStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  arenaStat: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  reviewSection: {
-    marginBottom: 24,
-  },
-  reviewSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#212529',
-    marginBottom: 16,
-  },
-  reviewItem: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  reviewLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
-    width: 80,
-  },
-  reviewValue: {
-    fontSize: 14,
-    color: '#212529',
-    flex: 1,
-  },
-  reviewArena: {
-    backgroundColor: '#f9fafb',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  reviewArenaName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#212529',
-    marginBottom: 4,
-  },
-  reviewArenaDetails: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    backgroundColor: '#ffffff',
-    gap: 12,
-  },
-  secondaryButton: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-    paddingVertical: 12,
-    borderRadius: 22,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  secondaryButtonText: {
-    color: '#6b7280',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  primaryButton: {
-    flex: 2,
-    backgroundColor: '#212529',
-    paddingVertical: 12,
-    borderRadius: 22,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
   },
 });
