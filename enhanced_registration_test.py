@@ -5,6 +5,7 @@ Test the enhanced venue owner registration flow with venue details
 
 import requests
 import json
+import random
 
 BASE_URL = "http://localhost:8001/api"
 
@@ -12,9 +13,13 @@ def test_enhanced_registration():
     print("🚀 TESTING ENHANCED VENUE OWNER REGISTRATION")
     print("=" * 50)
     
+    # Generate random mobile number
+    random_suffix = str(random.randint(100000, 999999))
+    mobile = f"+9195{random_suffix}"
+    
     # Step 1: Send OTP
-    print("\n1. Sending OTP...")
-    mobile = "+919999888777"  # Different mobile
+    print(f"\n1. Testing with mobile: {mobile}")
+    print("Sending OTP...")
     otp_response = requests.post(f"{BASE_URL}/auth/send-otp", 
                                json={"mobile": mobile})
     
@@ -31,24 +36,24 @@ def test_enhanced_registration():
     registration_data = {
         "mobile": mobile,
         "otp": dev_otp,
-        "name": "Amit Sharma",
-        "email": "amit@premiumsports.com",
+        "name": "Priya Patel",
+        "email": "priya@newagesports.com",
         "role": "venue_owner",
         # Business details
-        "business_name": "Premium Sports Arena",
-        "business_address": "789 Premium Street, Mumbai",
-        "gst_number": "24PREMIUM123F1Z5",
+        "business_name": "New Age Sports Center", 
+        "business_address": "321 Sports Avenue, Mumbai",
+        "gst_number": "24NEWAGE123F1Z5",
         # Venue details (NEW)
-        "venue_name": "Premium Multi-Sport Complex",
-        "venue_address": "789 Premium Road, Powai, Mumbai",
+        "venue_name": "New Age Multi-Sport Arena",
+        "venue_address": "321 Arena Street, Bandra East, Mumbai",
         "venue_city": "Mumbai",
         "venue_state": "Maharashtra",  
-        "venue_pincode": "400076",
-        "venue_description": "State-of-the-art multi-sport facility",
-        "venue_amenities": ["Parking", "Washroom", "AC", "Cafeteria", "WiFi"],
-        "base_price_per_hour": 1500.0,
-        "contact_phone": "+919999888777",
-        "whatsapp_number": "+919999888777"
+        "venue_pincode": "400051",
+        "venue_description": "Modern sports facility with latest equipment",
+        "venue_amenities": ["Parking", "Washroom", "Changing Room", "First Aid"],
+        "base_price_per_hour": 1000.0,
+        "contact_phone": mobile,
+        "whatsapp_number": mobile
     }
     
     register_response = requests.post(f"{BASE_URL}/auth/register",
