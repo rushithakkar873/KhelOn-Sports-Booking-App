@@ -38,7 +38,7 @@ export default function ArenaFormModal({
     amenities: [],
     base_price_per_hour: 0,
     images: [],
-    slots: [{ day_of_week: 0, start_time: '', end_time: '', capacity: 1, price_per_hour: 0, is_peak_hour: false }],
+    slots: [{ day_of_week: 0, start_time: '06:00', end_time: '08:00', capacity: 1, price_per_hour: 0, is_peak_hour: false }],
     is_active: true,
   });
 
@@ -59,7 +59,7 @@ export default function ArenaFormModal({
         amenities: [],
         base_price_per_hour: 0,
         images: [],
-        slots: [{ day_of_week: 0, start_time: '', end_time: '', capacity: 1, price_per_hour: 0, is_peak_hour: false }],
+        slots: [{ day_of_week: 0, start_time: '06:00', end_time: '08:00', capacity: 1, price_per_hour: 0, is_peak_hour: false }],
         is_active: true,
       });
     }
@@ -96,6 +96,7 @@ export default function ArenaFormModal({
       }
     }
 
+    console.log('Arena form saving:', arenaForm);
     onSave(arenaForm);
     onClose();
   };
@@ -110,8 +111,8 @@ export default function ArenaFormModal({
   const addTimeSlot = () => {
     const newSlot: CreateVenueSlot = {
       day_of_week: 0,
-      start_time: '',
-      end_time: '',
+      start_time: '06:00',
+      end_time: '08:00',
       capacity: arenaForm.capacity || 1,
       price_per_hour: arenaForm.base_price_per_hour,
       is_peak_hour: false,
@@ -149,7 +150,7 @@ export default function ArenaFormModal({
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#666" />
+            <Ionicons name="close" size={24} color="#6b7280" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
             {isEditing ? 'Edit Arena' : 'Add New Arena'}
@@ -171,7 +172,7 @@ export default function ArenaFormModal({
                 value={arenaForm.name}
                 onChangeText={(text) => setArenaForm({ ...arenaForm, name: text })}
                 placeholder="e.g., Cricket Ground A, Football Field 1"
-                placeholderTextColor="#999"
+                placeholderTextColor="#9ca3af"
               />
             </View>
 
@@ -208,7 +209,7 @@ export default function ArenaFormModal({
                   value={arenaForm.capacity?.toString() || '1'}
                   onChangeText={(text) => setArenaForm({ ...arenaForm, capacity: parseInt(text) || 1 })}
                   placeholder="Number of courts/fields"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#9ca3af"
                   keyboardType="numeric"
                 />
               </View>
@@ -219,7 +220,7 @@ export default function ArenaFormModal({
                   value={arenaForm.base_price_per_hour?.toString() || '0'}
                   onChangeText={(text) => setArenaForm({ ...arenaForm, base_price_per_hour: parseFloat(text) || 0 })}
                   placeholder="₹ per hour"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#9ca3af"
                   keyboardType="numeric"
                 />
               </View>
@@ -232,7 +233,7 @@ export default function ArenaFormModal({
                 value={arenaForm.description || ''}
                 onChangeText={(text) => setArenaForm({ ...arenaForm, description: text })}
                 placeholder="Brief description of this arena"
-                placeholderTextColor="#999"
+                placeholderTextColor="#9ca3af"
                 multiline
                 numberOfLines={3}
               />
@@ -243,7 +244,7 @@ export default function ArenaFormModal({
               <Switch
                 value={arenaForm.is_active}
                 onValueChange={(value) => setArenaForm({ ...arenaForm, is_active: value })}
-                trackColor={{ false: '#E5E5E5', true: '#4CAF50' }}
+                trackColor={{ false: '#e5e7eb', true: '#212529' }}
                 thumbColor={arenaForm.is_active ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -280,7 +281,7 @@ export default function ArenaFormModal({
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Time Slots</Text>
               <TouchableOpacity onPress={addTimeSlot} style={styles.addButton}>
-                <Ionicons name="add" size={20} color="#4CAF50" />
+                <Ionicons name="add" size={20} color="#212529" />
                 <Text style={styles.addButtonText}>Add Slot</Text>
               </TouchableOpacity>
             </View>
@@ -294,7 +295,7 @@ export default function ArenaFormModal({
                       onPress={() => removeTimeSlot(index)}
                       style={styles.removeButton}
                     >
-                      <Ionicons name="trash-outline" size={16} color="#FF5252" />
+                      <Ionicons name="trash-outline" size={16} color="#ef4444" />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -334,7 +335,7 @@ export default function ArenaFormModal({
                       value={slot.start_time}
                       onChangeText={(text) => updateTimeSlot(index, 'start_time', text)}
                       placeholder="HH:MM"
-                      placeholderTextColor="#999"
+                      placeholderTextColor="#9ca3af"
                     />
                   </View>
                   <View style={styles.halfWidth}>
@@ -344,7 +345,7 @@ export default function ArenaFormModal({
                       value={slot.end_time}
                       onChangeText={(text) => updateTimeSlot(index, 'end_time', text)}
                       placeholder="HH:MM"
-                      placeholderTextColor="#999"
+                      placeholderTextColor="#9ca3af"
                     />
                   </View>
                 </View>
@@ -357,7 +358,7 @@ export default function ArenaFormModal({
                       value={slot.price_per_hour?.toString() || '0'}
                       onChangeText={(text) => updateTimeSlot(index, 'price_per_hour', parseFloat(text) || 0)}
                       placeholder="₹ per hour"
-                      placeholderTextColor="#999"
+                      placeholderTextColor="#9ca3af"
                       keyboardType="numeric"
                     />
                   </View>
@@ -367,7 +368,7 @@ export default function ArenaFormModal({
                       <Switch
                         value={slot.is_peak_hour}
                         onValueChange={(value) => updateTimeSlot(index, 'is_peak_hour', value)}
-                        trackColor={{ false: '#E5E5E5', true: '#FF9800' }}
+                        trackColor={{ false: '#e5e7eb', true: '#f59e0b' }}
                         thumbColor={slot.is_peak_hour ? '#fff' : '#f4f3f4'}
                       />
                     </View>
@@ -385,82 +386,90 @@ export default function ArenaFormModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
   },
   closeButton: {
-    padding: 4,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#212529',
   },
   saveButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    backgroundColor: '#212529',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 22,
   },
   saveButtonText: {
-    color: '#fff',
+    color: '#ffffff',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 16,
   },
   content: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#f5f6f7',
   },
   section: {
-    marginBottom: 24,
+    backgroundColor: '#ffffff',
+    marginTop: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#212529',
+    marginBottom: 20,
   },
   formGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#212529',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 14,
-    color: '#333',
-    backgroundColor: '#FAFAFA',
+    fontSize: 16,
+    color: '#212529',
+    backgroundColor: '#ffffff',
   },
   textArea: {
-    height: 80,
+    height: 100,
     textAlignVertical: 'top',
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: 16,
   },
   halfWidth: {
     flex: 1,
@@ -476,23 +485,24 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    backgroundColor: '#FAFAFA',
+    borderColor: '#e5e7eb',
+    borderRadius: 22,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    marginRight: 12,
+    backgroundColor: '#ffffff',
   },
   optionButtonSelected: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#212529',
+    borderColor: '#212529',
   },
   optionText: {
     fontSize: 14,
-    color: '#666',
+    fontWeight: '500',
+    color: '#6b7280',
   },
   optionTextSelected: {
-    color: '#fff',
+    color: '#ffffff',
   },
   amenitiesGrid: {
     flexDirection: 'row',
@@ -501,77 +511,86 @@ const styles = StyleSheet.create({
   },
   amenityButton: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#FAFAFA',
+    borderColor: '#e5e7eb',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#ffffff',
   },
   amenityButtonSelected: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: '#212529',
+    borderColor: '#212529',
   },
   amenityText: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6b7280',
   },
   amenityTextSelected: {
-    color: '#fff',
+    color: '#ffffff',
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    backgroundColor: '#F0F8F0',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 22,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
   addButtonText: {
-    color: '#4CAF50',
-    fontWeight: '500',
-    marginLeft: 4,
+    color: '#212529',
+    fontWeight: '600',
+    marginLeft: 6,
     fontSize: 14,
   },
   slotCard: {
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#e5e7eb',
   },
   slotHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   slotTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#212529',
   },
   removeButton: {
-    padding: 4,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fef2f2',
   },
   dayButton: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 6,
-    backgroundColor: '#FAFAFA',
+    borderColor: '#e5e7eb',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    backgroundColor: '#ffffff',
   },
   dayButtonSelected: {
-    backgroundColor: '#2196F3',
-    borderColor: '#2196F3',
+    backgroundColor: '#212529',
+    borderColor: '#212529',
   },
   dayText: {
     fontSize: 12,
-    color: '#666',
+    fontWeight: '500',
+    color: '#6b7280',
   },
   dayTextSelected: {
-    color: '#fff',
+    color: '#ffffff',
   },
 });
