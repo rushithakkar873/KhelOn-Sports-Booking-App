@@ -157,6 +157,17 @@ export default function RegisterScreen() {
           business_name: formData.businessName.trim(),
           business_address: formData.businessAddress.trim() || undefined,
           gst_number: formData.gstNumber.trim() || undefined,
+          // Venue details
+          venue_name: formData.venueName.trim(),
+          venue_address: formData.venueAddress.trim(),
+          venue_city: formData.venueCity.trim(),
+          venue_state: formData.venueState.trim(),
+          venue_pincode: formData.venuePincode.trim(),
+          venue_description: formData.venueDescription.trim() || undefined,
+          venue_amenities: formData.venueAmenities,
+          base_price_per_hour: parseFloat(formData.basePricePerHour),
+          contact_phone: formData.contactPhone.trim() || formData.mobile,
+          whatsapp_number: formData.whatsappNumber.trim() || undefined,
         })
       };
 
