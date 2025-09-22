@@ -23,6 +23,17 @@ export default function RegisterScreen() {
     businessName: '',
     businessAddress: '',
     gstNumber: '',
+    // Venue details for venue owners
+    venueName: '',
+    venueAddress: '',
+    venueCity: 'Mumbai',
+    venueState: 'Maharashtra',
+    venuePincode: '',
+    venueDescription: '',
+    venueAmenities: [] as string[],
+    basePricePerHour: '',
+    contactPhone: '',
+    whatsappNumber: '',
   });
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
