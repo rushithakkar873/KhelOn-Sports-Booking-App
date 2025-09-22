@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timedelta
 
 # Configuration
-BASE_URL = "https://playonapp.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:8001/api"
 VENUE_OWNER_MOBILE = "+919876543210"
 PLAYER_MOBILE_1 = "+919888777666"
 PLAYER_MOBILE_2 = "+919999888777"
