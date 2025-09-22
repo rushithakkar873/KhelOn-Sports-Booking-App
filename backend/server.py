@@ -1067,6 +1067,8 @@ async def create_booking_by_owner(
     # 7. Send SMS notification
     sms_details = {
         "venue_name": venue["name"],
+        "arena_name": selected_arena.get("name", "Main Arena"),
+        "sport": booking_data.sport or selected_arena.get("sport", venue["sports_supported"][0]),
         "booking_date": booking_data.booking_date,
         "start_time": booking_data.start_time,
         "end_time": booking_data.end_time,
