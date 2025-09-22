@@ -272,7 +272,7 @@ def test_arena_system():
         
         if conflict_response.status_code == 409:
             print("✅ PASS: Same Arena Conflict Detection")
-            print("   Cricket Ground A at 18:00-20:00 correctly rejected (409 Conflict)")
+            print("   Cricket Ground A at 16:00-18:00 correctly rejected (409 Conflict)")
             
             # Test different arena (should succeed)
             different_arena_booking = {
