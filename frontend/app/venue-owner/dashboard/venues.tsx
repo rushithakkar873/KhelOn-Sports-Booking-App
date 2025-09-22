@@ -76,8 +76,7 @@ export default function VenuesScreen() {
   const venueOwnerService = VenueOwnerService.getInstance();
   const authService = AuthService.getInstance();
 
-  const sportsOptions = ['Cricket', 'Football', 'Badminton', 'Tennis', 'Basketball', 'Volleyball'];
-  const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen'];
+  const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen', 'WiFi', 'First Aid'];
 
   useEffect(() => {
     loadVenues();
