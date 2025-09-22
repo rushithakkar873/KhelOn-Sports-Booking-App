@@ -26,13 +26,19 @@ const { width } = Dimensions.get('window');
 
 interface VenueForm {
   name: string;
-  sports: string[];
-  location: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
   description: string;
-  facilities: string[];
-  pricePerHour: string;
-  timeSlots: { startTime: string; endTime: string; price: string }[];
-  imageUrl: string;
+  amenities: string[];
+  base_price_per_hour: string;
+  contact_phone: string;
+  whatsapp_number: string;
+  images: string[];
+  rules_and_regulations: string;
+  cancellation_policy: string;
+  arenas: CreateArena[];
 }
 
 export default function VenuesScreen() {
