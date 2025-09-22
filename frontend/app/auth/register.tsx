@@ -59,11 +59,35 @@ export default function RegisterScreen() {
   };
 
   const validateForm = () => {
-    const { name, mobile } = formData;
+    const { name, mobile, role, businessName, venueName, venueAddress, venuePincode, basePricePerHour } = formData;
 
     if (!name || !mobile) {
       Alert.alert('Error', 'Please fill in all required fields');
       return false;
+    }
+
+    // Additional validation for venue owners
+    if (role === 'venue_owner') {
+      if (!businessName) {
+        Alert.alert('Error', 'Business name is required for venue owners');
+        return false;
+      }
+      if (!venueName) {
+        Alert.alert('Error', 'Venue name is required');
+        return false;
+      }
+      if (!venueAddress) {
+        Alert.alert('Error', 'Venue address is required');
+        return false;
+      }
+      if (!venuePincode) {
+        Alert.alert('Error', 'Venue pincode is required');
+        return false;
+      }
+      if (!basePricePerHour || parseFloat(basePricePerHour) <= 0) {
+        Alert.alert('Error', 'Valid base price per hour is required');
+        return false;
+      }
     }
 
     const formattedMobile = AuthService.formatIndianMobile(mobile);
