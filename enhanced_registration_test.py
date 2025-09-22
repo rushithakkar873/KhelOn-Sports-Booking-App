@@ -14,7 +14,7 @@ def test_enhanced_registration():
     
     # Step 1: Send OTP
     print("\n1. Sending OTP...")
-    mobile = "+919123456789"
+    mobile = "+919999888777"  # Different mobile
     otp_response = requests.post(f"{BASE_URL}/auth/send-otp", 
                                json={"mobile": mobile})
     
@@ -31,24 +31,24 @@ def test_enhanced_registration():
     registration_data = {
         "mobile": mobile,
         "otp": dev_otp,
-        "name": "Rajesh Kumar",
-        "email": "rajesh@elitesports.com",
+        "name": "Amit Sharma",
+        "email": "amit@premiumsports.com",
         "role": "venue_owner",
         # Business details
-        "business_name": "Elite Sports Complex",
-        "business_address": "456 Sports Street, Mumbai",
-        "gst_number": "24ABCDE1234F1Z5",
+        "business_name": "Premium Sports Arena",
+        "business_address": "789 Premium Street, Mumbai",
+        "gst_number": "24PREMIUM123F1Z5",
         # Venue details (NEW)
-        "venue_name": "Elite Cricket & Football Ground",
-        "venue_address": "456 Ground Road, Andheri West, Mumbai",
+        "venue_name": "Premium Multi-Sport Complex",
+        "venue_address": "789 Premium Road, Powai, Mumbai",
         "venue_city": "Mumbai",
         "venue_state": "Maharashtra",  
-        "venue_pincode": "400058",
-        "venue_description": "Premium sports facility with multiple grounds",
-        "venue_amenities": ["Parking", "Washroom", "Floodlights", "Seating"],
-        "base_price_per_hour": 1200.0,
-        "contact_phone": "+919123456789",
-        "whatsapp_number": "+919123456789"
+        "venue_pincode": "400076",
+        "venue_description": "State-of-the-art multi-sport facility",
+        "venue_amenities": ["Parking", "Washroom", "AC", "Cafeteria", "WiFi"],
+        "base_price_per_hour": 1500.0,
+        "contact_phone": "+919999888777",
+        "whatsapp_number": "+919999888777"
     }
     
     register_response = requests.post(f"{BASE_URL}/auth/register",
