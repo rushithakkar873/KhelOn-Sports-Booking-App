@@ -590,7 +590,7 @@ async def get_analytics_dashboard(
                 "venueName": venue["name"], 
                 "bookings": len([b for b in bookings if b["venue_id"] == venue["_id"]]), 
                 "revenue": sum(b["total_amount"] for b in paid_bookings if b["venue_id"] == venue["_id"]),
-                "occupancy": min(100, round((len([b for b in bookings if b["venue_id"] == venue["_id"]]) / max(len(venue.get("slots", [])) * 30, 1)) * 100, 1))
+                "occupancy": min(100, round((len([b for b in bookings if b["venue_id"] == venue["_id"]]) / max(sum(len(arena.get("slots", [arena] if "day_of_week" in arena else [])) for arena in venue.get("arenas", venue.get("slots", []))) * 30, 1)) * 100, 1))
             } 
             for venue in venues[:5]
         ],
