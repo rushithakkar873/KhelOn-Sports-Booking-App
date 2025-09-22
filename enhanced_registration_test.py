@@ -5,7 +5,6 @@ Test the enhanced venue owner registration flow with venue details
 
 import requests
 import json
-import random
 
 BASE_URL = "http://localhost:8001/api"
 
@@ -13,12 +12,11 @@ def test_enhanced_registration():
     print("🚀 TESTING ENHANCED VENUE OWNER REGISTRATION")
     print("=" * 50)
     
-    # Generate proper Indian mobile number (13 chars: +91 + 10 digits)
-    random_suffix = str(random.randint(10000000, 99999999))
-    mobile = f"+919{random_suffix}"  # +91 + 9 + 8 digits = 13 chars
+    # Use proper 13-character mobile number
+    mobile = "+919555666777"
     
     # Step 1: Send OTP
-    print(f"\n1. Testing with mobile: {mobile}")
+    print(f"\n1. Testing with mobile: {mobile} (length: {len(mobile)})")
     print("Sending OTP...")
     otp_response = requests.post(f"{BASE_URL}/auth/send-otp", 
                                json={"mobile": mobile})
@@ -99,6 +97,8 @@ def test_enhanced_registration():
         print(f"   Active: {venue.get('is_active')}")
     else:
         print(f"❌ Expected 1 venue, got {len(venues)}")
+        for i, v in enumerate(venues):
+            print(f"   Venue {i+1}: {v.get('name')}")
         return
     
     print("\n🎉 ENHANCED REGISTRATION TEST COMPLETED SUCCESSFULLY!")
