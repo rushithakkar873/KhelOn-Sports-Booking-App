@@ -806,9 +806,11 @@ class SMSService:
         try:
             # Format message
             message = f"""
-🏏 PLAYON BOOKING CONFIRMATION
+🏏 KHELON BOOKING CONFIRMATION
 
 Venue: {booking_details['venue_name']}
+Arena: {booking_details.get('arena_name', 'Main Arena')}
+Sport: {booking_details.get('sport', 'General')}
 Date: {booking_details['booking_date']}
 Time: {booking_details['start_time']} - {booking_details['end_time']}
 Amount: ₹{booking_details['total_amount']}
