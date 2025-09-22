@@ -252,6 +252,8 @@ class BookingResponse(BaseModel):
     id: str
     venue_id: str
     venue_name: str
+    arena_id: str  # New field for arena identification
+    arena_name: str  # New field for arena name
     slot_id: str
     user_id: str
     user_name: Optional[str] = None
@@ -265,6 +267,7 @@ class BookingResponse(BaseModel):
     payment_id: Optional[str] = None
     player_name: str
     player_phone: str
+    sport: str  # Sport being played
     notes: Optional[str]
     created_at: datetime
     updated_at: datetime
