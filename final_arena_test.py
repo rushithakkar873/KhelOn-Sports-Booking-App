@@ -292,7 +292,7 @@ def test_arena_system():
             if different_response.status_code == 200:
                 result = different_response.json()
                 print("✅ PASS: Different Arena Same Time Booking")
-                print(f"   Football Field B at 18:00-20:00 successfully booked")
+                print(f"   Football Field B at 16:00-18:00 successfully booked")
                 print(f"   Amount: ₹{result.get('total_amount')} (2 hours × ₹800/hr)")
                 results.append(True)
             else:
