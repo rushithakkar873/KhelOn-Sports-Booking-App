@@ -177,6 +177,32 @@ class UserRegistrationRequest(BaseModel):
         if values.get('role') == 'venue_owner' and not v:
             raise ValueError('Business name is required for venue owners')
         return v
+    
+    @validator('venue_name')
+    def validate_venue_fields(cls, v, values):
+        if values.get('role') == 'venue_owner':
+            if not v:
+                raise ValueError('Venue name is required for venue owners')
+        return v
+    
+    @validator('venue_address')
+    def validate_venue_address(cls, v, values):
+        if values.get('role') == 'venue_owner' and not v:
+            raise ValueError('Venue address is required for venue owners')
+        return v
+    
+    @validator('venue_pincode')
+    def validate_venue_pincode(cls, v, values):
+        if values.get('role') == 'venue_owner' and not v:
+            raise ValueError('Venue pincode is required for venue owners')
+        return v
+    
+    @validator('base_price_per_hour')
+    def validate_base_price(cls, v, values):
+        if values.get('role') == 'venue_owner':
+            if v is None or v <= 0:
+                raise ValueError('Valid base price per hour is required for venue owners')
+        return v
 
 class UserResponse(BaseModel):
     id: str
