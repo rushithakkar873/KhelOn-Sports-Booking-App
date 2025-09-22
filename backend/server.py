@@ -940,21 +940,24 @@ async def create_booking_by_owner(
             detail="Invalid time format. Use HH:MM format"
         )
     
-    # Calculate amount based on venue base price
-    total_amount = venue["base_price_per_hour"] * duration_hours
+    # Calculate amount based on arena-specific price (fallback to venue price)
+    arena_price = selected_arena.get("base_price_per_hour", venue["base_price_per_hour"])
+    total_amount = arena_price * duration_hours
     
-    # 4. Check for slot conflicts
+    # 4. Check for slot conflicts - now per arena instead of per venue
     existing_booking = await db.bookings.find_one({
         "venue_id": booking_data.venue_id,
+        "arena_id": booking_data.arena_id,  # Check conflict per arena
         "booking_date": booking_data.booking_date,
         "start_time": booking_data.start_time,
         "status": {"$ne": "cancelled"}
     })
     
     if existing_booking:
+        arena_name = selected_arena.get("name", "Arena")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="This time slot is already booked"
+            detail=f"This time slot is already booked for {arena_name}"
         )
     
     # 5. Create booking record
