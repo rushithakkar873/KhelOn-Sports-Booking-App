@@ -432,6 +432,61 @@ async def get_owner_venues(
     
     return venue_responses
 
+@api_router.get("/venue-owner/venues/{venue_id}/arenas")
+async def get_venue_arenas(
+    venue_id: str,
+    current_owner: dict = Depends(get_current_venue_owner)
+):
+    """Get all arenas for a specific venue"""
+    venue = await db.venues.find_one({
+        "_id": venue_id, 
+        "owner_id": current_owner["_id"]
+    })
+    if not venue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venue not found or access denied"
+        )
+    
+    arenas = venue.get("arenas", venue.get("slots", []))  # Backward compatibility
+    arena_responses = []
+    
+    for arena in arenas:
+        if "sport" in arena:  # New arena format
+            arena_responses.append(ArenaResponse(
+                id=arena["_id"],
+                name=arena["name"],
+                sport=arena["sport"],
+                capacity=arena["capacity"],
+                description=arena.get("description"),
+                amenities=arena.get("amenities", []),
+                base_price_per_hour=arena["base_price_per_hour"],
+                images=arena.get("images", []),
+                slots=arena.get("slots", []),
+                is_active=arena.get("is_active", True),
+                created_at=arena["created_at"]
+            ))
+        else:  # Old slot format - convert to arena
+            arena_responses.append(ArenaResponse(
+                id=arena["_id"],
+                name=f"Arena {len(arena_responses) + 1}",
+                sport=venue["sports_supported"][0] if venue["sports_supported"] else "General",
+                capacity=arena.get("capacity", 1),
+                description="Migrated from old slot system",
+                amenities=[],
+                base_price_per_hour=arena.get("price_per_hour", venue["base_price_per_hour"]),
+                images=[],
+                slots=[arena],  # Single slot becomes arena's slot
+                is_active=arena.get("is_active", True),
+                created_at=arena["created_at"]
+            ))
+    
+    return {
+        "venue_id": venue_id,
+        "venue_name": venue["name"],
+        "arenas": arena_responses
+    }
+
 @api_router.get("/venue-owner/analytics/dashboard")
 async def get_analytics_dashboard(
     current_owner: dict = Depends(get_current_venue_owner),
