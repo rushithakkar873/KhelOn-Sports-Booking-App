@@ -366,6 +366,41 @@ async def get_owner_venues(
     
     venue_responses = []
     for venue in venues:
+        # Convert arena data to ArenaResponse objects
+        arena_responses = []
+        arenas_data = venue.get("arenas", venue.get("slots", []))  # Backward compatibility
+        
+        for arena in arenas_data:
+            # Handle both new arena format and old slot format
+            if "sport" in arena:  # New arena format
+                arena_responses.append(ArenaResponse(
+                    id=arena["_id"],
+                    name=arena["name"],
+                    sport=arena["sport"],
+                    capacity=arena["capacity"],
+                    description=arena.get("description"),
+                    amenities=arena.get("amenities", []),
+                    base_price_per_hour=arena["base_price_per_hour"],
+                    images=arena.get("images", []),
+                    slots=arena.get("slots", []),
+                    is_active=arena.get("is_active", True),
+                    created_at=arena["created_at"]
+                ))
+            else:  # Old slot format - convert to arena for backward compatibility
+                arena_responses.append(ArenaResponse(
+                    id=arena["_id"],
+                    name=f"Arena {len(arena_responses) + 1}",
+                    sport=venue["sports_supported"][0] if venue["sports_supported"] else "General",
+                    capacity=arena.get("capacity", 1),
+                    description="Migrated from old slot system",
+                    amenities=[],
+                    base_price_per_hour=arena.get("price_per_hour", venue["base_price_per_hour"]),
+                    images=[],
+                    slots=[arena],  # Single slot becomes arena's slot
+                    is_active=arena.get("is_active", True),
+                    created_at=arena["created_at"]
+                ))
+        
         venue_responses.append(VenueResponse(
             id=venue["_id"],
             name=venue["name"],
@@ -388,7 +423,7 @@ async def get_owner_venues(
             total_bookings=venue.get("total_bookings", 0),
             total_reviews=venue.get("total_reviews", 0),
             is_active=venue.get("is_active", True),
-            slots=venue.get("slots", []),
+            arenas=arena_responses,
             created_at=venue["created_at"]
         ))
     
