@@ -855,6 +855,26 @@ async def create_booking_by_owner(
             detail="Venue not found or access denied"
         )
     
+    # 1.1 Verify arena exists and is active
+    selected_arena = None
+    arenas = venue.get("arenas", venue.get("slots", []))  # Backward compatibility
+    
+    for arena in arenas:
+        if arena["_id"] == booking_data.arena_id:
+            if not arena.get("is_active", True):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Selected arena is not active"
+                )
+            selected_arena = arena
+            break
+    
+    if not selected_arena:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Arena not found in this venue"
+        )
+    
     # 2. Check for existing user or create new one
     player_mobile = booking_data.player_mobile
     existing_user = await db.users.find_one({"mobile": player_mobile})
