@@ -640,80 +640,95 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
     backgroundColor: '#ffffff',
   },
-  closeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
+  headerCancel: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '500',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#212529',
-  },
-  saveButton: {
-    backgroundColor: '#212529',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 22,
-  },
-  saveButtonText: {
-    color: '#ffffff',
     fontWeight: '600',
-    fontSize: 16,
+    color: '#212529',
+    flex: 1,
+    textAlign: 'center',
+  },
+  stepIndicator: {
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  stepText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  progressContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 2,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#212529',
+    borderRadius: 2,
   },
   content: {
     flex: 1,
-    backgroundColor: '#f5f6f7',
   },
-  section: {
-    backgroundColor: '#ffffff',
-    marginTop: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+  modalContent: {
+    flex: 1,
+    padding: 20,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
+  stepContent: {
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 18,
+  stepTitle: {
+    fontSize: 24,
     fontWeight: '700',
-    color: '#212529',
-    marginBottom: 20,
-  },
-  formGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
     color: '#212529',
     marginBottom: 8,
   },
-  input: {
+  stepSubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  formGroup: {
+    marginBottom: 24,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  formInput: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#d1d5db',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
     color: '#212529',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f9fafb',
   },
   textArea: {
-    height: 100,
+    minHeight: 80,
     textAlignVertical: 'top',
   },
   row: {
@@ -724,36 +739,71 @@ const styles = StyleSheet.create({
   halfWidth: {
     flex: 1,
   },
+  
+  // Sport Selection Styles
+  sportsScrollView: {
+    flexGrow: 0,
+  },
+  sportsContainer: {
+    paddingRight: 20,
+    gap: 12,
+  },
+  sportChip: {
+    backgroundColor: '#ffffff',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  sportChipSelected: {
+    backgroundColor: '#10b981',
+    borderColor: '#10b981',
+    shadowColor: '#10b981',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  sportChipText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '600',
+  },
+  sportChipTextSelected: {
+    color: '#ffffff',
+  },
+
+  // Switch Container
+  switchContainer: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    marginBottom: 8,
   },
-  optionsContainer: {
-    flexDirection: 'row',
+  switchLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0c4a6e',
   },
-  optionButton: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 22,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginRight: 12,
-    backgroundColor: '#ffffff',
-  },
-  optionButtonSelected: {
-    backgroundColor: '#212529',
-    borderColor: '#212529',
-  },
-  optionText: {
+  switchSubtext: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
+    color: '#0369a1',
+    fontStyle: 'italic',
   },
-  optionTextSelected: {
-    color: '#ffffff',
-  },
+
+  // Amenities Grid
   amenitiesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -779,29 +829,44 @@ const styles = StyleSheet.create({
   amenityTextSelected: {
     color: '#ffffff',
   },
-  addButton: {
+
+  // Section Header for Slots
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  addSlotButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f9ff',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 22,
-    backgroundColor: '#f3f4f6',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#bae6fd',
   },
-  addButtonText: {
-    color: '#212529',
+  addSlotText: {
+    color: '#10b981',
     fontWeight: '600',
     marginLeft: 6,
     fontSize: 14,
   },
+
+  // Slot Cards
   slotCard: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   slotHeader: {
     flexDirection: 'row',
@@ -814,33 +879,213 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#212529',
   },
-  removeButton: {
+  removeSlotButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+  },
+  slotLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  slotInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#212529',
+    backgroundColor: '#ffffff',
+  },
+  slotSwitchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 16,
+  },
+
+  // Days Container
+  daysContainer: {
+    flexDirection: 'row',
+    gap: 8,
   },
   dayButton: {
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     backgroundColor: '#ffffff',
   },
   dayButtonSelected: {
-    backgroundColor: '#212529',
-    borderColor: '#212529',
+    backgroundColor: '#10b981',
+    borderColor: '#10b981',
   },
-  dayText: {
+  dayButtonText: {
     fontSize: 12,
     fontWeight: '500',
     color: '#6b7280',
   },
-  dayTextSelected: {
+  dayButtonTextSelected: {
     color: '#ffffff',
+  },
+
+  // Summary Cards (Step 3)
+  summaryCard: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0c4a6e',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0f2fe',
+  },
+  summaryLabel: {
+    fontSize: 14,
+    color: '#0369a1',
+    fontWeight: '500',
+    flex: 1,
+  },
+  summaryValue: {
+    fontSize: 14,
+    color: '#0c4a6e',
+    fontWeight: '600',
+    flex: 2,
+    textAlign: 'right',
+  },
+
+  // Amenities Summary
+  amenitiesSummary: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  amenitySummaryTag: {
+    backgroundColor: '#e0f2fe',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  amenitySummaryText: {
+    fontSize: 12,
+    color: '#0369a1',
+    fontWeight: '500',
+  },
+
+  // Slot Summary
+  slotSummary: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e0f2fe',
+  },
+  slotSummaryDay: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0c4a6e',
+    flex: 1,
+  },
+  slotSummaryTime: {
+    fontSize: 14,
+    color: '#0369a1',
+    flex: 2,
+    textAlign: 'center',
+  },
+  slotSummaryPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#10b981',
+    flex: 1,
+    textAlign: 'right',
+  },
+
+  // Action Info
+  actionInfo: {
+    backgroundColor: '#eff6ff',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  actionInfoContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  actionInfoTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e40af',
+    marginBottom: 8,
+  },
+  actionInfoText: {
+    fontSize: 14,
+    color: '#1e40af',
+    lineHeight: 20,
+  },
+
+  // Modal Footer
+  modalFooter: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: '#212529',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  fullWidthButton: {
+    marginLeft: 0,
   },
 });
