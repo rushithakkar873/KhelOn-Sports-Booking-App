@@ -5,9 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Switch,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Arena } from '../services/venueOwnerService';
+
+const { width } = Dimensions.get('window');
 
 interface ArenaCardProps {
   arena: Arena;
