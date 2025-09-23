@@ -221,41 +221,68 @@ export default function ArenaCard({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#e5e7eb',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
     position: 'relative',
   },
   inactiveContainer: {
-    opacity: 0.7,
-    backgroundColor: '#f9fafb',
+    opacity: 0.75,
+    backgroundColor: '#fafafa',
+    borderColor: '#d1d5db',
   },
+  
+  // Status Badge
+  statusBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    zIndex: 1,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 6,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+
+  // Header Section
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 20,
+    marginTop: 8,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    marginRight: 16,
   },
-  sportIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+  sportIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -264,115 +291,164 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   arenaName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#212529',
-    marginBottom: 2,
+    marginBottom: 6,
+    lineHeight: 22,
+  },
+  sportBadge: {
+    alignSelf: 'flex-start',
   },
   sportText: {
-    fontSize: 12,
-    color: '#6b7280',
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   headerRight: {
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
-  stats: {
+  switch: {
+    transform: [{ scale: 0.9 }],
+  },
+
+  // Metrics Container
+  metricsContainer: {
     flexDirection: 'row',
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
     justifyContent: 'space-between',
-    marginBottom: 12,
-    paddingVertical: 8,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
-    paddingHorizontal: 12,
   },
-  statItem: {
-    flexDirection: 'row',
+  metricItem: {
     alignItems: 'center',
     flex: 1,
   },
-  statText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 4,
+  metricIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
-  amenities: {
-    marginBottom: 12,
-  },
-  amenitiesTitle: {
-    fontSize: 12,
+  metricLabel: {
+    fontSize: 11,
+    color: '#6b7280',
     fontWeight: '500',
-    color: '#666',
-    marginBottom: 6,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  metricValue: {
+    fontSize: 14,
+    color: '#212529',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+
+  // Peak Hours Info
+  peakHoursInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignSelf: 'flex-start',
+  },
+  peakHoursText: {
+    fontSize: 12,
+    color: '#92400e',
+    fontWeight: '500',
+    marginLeft: 6,
+  },
+
+  // Amenities Section
+  amenitiesSection: {
+    marginBottom: 16,
+  },
+  amenitiesLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
   },
   amenitiesList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 4,
+    gap: 6,
   },
-  amenityTag: {
-    backgroundColor: '#E3F2FD',
-    borderRadius: 12,
-    paddingHorizontal: 8,
+  amenityChip: {
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 16,
+    paddingHorizontal: 10,
     paddingVertical: 4,
   },
   amenityText: {
     fontSize: 11,
-    color: '#1976D2',
+    color: '#0369a1',
+    fontWeight: '500',
   },
+
+  // Description
   description: {
-    fontSize: 13,
-    color: '#666',
-    lineHeight: 18,
-    marginBottom: 12,
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+    marginBottom: 20,
+    fontStyle: 'italic',
   },
-  actions: {
+
+  // Actions Container
+  actionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
+    gap: 12,
   },
-  actionButton: {
+  actionButtonSecondary: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
     borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
-  editButton: {
-    backgroundColor: '#E3F2FD',
-    borderColor: '#2196F3',
+  actionButtonSecondaryText: {
+    color: '#6b7280',
+    fontWeight: '600',
+    marginLeft: 6,
+    fontSize: 14,
   },
-  editButtonText: {
-    color: '#2196F3',
-    fontWeight: '500',
-    marginLeft: 4,
-    fontSize: 13,
+  actionButtonPrimary: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#212529',
+    shadowColor: '#212529',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  detailsButton: {
-    backgroundColor: '#E8F5E8',
-    borderColor: '#4CAF50',
-  },
-  detailsButtonText: {
-    color: '#4CAF50',
-    fontWeight: '500',
-    marginLeft: 4,
-    fontSize: 13,
-  },
-  statusIndicator: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  activeIndicator: {
-    backgroundColor: '#4CAF50',
-  },
-  inactiveIndicator: {
-    backgroundColor: '#FF5252',
+  actionButtonPrimaryText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    marginLeft: 6,
+    fontSize: 14,
   },
 });
