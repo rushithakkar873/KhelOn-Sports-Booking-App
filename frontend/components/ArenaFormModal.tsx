@@ -11,9 +11,14 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CreateArena, CreateVenueSlot } from '../services/venueOwnerService';
+
+const { width } = Dimensions.get('window');
 
 interface ArenaFormModalProps {
   isVisible: boolean;
@@ -23,6 +28,11 @@ interface ArenaFormModalProps {
   isEditing?: boolean;
 }
 
+interface ArenaFormData extends CreateArena {
+  currentStep: number;
+  isSubmitting: boolean;
+}
+
 export default function ArenaFormModal({
   isVisible,
   onClose,
@@ -30,7 +40,8 @@ export default function ArenaFormModal({
   arena,
   isEditing = false,
 }: ArenaFormModalProps) {
-  const [arenaForm, setArenaForm] = useState<CreateArena>({
+  const insets = useSafeAreaInsets();
+  const [arenaForm, setArenaForm] = useState<ArenaFormData>({
     name: '',
     sport: '',
     capacity: 1,
@@ -40,6 +51,8 @@ export default function ArenaFormModal({
     images: [],
     slots: [{ day_of_week: 0, start_time: '06:00', end_time: '08:00', capacity: 1, price_per_hour: 0, is_peak_hour: false }],
     is_active: true,
+    currentStep: 1,
+    isSubmitting: false,
   });
 
   const sportsOptions = ['Cricket', 'Football', 'Badminton', 'Tennis', 'Basketball', 'Volleyball', 'Hockey', 'Squash'];
