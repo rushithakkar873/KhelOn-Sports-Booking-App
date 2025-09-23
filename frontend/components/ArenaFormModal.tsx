@@ -566,241 +566,69 @@ export default function ArenaFormModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        
+        {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#6b7280" />
+          <TouchableOpacity onPress={onClose}>
+            <Text style={styles.headerCancel}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {isEditing ? 'Edit Arena' : 'Add New Arena'}
+            {isEditing ? 'Edit Arena' : 'New Arena'}
           </Text>
-          <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
+          <View style={styles.stepIndicator}>
+            <Text style={styles.stepText}>{arenaForm.currentStep}/3</Text>
+          </View>
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Basic Information */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Basic Information</Text>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Arena Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={arenaForm.name}
-                onChangeText={(text) => setArenaForm({ ...arenaForm, name: text })}
-                placeholder="e.g., Cricket Ground A, Football Field 1"
-                placeholderTextColor="#9ca3af"
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Sport *</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.optionsContainer}>
-                {sportsOptions.map((sport) => (
-                  <TouchableOpacity
-                    key={sport}
-                    style={[
-                      styles.optionButton,
-                      arenaForm.sport === sport && styles.optionButtonSelected,
-                    ]}
-                    onPress={() => setArenaForm({ ...arenaForm, sport })}
-                  >
-                    <Text
-                      style={[
-                        styles.optionText,
-                        arenaForm.sport === sport && styles.optionTextSelected,
-                      ]}
-                    >
-                      {sport}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-
-            <View style={styles.row}>
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>Capacity</Text>
-                <TextInput
-                  style={styles.input}
-                  value={arenaForm.capacity?.toString() || '1'}
-                  onChangeText={(text) => setArenaForm({ ...arenaForm, capacity: parseInt(text) || 1 })}
-                  placeholder="Number of courts/fields"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>Base Price/Hour *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={arenaForm.base_price_per_hour?.toString() || '0'}
-                  onChangeText={(text) => setArenaForm({ ...arenaForm, base_price_per_hour: parseFloat(text) || 0 })}
-                  placeholder="₹ per hour"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                />
-              </View>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Description</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={arenaForm.description || ''}
-                onChangeText={(text) => setArenaForm({ ...arenaForm, description: text })}
-                placeholder="Brief description of this arena"
-                placeholderTextColor="#9ca3af"
-                multiline
-                numberOfLines={3}
-              />
-            </View>
-
-            <View style={styles.switchRow}>
-              <Text style={styles.label}>Arena Active</Text>
-              <Switch
-                value={arenaForm.is_active}
-                onValueChange={(value) => setArenaForm({ ...arenaForm, is_active: value })}
-                trackColor={{ false: '#e5e7eb', true: '#212529' }}
-                thumbColor={arenaForm.is_active ? '#fff' : '#f4f3f4'}
-              />
-            </View>
+        {/* Progress Bar */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${(arenaForm.currentStep / 3) * 100}%` }]} />
           </View>
+        </View>
 
-          {/* Amenities */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Arena-Specific Amenities</Text>
-            <View style={styles.amenitiesGrid}>
-              {amenityOptions.map((amenity) => (
-                <TouchableOpacity
-                  key={amenity}
-                  style={[
-                    styles.amenityButton,
-                    arenaForm.amenities.includes(amenity) && styles.amenityButtonSelected,
-                  ]}
-                  onPress={() => toggleAmenity(amenity)}
-                >
-                  <Text
-                    style={[
-                      styles.amenityText,
-                      arenaForm.amenities.includes(amenity) && styles.amenityTextSelected,
-                    ]}
-                  >
-                    {amenity}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+        {/* Step Content */}
+        <KeyboardAvoidingView 
+          style={styles.content}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            {arenaForm.currentStep === 1 && renderStep1()}
+            {arenaForm.currentStep === 2 && renderStep2()}
+            {arenaForm.currentStep === 3 && renderStep3()}
+          </ScrollView>
+        </KeyboardAvoidingView>
 
-          {/* Time Slots */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Time Slots</Text>
-              <TouchableOpacity onPress={addTimeSlot} style={styles.addButton}>
-                <Ionicons name="add" size={20} color="#212529" />
-                <Text style={styles.addButtonText}>Add Slot</Text>
-              </TouchableOpacity>
-            </View>
-
-            {arenaForm.slots.map((slot, index) => (
-              <View key={index} style={styles.slotCard}>
-                <View style={styles.slotHeader}>
-                  <Text style={styles.slotTitle}>Slot {index + 1}</Text>
-                  {arenaForm.slots.length > 1 && (
-                    <TouchableOpacity
-                      onPress={() => removeTimeSlot(index)}
-                      style={styles.removeButton}
-                    >
-                      <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                <View style={styles.row}>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>Day of Week</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                      {daysOfWeek.map((day, dayIndex) => (
-                        <TouchableOpacity
-                          key={day}
-                          style={[
-                            styles.dayButton,
-                            slot.day_of_week === dayIndex && styles.dayButtonSelected,
-                          ]}
-                          onPress={() => updateTimeSlot(index, 'day_of_week', dayIndex)}
-                        >
-                          <Text
-                            style={[
-                              styles.dayText,
-                              slot.day_of_week === dayIndex && styles.dayTextSelected,
-                            ]}
-                          >
-                            {day.slice(0, 3)}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                </View>
-
-                <View style={styles.row}>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>Start Time</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={slot.start_time}
-                      onChangeText={(text) => updateTimeSlot(index, 'start_time', text)}
-                      placeholder="HH:MM"
-                      placeholderTextColor="#9ca3af"
-                    />
-                  </View>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>End Time</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={slot.end_time}
-                      onChangeText={(text) => updateTimeSlot(index, 'end_time', text)}
-                      placeholder="HH:MM"
-                      placeholderTextColor="#9ca3af"
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.row}>
-                  <View style={styles.halfWidth}>
-                    <Text style={styles.label}>Price/Hour</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={slot.price_per_hour?.toString() || '0'}
-                      onChangeText={(text) => updateTimeSlot(index, 'price_per_hour', parseFloat(text) || 0)}
-                      placeholder="₹ per hour"
-                      placeholderTextColor="#9ca3af"
-                      keyboardType="numeric"
-                    />
-                  </View>
-                  <View style={styles.halfWidth}>
-                    <View style={styles.switchRow}>
-                      <Text style={styles.label}>Peak Hour</Text>
-                      <Switch
-                        value={slot.is_peak_hour}
-                        onValueChange={(value) => updateTimeSlot(index, 'is_peak_hour', value)}
-                        trackColor={{ false: '#e5e7eb', true: '#f59e0b' }}
-                        thumbColor={slot.is_peak_hour ? '#fff' : '#f4f3f4'}
-                      />
-                    </View>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        {/* Navigation Footer */}
+        <View style={styles.modalFooter}>
+          {arenaForm.currentStep > 1 && (
+            <TouchableOpacity 
+              style={styles.secondaryButton} 
+              onPress={() => handleStepNavigation('back')}
+            >
+              <Text style={styles.secondaryButtonText}>Previous</Text>
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity 
+            style={[
+              styles.primaryButton, 
+              arenaForm.currentStep === 1 && styles.fullWidthButton
+            ]}
+            onPress={arenaForm.currentStep === 3 ? handleSave : () => handleStepNavigation('next')}
+            disabled={arenaForm.isSubmitting}
+          >
+            <Text style={styles.primaryButtonText}>
+              {arenaForm.currentStep === 3 
+                ? (arenaForm.isSubmitting ? 'Saving...' : 'Save Arena')
+                : 'Next'
+              }
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 }
