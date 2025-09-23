@@ -61,7 +61,11 @@ export default function ArenaFormModal({
 
   useEffect(() => {
     if (arena) {
-      setArenaForm(arena);
+      setArenaForm({
+        ...arena,
+        currentStep: 1,
+        isSubmitting: false,
+      });
     } else {
       // Reset form when creating new arena
       setArenaForm({
@@ -74,6 +78,8 @@ export default function ArenaFormModal({
         images: [],
         slots: [{ day_of_week: 0, start_time: '06:00', end_time: '08:00', capacity: 1, price_per_hour: 0, is_peak_hour: false }],
         is_active: true,
+        currentStep: 1,
+        isSubmitting: false,
       });
     }
   }, [arena, isVisible]);
