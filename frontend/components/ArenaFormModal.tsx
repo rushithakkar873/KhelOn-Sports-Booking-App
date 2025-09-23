@@ -523,6 +523,13 @@ export default function ArenaFormModal({
     </View>
   );
 
+  const toggleAmenity = (amenity: string) => {
+    const newAmenities = arenaForm.amenities.includes(amenity)
+      ? arenaForm.amenities.filter(a => a !== amenity)
+      : [...arenaForm.amenities, amenity];
+    setArenaForm({ ...arenaForm, amenities: newAmenities });
+  };
+
   const addTimeSlot = () => {
     const newSlot: CreateVenueSlot = {
       day_of_week: 0,
