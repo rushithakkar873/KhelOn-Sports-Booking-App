@@ -187,12 +187,341 @@ export default function ArenaFormModal({
     });
   };
 
-  const toggleAmenity = (amenity: string) => {
-    const newAmenities = arenaForm.amenities.includes(amenity)
-      ? arenaForm.amenities.filter(a => a !== amenity)
-      : [...arenaForm.amenities, amenity];
-    setArenaForm({ ...arenaForm, amenities: newAmenities });
-  };
+  const renderStep1 = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Basic Information</Text>
+      <Text style={styles.stepSubtitle}>Set up your arena's basic details and pricing</Text>
+
+      {/* Arena Name */}
+      <View style={styles.formGroup}>
+        <Text style={styles.formLabel}>Arena Name *</Text>
+        <TextInput
+          style={styles.formInput}
+          value={arenaForm.name}
+          onChangeText={(text) => setArenaForm({ ...arenaForm, name: text })}
+          placeholder="e.g., Cricket Ground A, Football Field 1"
+          placeholderTextColor="#9ca3af"
+        />
+      </View>
+
+      {/* Sport Selection */}
+      <View style={styles.formGroup}>
+        <Text style={styles.formLabel}>Sport *</Text>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.sportsScrollView}
+          contentContainerStyle={styles.sportsContainer}
+        >
+          {sportsOptions.map((sport) => (
+            <TouchableOpacity
+              key={sport}
+              style={[
+                styles.sportChip,
+                arenaForm.sport === sport && styles.sportChipSelected,
+              ]}
+              onPress={() => setArenaForm({ ...arenaForm, sport })}
+            >
+              <Text
+                style={[
+                  styles.sportChipText,
+                  arenaForm.sport === sport && styles.sportChipTextSelected,
+                ]}
+              >
+                {sport}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Capacity and Price Row */}
+      <View style={styles.row}>
+        <View style={styles.halfWidth}>
+          <Text style={styles.formLabel}>Capacity</Text>
+          <TextInput
+            style={styles.formInput}
+            value={arenaForm.capacity?.toString() || '1'}
+            onChangeText={(text) => setArenaForm({ ...arenaForm, capacity: parseInt(text) || 1 })}
+            placeholder="Number of courts"
+            placeholderTextColor="#9ca3af"
+            keyboardType="numeric"
+          />
+        </View>
+        <View style={styles.halfWidth}>
+          <Text style={styles.formLabel}>Base Price/Hour *</Text>
+          <TextInput
+            style={styles.formInput}
+            value={arenaForm.base_price_per_hour?.toString() || '0'}
+            onChangeText={(text) => setArenaForm({ ...arenaForm, base_price_per_hour: parseFloat(text) || 0 })}
+            placeholder="₹ per hour"
+            placeholderTextColor="#9ca3af"
+            keyboardType="numeric"
+          />
+        </View>
+      </View>
+
+      {/* Description */}
+      <View style={styles.formGroup}>
+        <Text style={styles.formLabel}>Description</Text>
+        <TextInput
+          style={[styles.formInput, styles.textArea]}
+          value={arenaForm.description || ''}
+          onChangeText={(text) => setArenaForm({ ...arenaForm, description: text })}
+          placeholder="Brief description of this arena"
+          placeholderTextColor="#9ca3af"
+          multiline
+          numberOfLines={3}
+        />
+      </View>
+
+      {/* Active Status */}
+      <View style={styles.switchContainer}>
+        <View style={styles.switchRow}>
+          <Text style={styles.switchLabel}>Arena Active</Text>
+          <Switch
+            value={arenaForm.is_active}
+            onValueChange={(value) => setArenaForm({ ...arenaForm, is_active: value })}
+            trackColor={{ false: '#e5e7eb', true: '#10b981' }}
+            thumbColor={arenaForm.is_active ? '#fff' : '#f4f3f4'}
+          />
+        </View>
+        <Text style={styles.switchSubtext}>
+          {arenaForm.is_active ? 'Arena is available for booking' : 'Arena is temporarily unavailable'}
+        </Text>
+      </View>
+    </View>
+  );
+
+  const renderStep2 = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Amenities & Time Slots</Text>
+      <Text style={styles.stepSubtitle}>Configure arena amenities and available time slots</Text>
+
+      {/* Amenities */}
+      <View style={styles.formGroup}>
+        <Text style={styles.formLabel}>Arena-Specific Amenities</Text>
+        <View style={styles.amenitiesGrid}>
+          {amenityOptions.map((amenity) => (
+            <TouchableOpacity
+              key={amenity}
+              style={[
+                styles.amenityButton,
+                arenaForm.amenities.includes(amenity) && styles.amenityButtonSelected,
+              ]}
+              onPress={() => toggleAmenity(amenity)}
+            >
+              <Text
+                style={[
+                  styles.amenityText,
+                  arenaForm.amenities.includes(amenity) && styles.amenityTextSelected,
+                ]}
+              >
+                {amenity}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Time Slots */}
+      <View style={styles.formGroup}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.formLabel}>Time Slots</Text>
+          <TouchableOpacity onPress={addTimeSlot} style={styles.addSlotButton}>
+            <Ionicons name="add" size={20} color="#10b981" />
+            <Text style={styles.addSlotText}>Add Slot</Text>
+          </TouchableOpacity>
+        </View>
+
+        {arenaForm.slots.map((slot, index) => (
+          <View key={index} style={styles.slotCard}>
+            <View style={styles.slotHeader}>
+              <Text style={styles.slotTitle}>Slot {index + 1}</Text>
+              {arenaForm.slots.length > 1 && (
+                <TouchableOpacity
+                  onPress={() => removeTimeSlot(index)}
+                  style={styles.removeSlotButton}
+                >
+                  <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Day Selection */}
+            <View style={styles.formGroup}>
+              <Text style={styles.slotLabel}>Day of Week</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.daysContainer}>
+                  {daysOfWeek.map((day, dayIndex) => (
+                    <TouchableOpacity
+                      key={day}
+                      style={[
+                        styles.dayButton,
+                        slot.day_of_week === dayIndex && styles.dayButtonSelected,
+                      ]}
+                      onPress={() => updateTimeSlot(index, 'day_of_week', dayIndex)}
+                    >
+                      <Text
+                        style={[
+                          styles.dayButtonText,
+                          slot.day_of_week === dayIndex && styles.dayButtonTextSelected,
+                        ]}
+                      >
+                        {day.slice(0, 3)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+
+            {/* Time and Price */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.slotLabel}>Start Time</Text>
+                <TextInput
+                  style={styles.slotInput}
+                  value={slot.start_time}
+                  onChangeText={(text) => updateTimeSlot(index, 'start_time', text)}
+                  placeholder="HH:MM"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.slotLabel}>End Time</Text>
+                <TextInput
+                  style={styles.slotInput}
+                  value={slot.end_time}
+                  onChangeText={(text) => updateTimeSlot(index, 'end_time', text)}
+                  placeholder="HH:MM"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.slotLabel}>Price/Hour</Text>
+                <TextInput
+                  style={styles.slotInput}
+                  value={slot.price_per_hour?.toString() || '0'}
+                  onChangeText={(text) => updateTimeSlot(index, 'price_per_hour', parseFloat(text) || 0)}
+                  placeholder="₹ per hour"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.halfWidth}>
+                <View style={styles.slotSwitchRow}>
+                  <Text style={styles.slotLabel}>Peak Hour</Text>
+                  <Switch
+                    value={slot.is_peak_hour}
+                    onValueChange={(value) => updateTimeSlot(index, 'is_peak_hour', value)}
+                    trackColor={{ false: '#e5e7eb', true: '#f59e0b' }}
+                    thumbColor={slot.is_peak_hour ? '#fff' : '#f4f3f4'}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+
+  const renderStep3 = () => (
+    <View style={styles.stepContent}>
+      <Text style={styles.stepTitle}>Review & Confirm</Text>
+      <Text style={styles.stepSubtitle}>Review your arena details before saving</Text>
+
+      {/* Arena Summary */}
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryTitle}>Arena Summary</Text>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Name:</Text>
+          <Text style={styles.summaryValue}>{arenaForm.name}</Text>
+        </View>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Sport:</Text>
+          <Text style={styles.summaryValue}>{arenaForm.sport}</Text>
+        </View>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Capacity:</Text>
+          <Text style={styles.summaryValue}>{arenaForm.capacity} courts/fields</Text>
+        </View>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Base Price:</Text>
+          <Text style={styles.summaryValue}>₹{arenaForm.base_price_per_hour}/hour</Text>
+        </View>
+        
+        {arenaForm.description && (
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Description:</Text>
+            <Text style={styles.summaryValue}>{arenaForm.description}</Text>
+          </View>
+        )}
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Status:</Text>
+          <Text style={[
+            styles.summaryValue,
+            { color: arenaForm.is_active ? '#10b981' : '#ef4444' }
+          ]}>
+            {arenaForm.is_active ? 'Active' : 'Inactive'}
+          </Text>
+        </View>
+      </View>
+
+      {/* Amenities Summary */}
+      {arenaForm.amenities.length > 0 && (
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Amenities</Text>
+          <View style={styles.amenitiesSummary}>
+            {arenaForm.amenities.map((amenity, index) => (
+              <View key={index} style={styles.amenitySummaryTag}>
+                <Text style={styles.amenitySummaryText}>{amenity}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* Time Slots Summary */}
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryTitle}>Time Slots ({arenaForm.slots.length})</Text>
+        {arenaForm.slots.map((slot, index) => (
+          <View key={index} style={styles.slotSummary}>
+            <Text style={styles.slotSummaryDay}>
+              {daysOfWeek[slot.day_of_week]}
+            </Text>
+            <Text style={styles.slotSummaryTime}>
+              {slot.start_time} - {slot.end_time}
+            </Text>
+            <Text style={styles.slotSummaryPrice}>
+              ₹{slot.price_per_hour}/hr
+              {slot.is_peak_hour && ' (Peak)'}
+            </Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Action Info */}
+      <View style={styles.actionInfo}>
+        <Ionicons name="information-circle" size={24} color="#3b82f6" />
+        <View style={styles.actionInfoContent}>
+          <Text style={styles.actionInfoTitle}>Ready to save?</Text>
+          <Text style={styles.actionInfoText}>
+            Your arena will be {arenaForm.is_active ? 'immediately available for bookings' : 'saved as inactive and can be activated later'}.
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
 
   const addTimeSlot = () => {
     const newSlot: CreateVenueSlot = {
