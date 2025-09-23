@@ -47,71 +47,142 @@ export default function ArenaCard({
     return sportIcons[sport] || 'ellipse-outline';
   };
 
+  const getSportColor = (sport: string) => {
+    const sportColors: { [key: string]: string } = {
+      'Cricket': '#10b981',
+      'Football': '#3b82f6',
+      'Badminton': '#f59e0b',
+      'Tennis': '#ef4444',
+      'Basketball': '#8b5cf6',
+      'Volleyball': '#f97316',
+      'Hockey': '#06b6d4',
+      'Squash': '#84cc16',
+    };
+    return sportColors[sport] || '#6b7280';
+  };
+
   const getSlotCount = () => {
     return arena.slots?.length || 0;
   };
 
   const getActiveSlotCount = () => {
-    return arena.slots?.filter(slot => slot.is_active)?.length || 0;
+    return arena.slots?.filter(slot => slot.is_active !== false)?.length || 0;
+  };
+
+  const getPeakSlotsCount = () => {
+    return arena.slots?.filter(slot => slot.is_peak_hour)?.length || 0;
   };
 
   return (
-    <View style={[styles.container, !arena.is_active && styles.inactiveContainer]}>
-      {/* Header */}
+    <View style={[
+      styles.container, 
+      !arena.is_active && styles.inactiveContainer
+    ]}>
+      {/* Status Indicator */}
+      <View style={[
+        styles.statusBadge, 
+        { backgroundColor: arena.is_active ? '#dcfce7' : '#fee2e2' }
+      ]}>
+        <View style={[
+          styles.statusDot,
+          { backgroundColor: arena.is_active ? '#16a34a' : '#dc2626' }
+        ]} />
+        <Text style={[
+          styles.statusText,
+          { color: arena.is_active ? '#166534' : '#991b1b' }
+        ]}>
+          {arena.is_active ? 'Active' : 'Inactive'}
+        </Text>
+      </View>
+
+      {/* Header Section */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={styles.sportIcon}>
-            <Ionicons name={getSportIcon(arena.sport) as any} size={20} color="#4CAF50" />
+          <View style={[
+            styles.sportIconContainer,
+            { backgroundColor: `${getSportColor(arena.sport)}15` }
+          ]}>
+            <Ionicons 
+              name={getSportIcon(arena.sport) as any} 
+              size={24} 
+              color={getSportColor(arena.sport)} 
+            />
           </View>
           <View style={styles.headerInfo}>
             <Text style={styles.arenaName} numberOfLines={1}>
               {arena.name}
             </Text>
-            <Text style={styles.sportText}>{arena.sport}</Text>
+            <View style={styles.sportBadge}>
+              <Text style={[styles.sportText, { color: getSportColor(arena.sport) }]}>
+                {arena.sport}
+              </Text>
+            </View>
           </View>
         </View>
         <View style={styles.headerRight}>
           <Switch
             value={arena.is_active}
             onValueChange={(value) => onToggleStatus(arena.id, value)}
-            trackColor={{ false: '#E5E5E5', true: '#4CAF50' }}
-            thumbColor={arena.is_active ? '#fff' : '#f4f3f4'}
-            ios_backgroundColor="#E5E5E5"
+            trackColor={{ false: '#f1f5f9', true: '#dcfce7' }}
+            thumbColor={arena.is_active ? '#16a34a' : '#94a3b8'}
+            ios_backgroundColor="#f1f5f9"
+            style={styles.switch}
           />
         </View>
       </View>
 
-      {/* Stats */}
-      <View style={styles.stats}>
-        <View style={styles.statItem}>
-          <Ionicons name="people-outline" size={16} color="#666" />
-          <Text style={styles.statText}>Capacity: {arena.capacity}</Text>
+      {/* Key Metrics */}
+      <View style={styles.metricsContainer}>
+        <View style={styles.metricItem}>
+          <View style={[styles.metricIcon, { backgroundColor: '#dbeafe' }]}>
+            <Ionicons name="people-outline" size={16} color="#2563eb" />
+          </View>
+          <Text style={styles.metricLabel}>Capacity</Text>
+          <Text style={styles.metricValue}>{arena.capacity}</Text>
         </View>
-        <View style={styles.statItem}>
-          <Ionicons name="time-outline" size={16} color="#666" />
-          <Text style={styles.statText}>
-            {getActiveSlotCount()}/{getSlotCount()} slots
+        
+        <View style={styles.metricItem}>
+          <View style={[styles.metricIcon, { backgroundColor: '#fef3c7' }]}>
+            <Ionicons name="time-outline" size={16} color="#d97706" />
+          </View>
+          <Text style={styles.metricLabel}>Time Slots</Text>
+          <Text style={styles.metricValue}>
+            {getActiveSlotCount()}/{getSlotCount()}
           </Text>
         </View>
-        <View style={styles.statItem}>
-          <Ionicons name="pricetag-outline" size={16} color="#666" />
-          <Text style={styles.statText}>{formatCurrency(arena.base_price_per_hour)}/hr</Text>
+        
+        <View style={styles.metricItem}>
+          <View style={[styles.metricIcon, { backgroundColor: '#dcfce7' }]}>
+            <Ionicons name="pricetag-outline" size={16} color="#16a34a" />
+          </View>
+          <Text style={styles.metricLabel}>Base Price</Text>
+          <Text style={styles.metricValue}>{formatCurrency(arena.base_price_per_hour)}</Text>
         </View>
       </View>
 
-      {/* Amenities */}
+      {/* Additional Info */}
+      {getPeakSlotsCount() > 0 && (
+        <View style={styles.peakHoursInfo}>
+          <Ionicons name="trending-up" size={16} color="#f59e0b" />
+          <Text style={styles.peakHoursText}>
+            {getPeakSlotsCount()} peak hour slot{getPeakSlotsCount() > 1 ? 's' : ''}
+          </Text>
+        </View>
+      )}
+
+      {/* Amenities Preview */}
       {arena.amenities && arena.amenities.length > 0 && (
-        <View style={styles.amenities}>
-          <Text style={styles.amenitiesTitle}>Amenities:</Text>
+        <View style={styles.amenitiesSection}>
+          <Text style={styles.amenitiesLabel}>Amenities:</Text>
           <View style={styles.amenitiesList}>
-            {arena.amenities.slice(0, 3).map((amenity, index) => (
-              <View key={index} style={styles.amenityTag}>
+            {arena.amenities.slice(0, 4).map((amenity, index) => (
+              <View key={index} style={styles.amenityChip}>
                 <Text style={styles.amenityText}>{amenity}</Text>
               </View>
             ))}
-            {arena.amenities.length > 3 && (
-              <View style={styles.amenityTag}>
-                <Text style={styles.amenityText}>+{arena.amenities.length - 3}</Text>
+            {arena.amenities.length > 4 && (
+              <View style={styles.amenityChip}>
+                <Text style={styles.amenityText}>+{arena.amenities.length - 4}</Text>
               </View>
             )}
           </View>
@@ -126,26 +197,23 @@ export default function ArenaCard({
       )}
 
       {/* Action Buttons */}
-      <View style={styles.actions}>
+      <View style={styles.actionsContainer}>
         <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => onEdit(arena)}
+          style={styles.actionButtonSecondary}
+          onPress={() => onViewDetails(arena)}
         >
-          <Ionicons name="create-outline" size={16} color="#2196F3" />
-          <Text style={styles.editButtonText}>Edit</Text>
+          <Ionicons name="information-circle-outline" size={18} color="#6b7280" />
+          <Text style={styles.actionButtonSecondaryText}>Details</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={[styles.actionButton, styles.detailsButton]}
-          onPress={() => onViewDetails(arena)}
+          style={styles.actionButtonPrimary}
+          onPress={() => onEdit(arena)}
         >
-          <Ionicons name="information-circle-outline" size={16} color="#4CAF50" />
-          <Text style={styles.detailsButtonText}>Details</Text>
+          <Ionicons name="create-outline" size={18} color="#ffffff" />
+          <Text style={styles.actionButtonPrimaryText}>Edit Arena</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Status Indicator */}
-      <View style={[styles.statusIndicator, arena.is_active ? styles.activeIndicator : styles.inactiveIndicator]} />
     </View>
   );
 }
