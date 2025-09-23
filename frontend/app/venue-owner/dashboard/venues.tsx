@@ -11,6 +11,7 @@ import {
   Alert,
   StatusBar,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,8 @@ import VenueOwnerService, { Venue, Arena } from '../../../services/venueOwnerSer
 import AuthService from '../../../services/authService';
 import ArenaFormModal from '../../../components/ArenaFormModal';
 import ArenaCard from '../../../components/ArenaCard';
+
+const { width } = Dimensions.get('window');
 
 export default function MyVenueScreen() {
   const [venue, setVenue] = useState<Venue | null>(null);
