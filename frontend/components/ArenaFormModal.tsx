@@ -84,40 +84,107 @@ export default function ArenaFormModal({
     }
   }, [arena, isVisible]);
 
-  const handleSave = () => {
-    // Validation
-    if (!arenaForm.name.trim()) {
-      Alert.alert('Error', 'Arena name is required');
-      return;
+  const validateCurrentStep = (): boolean => {
+    switch (arenaForm.currentStep) {
+      case 1:
+        if (!arenaForm.name.trim()) {
+          Alert.alert('Required Field', 'Arena name is required');
+          return false;
+        }
+        if (!arenaForm.sport) {
+          Alert.alert('Required Field', 'Please select a sport');
+          return false;
+        }
+        if (arenaForm.base_price_per_hour <= 0) {
+          Alert.alert('Invalid Price', 'Base price must be greater than 0');
+          return false;
+        }
+        return true;
+      case 2:
+        // Amenities step - no required fields, but validate slots if any
+        if (arenaForm.slots.length === 0) {
+          Alert.alert('Required', 'At least one time slot is required');
+          return false;
+        }
+        // Validate time slots
+        for (const slot of arenaForm.slots) {
+          if (!slot.start_time || !slot.end_time) {
+            Alert.alert('Invalid Time', 'All time slots must have start and end times');
+            return false;
+          }
+          if (slot.price_per_hour <= 0) {
+            Alert.alert('Invalid Price', 'All time slots must have valid pricing');
+            return false;
+          }
+        }
+        return true;
+      case 3:
+        // Review step - all validation done in previous steps
+        return true;
+      default:
+        return false;
     }
-    if (!arenaForm.sport) {
-      Alert.alert('Error', 'Please select a sport');
-      return;
-    }
-    if (arenaForm.base_price_per_hour <= 0) {
-      Alert.alert('Error', 'Base price must be greater than 0');
-      return;
-    }
-    if (arenaForm.slots.length === 0) {
-      Alert.alert('Error', 'At least one time slot is required');
-      return;
-    }
+  };
 
-    // Validate time slots
-    for (const slot of arenaForm.slots) {
-      if (!slot.start_time || !slot.end_time) {
-        Alert.alert('Error', 'All time slots must have start and end times');
-        return;
+  const handleStepNavigation = (direction: 'next' | 'back') => {
+    if (direction === 'next') {
+      if (validateCurrentStep()) {
+        setArenaForm(prev => ({
+          ...prev,
+          currentStep: Math.min(prev.currentStep + 1, 3),
+        }));
       }
-      if (slot.price_per_hour <= 0) {
-        Alert.alert('Error', 'All time slots must have valid pricing');
-        return;
-      }
+    } else {
+      setArenaForm(prev => ({
+        ...prev,
+        currentStep: Math.max(prev.currentStep - 1, 1),
+      }));
     }
+  };
 
-    console.log('Arena form saving:', arenaForm);
-    onSave(arenaForm);
-    onClose();
+  const handleSave = async () => {
+    if (!validateCurrentStep()) return;
+
+    setArenaForm(prev => ({ ...prev, isSubmitting: true }));
+
+    try {
+      const arenaData: CreateArena = {
+        name: arenaForm.name,
+        sport: arenaForm.sport,
+        capacity: arenaForm.capacity,
+        description: arenaForm.description,
+        amenities: arenaForm.amenities,
+        base_price_per_hour: arenaForm.base_price_per_hour,
+        images: arenaForm.images,
+        slots: arenaForm.slots,
+        is_active: arenaForm.is_active,
+      };
+
+      console.log('Arena form saving:', arenaData);
+      onSave(arenaData);
+      onClose();
+    } catch (error) {
+      console.error('Error saving arena:', error);
+      Alert.alert('Error', 'Failed to save arena. Please try again.');
+    } finally {
+      setArenaForm(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  const resetArenaData = () => {
+    setArenaForm({
+      name: '',
+      sport: '',
+      capacity: 1,
+      description: '',
+      amenities: [],
+      base_price_per_hour: 0,
+      images: [],
+      slots: [{ day_of_week: 0, start_time: '06:00', end_time: '08:00', capacity: 1, price_per_hour: 0, is_peak_hour: false }],
+      is_active: true,
+      currentStep: 1,
+      isSubmitting: false,
+    });
   };
 
   const toggleAmenity = (amenity: string) => {
