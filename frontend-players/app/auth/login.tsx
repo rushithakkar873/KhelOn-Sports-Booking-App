@@ -156,52 +156,6 @@ export default function LoginScreen() {
             {/* Login Form */}
             <View style={styles.formContainer}>
               <View style={styles.form}>
-                {/* Role Selection */}
-                <View style={styles.roleSelection}>
-                  <Text style={styles.roleTitle}>I am a:</Text>
-                  <View style={styles.roleButtons}>
-                    <TouchableOpacity
-                      style={[
-                        styles.roleButton,
-                        userRole === 'player' && styles.roleButtonActive
-                      ]}
-                      onPress={() => setUserRole('player')}
-                    >
-                      <Ionicons 
-                        name="person-outline" 
-                        size={16} 
-                        color={userRole === 'player' ? '#ffffff' : '#6b7280'} 
-                      />
-                      <Text style={[
-                        styles.roleButtonText,
-                        userRole === 'player' && styles.roleButtonTextActive
-                      ]}>
-                        Player
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[
-                        styles.roleButton,
-                        userRole === 'venue_owner' && styles.roleButtonActive
-                      ]}
-                      onPress={() => setUserRole('venue_owner')}
-                    >
-                      <Ionicons 
-                        name="business-outline" 
-                        size={16} 
-                        color={userRole === 'venue_owner' ? '#ffffff' : '#6b7280'} 
-                      />
-                      <Text style={[
-                        styles.roleButtonText,
-                        userRole === 'venue_owner' && styles.roleButtonTextActive
-                      ]}>
-                        Venue Owner
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
                 {!otpSent ? (
                   <>
                     <View style={styles.inputGroup}>
