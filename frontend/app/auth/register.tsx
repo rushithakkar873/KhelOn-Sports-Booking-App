@@ -217,8 +217,8 @@ export default function RegisterScreen() {
           <View style={styles.logo}>
             <Ionicons name="tennisball" size={48} color="#000000" />
           </View>
-          <Text style={styles.title}>Join Playon</Text>
-          <Text style={styles.subtitle}>Create your account to get started</Text>
+          <Text style={styles.title}>Join KhelON Venue Partner</Text>
+          <Text style={styles.subtitle}>Create your venue partner account</Text>
         </View>
 
         {/* Role Selection */}
