@@ -308,7 +308,7 @@ export default function VenueOwnerDashboard() {
             <View style={styles.bookingsCard}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Recent Bookings</Text>
-                <TouchableOpacity onPress={() => router.push('/venue-owner/dashboard/bookings')}>
+                <TouchableOpacity onPress={() => router.push('/venue-partner/dashboard/bookings')}>
                   <Text style={styles.sectionLink}>View All</Text>
                 </TouchableOpacity>
               </View>
