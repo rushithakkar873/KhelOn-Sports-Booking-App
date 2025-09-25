@@ -88,21 +88,15 @@ export default function LoginScreen() {
       const result = await authService.login(mobile, otp);
       
       if (result.success && result.user) {
-        // Check if user role matches selected role
-        if (result.user.role !== userRole) {
-          const roleText = result.user.role === 'venue_owner' ? 'venue owner' : 'player';
-          const selectedRoleText = userRole === 'venue_owner' ? 'venue owner' : 'player';
-          Alert.alert('Error', `This mobile number is registered as a ${roleText}. Please select the correct role or register as a ${selectedRoleText}.`);
+        // Check if user role is venue_owner
+        if (result.user.role !== 'venue_owner') {
+          Alert.alert('Error', 'This app is for venue partners only. Please download KhelON Player app if you are a player.');
           return;
         }
         
-        // Navigate based on user role
-        const destination = result.user.role === 'venue_owner' 
-          ? '/venue-owner/dashboard'
-          : '/main/home';
-        
+        // Navigate to venue partner dashboard
         Alert.alert('Success', 'Login successful!', [
-          { text: 'OK', onPress: () => router.replace(destination) }
+          { text: 'OK', onPress: () => router.replace('/venue-partner/dashboard') }
         ]);
       } else {
         Alert.alert('Error', result.message);
