@@ -20,20 +20,6 @@ export default function RegisterScreen() {
     email: '',
     mobile: '',
     role: 'player' as 'player',
-    businessName: '',
-    businessAddress: '',
-    gstNumber: '',
-    // Venue details for venue owners
-    venueName: '',
-    venueAddress: '',
-    venueCity: 'Mumbai',
-    venueState: 'Maharashtra',
-    venuePincode: '',
-    venueDescription: '',
-    venueAmenities: [] as string[],
-    basePricePerHour: '',
-    contactPhone: '',
-    whatsappNumber: '',
   });
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,8 +29,6 @@ export default function RegisterScreen() {
   
   const router = useRouter();
   const authService = AuthService.getInstance();
-
-  const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen', 'WiFi', 'First Aid'];
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -61,35 +45,11 @@ export default function RegisterScreen() {
   };
 
   const validateForm = () => {
-    const { name, mobile, role, businessName, venueName, venueAddress, venuePincode, basePricePerHour } = formData;
+    const { name, mobile } = formData;
 
     if (!name || !mobile) {
       Alert.alert('Error', 'Please fill in all required fields');
       return false;
-    }
-
-    // Additional validation for venue owners
-    if (role === 'venue_owner') {
-      if (!businessName) {
-        Alert.alert('Error', 'Business name is required for venue owners');
-        return false;
-      }
-      if (!venueName) {
-        Alert.alert('Error', 'Venue name is required');
-        return false;
-      }
-      if (!venueAddress) {
-        Alert.alert('Error', 'Venue address is required');
-        return false;
-      }
-      if (!venuePincode) {
-        Alert.alert('Error', 'Venue pincode is required');
-        return false;
-      }
-      if (!basePricePerHour || parseFloat(basePricePerHour) <= 0) {
-        Alert.alert('Error', 'Valid base price per hour is required');
-        return false;
-      }
     }
 
     const formattedMobile = AuthService.formatIndianMobile(mobile);
@@ -151,38 +111,16 @@ export default function RegisterScreen() {
         name: formData.name.trim(),
         email: formData.email.toLowerCase().trim() || undefined,
         role: formData.role,
-        
-        // Venue Owner fields
-        ...(formData.role === 'venue_owner' && {
-          business_name: formData.businessName.trim(),
-          business_address: formData.businessAddress.trim() || undefined,
-          gst_number: formData.gstNumber.trim() || undefined,
-          // Venue details
-          venue_name: formData.venueName.trim(),
-          venue_address: formData.venueAddress.trim(),
-          venue_city: formData.venueCity.trim(),
-          venue_state: formData.venueState.trim(),
-          venue_pincode: formData.venuePincode.trim(),
-          venue_description: formData.venueDescription.trim() || undefined,
-          venue_amenities: formData.venueAmenities,
-          base_price_per_hour: parseFloat(formData.basePricePerHour),
-          contact_phone: formData.contactPhone.trim() || formData.mobile,
-          whatsapp_number: formData.whatsappNumber.trim() || undefined,
-        })
       };
 
       const result = await authService.register(registerData);
 
       if (result.success) {
-        // Navigate based on user role
-        const destination = result.user?.role === 'venue_owner' 
-          ? '/venue-owner/dashboard'
-          : '/main/home';
-        
+        // Navigate to player home
         Alert.alert(
           'Success', 
-          'Registration successful! Welcome to Playon.',
-          [{ text: 'OK', onPress: () => router.replace(destination) }]
+          'Registration successful! Welcome to KhelON Player.',
+          [{ text: 'OK', onPress: () => router.replace('/main/home') }]
         );
       } else {
         Alert.alert('Error', result.message);
@@ -201,13 +139,6 @@ export default function RegisterScreen() {
     await handleSendOTP();
   };
 
-  const toggleFacility = (facility: string) => {
-    const newFacilities = formData.venueAmenities.includes(facility)
-      ? formData.venueAmenities.filter(f => f !== facility)
-      : [...formData.venueAmenities, facility];
-    setFormData({ ...formData, venueAmenities: newFacilities });
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
@@ -217,54 +148,8 @@ export default function RegisterScreen() {
           <View style={styles.logo}>
             <Ionicons name="tennisball" size={48} color="#000000" />
           </View>
-          <Text style={styles.title}>Join Playon</Text>
+          <Text style={styles.title}>Join KhelON Player</Text>
           <Text style={styles.subtitle}>Create your account to get started</Text>
-        </View>
-
-        {/* Role Selection */}
-        <View style={styles.roleSelection}>
-          <Text style={styles.roleTitle}>I want to:</Text>
-          <View style={styles.roleButtons}>
-            <TouchableOpacity
-              style={[
-                styles.roleButton,
-                formData.role === 'player' && styles.roleButtonActive
-              ]}
-              onPress={() => updateField('role', 'player')}
-            >
-              <Ionicons 
-                name="person-outline" 
-                size={20} 
-                color={formData.role === 'player' ? '#ffffff' : '#6b7280'} 
-              />
-              <Text style={[
-                styles.roleButtonText,
-                formData.role === 'player' && styles.roleButtonTextActive
-              ]}>
-                Play Sports
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.roleButton,
-                formData.role === 'venue_owner' && styles.roleButtonActive
-              ]}
-              onPress={() => updateField('role', 'venue_owner')}
-            >
-              <Ionicons 
-                name="business-outline" 
-                size={20} 
-                color={formData.role === 'venue_owner' ? '#ffffff' : '#6b7280'} 
-              />
-              <Text style={[
-                styles.roleButtonText,
-                formData.role === 'venue_owner' && styles.roleButtonTextActive
-              ]}>
-                Manage Venues
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* Registration Form */}
@@ -279,6 +164,7 @@ export default function RegisterScreen() {
                 value={formData.name}
                 onChangeText={(value) => updateField('name', value)}
                 autoComplete="name"
+                editable={!otpSent}
               />
             </View>
           </View>
@@ -353,222 +239,6 @@ export default function RegisterScreen() {
             </View>
           )}
 
-          {/* Business Information - Only show for venue owners */}
-          {formData.role === 'venue_owner' && (
-            <>
-              <View style={styles.sectionDivider}>
-                <Text style={styles.sectionTitle}>Business Information</Text>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Business Name</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons name="storefront-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter business name (required for venue owners)"
-                    value={formData.businessName}
-                    onChangeText={(value) => updateField('businessName', value)}
-                    editable={!otpSent}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Business Address</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons name="location-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter business address (optional)"
-                    value={formData.businessAddress}
-                    onChangeText={(value) => updateField('businessAddress', value)}
-                    multiline
-                    numberOfLines={2}
-                    editable={!otpSent}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>GST Number</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons name="document-text-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter GST number (optional)"
-                    value={formData.gstNumber}
-                    onChangeText={(value) => updateField('gstNumber', value)}
-                    autoCapitalize="characters"
-                    editable={!otpSent}
-                  />
-                </View>
-              </View>
-
-              {/* Venue Information Section */}
-              <View style={styles.sectionDivider}>
-                <Text style={styles.sectionTitle}>Venue Information</Text>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Venue Name *</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons name="business-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter venue name"
-                    value={formData.venueName}
-                    onChangeText={(value) => updateField('venueName', value)}
-                    editable={!otpSent}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Venue Address *</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons name="location-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter complete venue address"
-                    value={formData.venueAddress}
-                    onChangeText={(value) => updateField('venueAddress', value)}
-                    multiline
-                    numberOfLines={2}
-                    editable={!otpSent}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.row}>
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>City</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="City"
-                      value={formData.venueCity}
-                      onChangeText={(value) => updateField('venueCity', value)}
-                      editable={!otpSent}
-                    />
-                  </View>
-                </View>
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>State</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="State"
-                      value={formData.venueState}
-                      onChangeText={(value) => updateField('venueState', value)}
-                      editable={!otpSent}
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.row}>
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>Pincode *</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Pincode"
-                      value={formData.venuePincode}
-                      onChangeText={(value) => updateField('venuePincode', value)}
-                      keyboardType="numeric"
-                      editable={!otpSent}
-                    />
-                  </View>
-                </View>
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>Base Price/Hour *</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="₹ per hour"
-                      value={formData.basePricePerHour}
-                      onChangeText={(value) => updateField('basePricePerHour', value)}
-                      keyboardType="numeric"
-                      editable={!otpSent}
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Venue Description</Text>
-                <View style={styles.inputContainer}>
-                  <Ionicons name="document-text-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Brief description of your venue"
-                    value={formData.venueDescription}
-                    onChangeText={(value) => updateField('venueDescription', value)}
-                    multiline
-                    numberOfLines={3}
-                    editable={!otpSent}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.row}>
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>Contact Phone</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Contact number"
-                      value={formData.contactPhone}
-                      onChangeText={(value) => updateField('contactPhone', value)}
-                      keyboardType="phone-pad"
-                      editable={!otpSent}
-                    />
-                  </View>
-                </View>
-                <View style={styles.halfWidth}>
-                  <Text style={styles.label}>WhatsApp Number</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="WhatsApp number"
-                      value={formData.whatsappNumber}
-                      onChangeText={(value) => updateField('whatsappNumber', value)}
-                      keyboardType="phone-pad"
-                      editable={!otpSent}
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>General Amenities</Text>
-                <View style={styles.facilitiesGrid}>
-                  {facilityOptions.map((facility) => (
-                    <TouchableOpacity
-                      key={facility}
-                      style={[
-                        styles.facilityButton,
-                        formData.venueAmenities.includes(facility) && styles.facilityButtonSelected,
-                      ]}
-                      onPress={() => toggleFacility(facility)}
-                      disabled={otpSent}
-                    >
-                      <Text
-                        style={[
-                          styles.facilityText,
-                          formData.venueAmenities.includes(facility) && styles.facilityTextSelected,
-                        ]}
-                      >
-                        {facility}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </>
-          )}
-
           <TouchableOpacity
             style={[styles.registerButton, isLoading && styles.registerButtonDisabled]}
             onPress={otpSent ? handleRegister : handleSendOTP}
@@ -631,58 +301,8 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     textAlign: 'center',
   },
-  roleSelection: {
-    marginBottom: 32,
-  },
-  roleTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  roleButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  roleButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
-  },
-  roleButtonActive: {
-    backgroundColor: '#000000',
-    borderColor: '#000000',
-  },
-  roleButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6b7280',
-    marginLeft: 8,
-  },
-  roleButtonTextActive: {
-    color: '#ffffff',
-  },
   form: {
     marginBottom: 32,
-  },
-  sectionDivider: {
-    marginVertical: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 16,
   },
   inputGroup: {
     marginBottom: 20,
@@ -730,9 +350,6 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontWeight: '600',
   },
-  eyeIcon: {
-    padding: 16,
-  },
   registerButton: {
     backgroundColor: '#000000',
     paddingVertical: 16,
@@ -761,38 +378,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000000',
     fontWeight: '600',
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
-  halfWidth: {
-    flex: 1,
-  },
-  facilitiesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  facilityButton: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#f9fafb',
-  },
-  facilityButtonSelected: {
-    backgroundColor: '#000000',
-    borderColor: '#000000',
-  },
-  facilityText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
-  },
-  facilityTextSelected: {
-    color: '#ffffff',
   },
 });
