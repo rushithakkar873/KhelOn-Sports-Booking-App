@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import VenueOwnerService from '../../../services/venueOwnerService';
+import VenuePartnerService from '../../../services/venuePartnerService';
 import AuthService from '../../../services/authService';
 import AnimatedLoader from '../../../components/AnimatedLoader';
 
