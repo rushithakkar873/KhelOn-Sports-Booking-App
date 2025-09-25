@@ -66,10 +66,10 @@ export default function VenueOwnerDashboard() {
       }
 
       // Fetch analytics data from API
-      const analytics = await venueOwnerService.getAnalyticsDashboard();
+      const analytics = await venuePartnerService.getAnalyticsDashboard();
       
       // Fetch recent bookings
-      const recentBookings = await venueOwnerService.getBookings(undefined, undefined, undefined, undefined, 0, 5);
+      const recentBookings = await venuePartnerService.getBookings(undefined, undefined, undefined, undefined, 0, 5);
       
       // Transform API data to dashboard format
       const transformedData: DashboardData = {
