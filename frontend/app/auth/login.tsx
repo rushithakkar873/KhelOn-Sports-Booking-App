@@ -22,7 +22,7 @@ export default function LoginScreen() {
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [devOtp, setDevOtp] = useState(''); // For development
-  const [userRole, setUserRole] = useState<'player' | 'venue_owner'>('player');
+  const [userRole, setUserRole] = useState<'venue_owner'>('venue_owner');
   
   const router = useRouter();
   const authService = AuthService.getInstance();
