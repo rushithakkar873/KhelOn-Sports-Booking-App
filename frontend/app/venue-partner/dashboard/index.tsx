@@ -128,7 +128,7 @@ export default function VenueOwnerDashboard() {
   };
 
   const formatCurrency = (amount: number) => {
-    return VenueOwnerService.formatCurrency(amount);
+    return VenuePartnerService.formatCurrency(amount);
   };
 
   const getRevenueChartData = () => {
