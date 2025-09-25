@@ -26,7 +26,7 @@ export default function WelcomeScreen() {
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.greeting}>Hello!</Text>
-              <Text style={styles.subtitle}>Welcome to PlayOn</Text>
+              <Text style={styles.subtitle}>Welcome to KhelON Player</Text>
               <Text style={styles.description}>
                 Book sports venues, join tournaments, and connect with players in your area
               </Text>
