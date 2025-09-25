@@ -144,8 +144,8 @@ export interface AnalyticsDashboard {
   monthlyComparison: Array<{month: string; revenue: number; bookings: number}>;
 }
 
-class VenueOwnerService {
-  private static instance: VenueOwnerService;
+class VenuePartnerService {
+  private static instance: VenuePartnerService;
   private authService: AuthService;
 
   constructor() {
