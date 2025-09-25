@@ -3,17 +3,17 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 
-interface VenueOwnerBottomNavigationProps {
+interface VenuePartnerBottomNavigationProps {
   currentRoute?: string;
 }
 
-function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigationProps) {
+function VenuePartnerBottomNavigation({ currentRoute }: VenuePartnerBottomNavigationProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   const getActiveRoute = () => {
     if (currentRoute) return currentRoute;
-    if (pathname.includes('/dashboard/index') || pathname === '/venue-owner/dashboard' || pathname.endsWith('/dashboard')) return 'overview';
+    if (pathname.includes('/dashboard/index') || pathname === '/venue-partner/dashboard' || pathname.endsWith('/dashboard')) return 'overview';
     if (pathname.includes('/dashboard/venues')) return 'venues';
     if (pathname.includes('/dashboard/bookings')) return 'bookings';
     if (pathname.includes('/dashboard/analytics')) return 'analytics';
@@ -24,11 +24,11 @@ function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigation
   const activeRoute = getActiveRoute();
 
   const navItems = [
-    { key: 'overview', icon: 'analytics', route: '/venue-owner/dashboard' },
-    { key: 'venues', icon: 'business', route: '/venue-owner/dashboard/venues' },
-    { key: 'bookings', icon: 'calendar', route: '/venue-owner/dashboard/bookings' },
-    { key: 'analytics', icon: 'bar-chart', route: '/venue-owner/dashboard/analytics' },
-    { key: 'profile', icon: 'person', route: '/venue-owner/dashboard/profile' },
+    { key: 'overview', icon: 'analytics', route: '/venue-partner/dashboard' },
+    { key: 'venues', icon: 'business', route: '/venue-partner/dashboard/venues' },
+    { key: 'bookings', icon: 'calendar', route: '/venue-partner/dashboard/bookings' },
+    { key: 'analytics', icon: 'bar-chart', route: '/venue-partner/dashboard/analytics' },
+    { key: 'profile', icon: 'person', route: '/venue-partner/dashboard/profile' },
   ];
 
   const handleNavigation = (route: string) => {
@@ -61,7 +61,7 @@ function VenueOwnerBottomNavigation({ currentRoute }: VenueOwnerBottomNavigation
 }
 
 // Memoize the component to prevent unnecessary re-renders
-export default memo(VenueOwnerBottomNavigation);
+export default memo(VenuePartnerBottomNavigation);
 
 const styles = StyleSheet.create({
   bottomNavContainer: {
