@@ -324,11 +324,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   roleTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#ffffff',
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
+  },
+  roleSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    marginBottom: 16,
   },
   roleButtons: {
     flexDirection: 'row',
