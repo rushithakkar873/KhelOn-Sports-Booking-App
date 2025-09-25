@@ -19,7 +19,7 @@ export default function RegisterScreen() {
     name: '',
     email: '',
     mobile: '',
-    role: 'player' as 'player' | 'venue_owner',
+    role: 'venue_owner' as 'venue_owner',
     businessName: '',
     businessAddress: '',
     gstNumber: '',
