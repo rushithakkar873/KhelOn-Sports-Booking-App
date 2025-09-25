@@ -365,4 +365,4 @@ class VenuePartnerService {
   }
 }
 
-export default VenueOwnerService;
+export default VenuePartnerService;
