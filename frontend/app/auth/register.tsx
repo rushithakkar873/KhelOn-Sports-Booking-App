@@ -174,15 +174,11 @@ export default function RegisterScreen() {
       const result = await authService.register(registerData);
 
       if (result.success) {
-        // Navigate based on user role
-        const destination = result.user?.role === 'venue_owner' 
-          ? '/venue-owner/dashboard'
-          : '/main/home';
-        
+        // Navigate to venue partner dashboard
         Alert.alert(
           'Success', 
-          'Registration successful! Welcome to Playon.',
-          [{ text: 'OK', onPress: () => router.replace(destination) }]
+          'Registration successful! Welcome to KhelON Venue Partner.',
+          [{ text: 'OK', onPress: () => router.replace('/venue-partner/dashboard') }]
         );
       } else {
         Alert.alert('Error', result.message);
