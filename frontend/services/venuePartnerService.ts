@@ -152,11 +152,11 @@ class VenuePartnerService {
     this.authService = AuthService.getInstance();
   }
 
-  static getInstance(): VenueOwnerService {
-    if (!VenueOwnerService.instance) {
-      VenueOwnerService.instance = new VenueOwnerService();
+  static getInstance(): VenuePartnerService {
+    if (!VenuePartnerService.instance) {
+      VenuePartnerService.instance = new VenuePartnerService();
     }
-    return VenueOwnerService.instance;
+    return VenuePartnerService.instance;
   }
 
   private async makeRequest(
