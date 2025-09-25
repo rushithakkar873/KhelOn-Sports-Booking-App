@@ -163,7 +163,7 @@ export default function HomeScreen() {
           <View style={styles.header}>
             <View>
               <Text style={styles.greeting}>Hello, Player</Text>
-              <Text style={styles.subtitle}>Welcome to PlayOn</Text>
+              <Text style={styles.subtitle}>Welcome to KhelON Player</Text>
             </View>
             <TouchableOpacity style={styles.profileButton}>
               <View style={styles.avatar}>
