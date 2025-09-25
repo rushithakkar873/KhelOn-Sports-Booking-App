@@ -26,9 +26,9 @@ export default function WelcomeScreen() {
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.greeting}>Hello!</Text>
-              <Text style={styles.subtitle}>Welcome to PlayOn</Text>
+              <Text style={styles.subtitle}>Welcome to KhelON Venue Partner</Text>
               <Text style={styles.description}>
-                Book sports venues, join tournaments, and connect with players in your area
+                Manage your sports venue, bookings, and grow your business with our comprehensive partner platform
               </Text>
             </View>
 
@@ -36,18 +36,18 @@ export default function WelcomeScreen() {
             <View style={styles.featuresContainer}>
               <View style={styles.featureCard}>
                 <View style={styles.featureIconContainer}>
-                  <Ionicons name="location" size={24} color="#ffffff" />
+                  <Ionicons name="business" size={24} color="#ffffff" />
                 </View>
-                <Text style={styles.featureTitle}>Find Venues</Text>
-                <Text style={styles.featureDescription}>Discover and book nearby sports venues</Text>
+                <Text style={styles.featureTitle}>Manage Venues</Text>
+                <Text style={styles.featureDescription}>List and manage your sports venues</Text>
               </View>
 
               <View style={styles.featureCard}>
                 <View style={styles.featureIconContainer}>
-                  <Ionicons name="trophy" size={24} color="#ffffff" />
+                  <Ionicons name="analytics" size={24} color="#ffffff" />
                 </View>
-                <Text style={styles.featureTitle}>Join Tournaments</Text>
-                <Text style={styles.featureDescription}>Compete in local tournaments</Text>
+                <Text style={styles.featureTitle}>Track Analytics</Text>
+                <Text style={styles.featureDescription}>Monitor bookings and revenue</Text>
               </View>
             </View>
 
@@ -61,7 +61,7 @@ export default function WelcomeScreen() {
                 style={styles.secondaryButton}
                 onPress={() => router.push('/auth/register')}
               >
-                <Text style={styles.secondaryButtonText}>Create Account</Text>
+                <Text style={styles.secondaryButtonText}>Create Partner Account</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
