@@ -21,7 +21,7 @@ export default function VenueOwnerDashboardLayout() {
       </Stack>
       
       {/* Fixed Bottom Navigation - Won't re-render on screen changes */}
-      <VenueOwnerBottomNavigation />
+      <VenuePartnerBottomNavigation />
     </View>
   );
 }
