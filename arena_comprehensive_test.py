@@ -37,7 +37,7 @@ def test_arena_system():
         results.append(False)
     
     # Test 2: Authentication
-    print("\n🔍 Test 2: Venue Owner Authentication")
+    print("\n🔍 Test 2: Venue Partner Authentication")
     try:
         # Send OTP
         otp_response = requests.post(f"{BASE_URL}/auth/send-otp", 
@@ -62,8 +62,8 @@ def test_arena_system():
         token = login_data.get("access_token")
         user = login_data.get("user", {})
         
-        if user.get("role") == "venue_owner":
-            print(f"✅ PASS: Authentication - {user.get('name')} (venue_owner)")
+        if user.get("role") == "venue_partner":
+            print(f"✅ PASS: Authentication - {user.get('name')} (venue_partner)")
             results.append(True)
         else:
             print(f"❌ FAIL: Wrong role - {user.get('role')}")

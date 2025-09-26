@@ -100,7 +100,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     mobile: str = Field(..., min_length=10, max_length=15)
     password: str = Field(..., min_length=6)
-    role: str = Field(default="player", pattern="^(player|venue_owner)$")
+    role: str = Field(default="player", pattern="^(player|venue_partner)$")
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -116,7 +116,7 @@ class UserResponse(BaseModel):
     location: Optional[str] = None
     created_at: datetime
 
-# Venue Owner Models
+# Venue Partner Models
 class VenueOwnerCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
@@ -293,10 +293,10 @@ class TournamentResponse(BaseModel):
     prizes: Optional[str]
     created_at: datetime
 
-# Venue Owner Authentication Routes
+# Venue Partner Authentication Routes
 @api_router.post("/venue-owner/register", response_model=Dict[str, str])
 async def register_venue_owner(owner_data: VenueOwnerCreate):
-    # Check if venue owner already exists
+    # Check if venue partner already exists
     existing_owner = await db.venue_owners.find_one({
         "$or": [
             {"email": owner_data.email},
@@ -307,10 +307,10 @@ async def register_venue_owner(owner_data: VenueOwnerCreate):
     if existing_owner:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Venue owner with this email or mobile already exists"
+            detail="Venue partner with this email or mobile already exists"
         )
     
-    # Create new venue owner
+    # Create new venue partner
     owner_id = str(uuid.uuid4())
     hashed_password = get_password_hash(owner_data.password)
     
@@ -333,13 +333,13 @@ async def register_venue_owner(owner_data: VenueOwnerCreate):
     await db.venue_owners.insert_one(new_owner)
     
     return {
-        "message": "Venue owner registered successfully",
+        "message": "Venue partner registered successfully",
         "owner_id": owner_id
     }
 
 @api_router.post("/venue-owner/login")
 async def login_venue_owner(credentials: UserLogin):
-    # Find venue owner
+    # Find venue partner
     owner = await db.venue_owners.find_one({"email": credentials.email})
     if not owner or not verify_password(credentials.password, owner["password"]):
         raise HTTPException(
@@ -356,14 +356,14 @@ async def login_venue_owner(credentials: UserLogin):
     # Create access token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": owner["_id"], "type": "venue_owner"}, 
+        data={"sub": owner["_id"], "type": "venue_partner"}, 
         expires_delta=access_token_expires
     )
     
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user_type": "venue_owner",
+        "user_type": "venue_partner",
         "owner_id": owner["_id"],
         "name": owner["name"]
     }
@@ -375,7 +375,7 @@ async def get_current_venue_owner(credentials: HTTPAuthorizationCredentials = De
         owner_id: str = payload.get("sub")
         user_type: str = payload.get("type")
         
-        if owner_id is None or user_type != "venue_owner":
+        if owner_id is None or user_type != "venue_partner":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
@@ -390,7 +390,7 @@ async def get_current_venue_owner(credentials: HTTPAuthorizationCredentials = De
     if owner is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Venue owner not found",
+            detail="Venue partner not found",
         )
     return owner
 
@@ -411,7 +411,7 @@ async def get_venue_owner_profile(current_owner: dict = Depends(get_current_venu
         created_at=current_owner["created_at"]
     )
 
-# Venue Owner - Venue Management Routes
+# Venue Partner - Venue Management Routes
 @api_router.post("/venue-owner/venues", response_model=Dict[str, str])
 async def create_venue_by_owner(venue_data: VenueCreate, current_owner: dict = Depends(get_current_venue_owner)):
     venue_id = str(uuid.uuid4())
@@ -461,7 +461,7 @@ async def create_venue_by_owner(venue_data: VenueCreate, current_owner: dict = D
     
     await db.venues.insert_one(new_venue)
     
-    # Update venue owner's venue count
+    # Update venue partner's venue count
     await db.venue_owners.update_one(
         {"_id": current_owner["_id"]},
         {"$inc": {"total_venues": 1}}
@@ -576,7 +576,7 @@ async def update_venue_status(
         "message": f"Venue {'activated' if is_active else 'deactivated'} successfully"
     }
 
-# Venue Owner - Booking Management Routes
+# Venue Partner - Booking Management Routes
 @api_router.get("/venue-owner/bookings", response_model=List[BookingResponse])
 async def get_owner_bookings(
     current_owner: dict = Depends(get_current_venue_owner),
@@ -828,7 +828,7 @@ async def verify_payment(payment_data: PaymentVerification, current_user: dict =
                 }
             )
             
-            # Update venue owner's revenue
+            # Update venue partner's revenue
             booking = await db.bookings.find_one({"_id": transaction["booking_id"]})
             if booking:
                 venue = await db.venues.find_one({"_id": booking["venue_id"]})
@@ -862,7 +862,7 @@ async def verify_payment(payment_data: PaymentVerification, current_user: dict =
             detail=f"Payment verification failed: {str(e)}"
         )
 
-# Venue Owner Analytics Routes
+# Venue Partner Analytics Routes
 @api_router.get("/venue-owner/analytics/dashboard")
 async def get_analytics_dashboard(
     current_owner: dict = Depends(get_current_venue_owner),
@@ -1047,7 +1047,7 @@ async def get_current_user_profile(current_user: dict = Depends(get_current_user
 # Venue Routes
 @api_router.post("/venues", response_model=Dict[str, str])
 async def create_venue(venue_data: VenueCreate, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] != "venue_owner":
+    if current_user["role"] != "venue_partner":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only venue owners can create venues"

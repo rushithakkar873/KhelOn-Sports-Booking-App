@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple Venue Owner Booking Creation Test
+Simple Venue Partner Booking Creation Test
 Quick test to verify the enhanced booking system backend functionality
 """
 
@@ -17,8 +17,8 @@ def test_simple_booking_flow():
     print("🚀 Testing Enhanced Booking System Backend Functionality")
     print(f"API Base URL: {BASE_URL}")
     
-    # Step 1: Authenticate as venue owner using unified mobile OTP
-    print("\n1️⃣ Authenticating venue owner...")
+    # Step 1: Authenticate as venue partner using unified mobile OTP
+    print("\n1️⃣ Authenticating venue partner...")
     venue_owner_mobile = "+919876543210"
     
     # Send OTP
@@ -51,13 +51,13 @@ def test_simple_booking_flow():
     print(f"   User: {user_info['name']} ({user_info['role']})")
     print(f"   Mobile: {user_info['mobile']}")
     
-    # Verify role is venue_owner
-    if user_info["role"] != "venue_owner":
-        print(f"❌ Expected venue_owner role, got {user_info['role']}")
+    # Verify role is venue_partner
+    if user_info["role"] != "venue_partner":
+        print(f"❌ Expected venue_partner role, got {user_info['role']}")
         return False
     
-    # Step 2: Get venue owner's venues
-    print("\n2️⃣ Getting venue owner's venues...")
+    # Step 2: Get venue partner's venues
+    print("\n2️⃣ Getting venue partner's venues...")
     auth_headers = HEADERS.copy()
     auth_headers["Authorization"] = f"Bearer {token}"
     
@@ -69,7 +69,7 @@ def test_simple_booking_flow():
     
     venues = venues_response.json()
     if not venues:
-        print("❌ No venues found for venue owner")
+        print("❌ No venues found for venue partner")
         return False
     
     venue = venues[0]  # Use first venue
@@ -90,7 +90,7 @@ def test_simple_booking_flow():
         "start_time": "16:00",
         "end_time": "18:00",
         "sport": "Cricket",
-        "notes": "Simple test booking via venue owner"
+        "notes": "Simple test booking via venue partner"
     }
     
     booking_response = requests.post(f"{BASE_URL}/venue-owner/bookings",

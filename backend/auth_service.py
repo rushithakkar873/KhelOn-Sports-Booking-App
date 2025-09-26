@@ -148,7 +148,7 @@ class UserRegistrationRequest(BaseModel):
     sports_interests: Optional[list] = []
     location: Optional[str] = None
     
-    # Venue Owner specific fields
+    # Venue Partner specific fields
     business_name: Optional[str] = Field(None, max_length=200)
     business_address: Optional[str] = Field(None, max_length=500)
     gst_number: Optional[str] = Field(None, max_length=20)
@@ -217,7 +217,7 @@ class UserResponse(BaseModel):
     sports_interests: Optional[list] = []
     location: Optional[str] = None
     
-    # Venue Owner fields
+    # Venue Partner fields
     business_name: Optional[str] = None
     business_address: Optional[str] = None
     gst_number: Optional[str] = None

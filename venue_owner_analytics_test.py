@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Venue Owner Analytics Dashboard API Testing
+Venue Partner Analytics Dashboard API Testing
 Tests the analytics dashboard endpoint after recent fixes to handle missing data gracefully
 """
 
@@ -23,13 +23,13 @@ class VenueOwnerAnalyticsTester:
         self.test_venue_ids = []
         self.test_booking_ids = []
         
-        # Test venue owner data (Rajesh Kumar as mentioned in review request)
+        # Test venue partner data (Rajesh Kumar as mentioned in review request)
         self.venue_owner_mobile = "+919876543210"
         self.venue_owner_data = {
             "mobile": "+919876543210",
             "name": "Rajesh Kumar",
             "email": "rajesh.kumar@example.com",
-            "role": "venue_owner",
+            "role": "venue_partner",
             "business_name": "Elite Sports Complex",
             "business_address": "Bandra West, Mumbai, Maharashtra 400050",
             "gst_number": "24ABCDE1234F1Z5"
@@ -137,8 +137,8 @@ class VenueOwnerAnalyticsTester:
             }
 
     def authenticate_venue_owner(self):
-        """Authenticate as venue owner using unified auth system"""
-        print("\n=== Authenticating Venue Owner (Rajesh Kumar) ===")
+        """Authenticate as venue partner using unified auth system"""
+        print("\n=== Authenticating Venue Partner (Rajesh Kumar) ===")
         
         # Step 1: Send OTP
         otp_request = {"mobile": self.venue_owner_mobile}
@@ -161,7 +161,7 @@ class VenueOwnerAnalyticsTester:
         result = self.make_request("POST", "/auth/login", login_data)
         
         if result["success"]:
-            print("✅ Venue owner logged in successfully")
+            print("✅ Venue partner logged in successfully")
             self.venue_owner_token = result["data"].get("access_token")
             self.venue_owner_id = result["data"]["user"]["id"]
         else:
@@ -179,11 +179,11 @@ class VenueOwnerAnalyticsTester:
             
             result = self.make_request("POST", "/auth/register", registration_data)
             if result["success"]:
-                print("✅ Venue owner registered successfully")
+                print("✅ Venue partner registered successfully")
                 self.venue_owner_token = result["data"].get("access_token")
                 self.venue_owner_id = result["data"]["user"]["id"]
             else:
-                print(f"❌ Failed to authenticate venue owner: {result}")
+                print(f"❌ Failed to authenticate venue partner: {result}")
                 return False
         
         print(f"   Token: {self.venue_owner_token[:20]}...")
@@ -324,10 +324,10 @@ class VenueOwnerAnalyticsTester:
         return True
 
     def test_analytics_dashboard_no_venues(self):
-        """Test analytics dashboard when venue owner has no venues"""
+        """Test analytics dashboard when venue partner has no venues"""
         print("\n=== Testing Analytics Dashboard - No Venues Scenario ===")
         
-        # Create a new venue owner with no venues
+        # Create a new venue partner with no venues
         new_owner_mobile = "+919876543299"
         
         # Send OTP for new owner
@@ -340,12 +340,12 @@ class VenueOwnerAnalyticsTester:
         
         dev_otp = result["data"].get("dev_info", "").replace("OTP: ", "")
         
-        # Register new venue owner
+        # Register new venue partner
         new_owner_data = {
             "mobile": new_owner_mobile,
             "name": "Test Owner No Venues",
             "email": "test.novenues@example.com",
-            "role": "venue_owner",
+            "role": "venue_partner",
             "business_name": "Test Business",
             "business_address": "Test Address",
             "gst_number": "24TESTNO1234F1Z5",
@@ -355,7 +355,7 @@ class VenueOwnerAnalyticsTester:
         result = self.make_request("POST", "/auth/register", new_owner_data)
         
         if not result["success"]:
-            print(f"❌ Failed to register new venue owner: {result}")
+            print(f"❌ Failed to register new venue partner: {result}")
             return False
         
         new_owner_token = result["data"].get("access_token")
@@ -539,14 +539,14 @@ class VenueOwnerAnalyticsTester:
 
     def run_all_tests(self):
         """Run all analytics dashboard tests"""
-        print("🚀 Starting Venue Owner Analytics Dashboard Tests")
+        print("🚀 Starting Venue Partner Analytics Dashboard Tests")
         print(f"Testing against: {self.base_url}")
         
         test_results = []
         
         # Authentication first
         if not self.authenticate_venue_owner():
-            print("❌ Failed to authenticate venue owner - cannot proceed with tests")
+            print("❌ Failed to authenticate venue partner - cannot proceed with tests")
             return False
         
         # Setup test data

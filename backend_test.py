@@ -66,8 +66,8 @@ class KhelOnTester:
             return False
     
     def test_2_venue_owner_auth(self):
-        """Test 2: Venue Owner Authentication with Mobile OTP"""
-        self.log("Testing venue owner authentication...")
+        """Test 2: Venue Partner Authentication with Mobile OTP"""
+        self.log("Testing venue partner authentication...")
         
         # Step 1: Send OTP
         otp_data = {"mobile": VENUE_OWNER_MOBILE}
@@ -89,8 +89,8 @@ class KhelOnTester:
             self.venue_owner_token = login_response.get("access_token")
             user_data = login_response.get("user", {})
             
-            if user_data.get("role") == "venue_owner":
-                self.log("✅ Venue owner authentication successful", "SUCCESS")
+            if user_data.get("role") == "venue_partner":
+                self.log("✅ Venue partner authentication successful", "SUCCESS")
                 return True
             else:
                 self.log(f"❌ Wrong user role: {user_data.get('role')}", "ERROR")
@@ -104,7 +104,7 @@ class KhelOnTester:
         self.log("Testing venue creation with multiple arenas...")
         
         if not self.venue_owner_token:
-            self.log("❌ No venue owner token available", "ERROR")
+            self.log("❌ No venue partner token available", "ERROR")
             return False
         
         headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
@@ -210,7 +210,7 @@ class KhelOnTester:
         self.log("Testing arena listing endpoint...")
         
         if not self.venue_owner_token or not self.venue_id:
-            self.log("❌ Missing venue owner token or venue ID", "ERROR")
+            self.log("❌ Missing venue partner token or venue ID", "ERROR")
             return False
         
         headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
@@ -353,7 +353,7 @@ class KhelOnTester:
         self.log("Testing analytics dashboard with arena-based calculations...")
         
         if not self.venue_owner_token:
-            self.log("❌ No venue owner token available", "ERROR")
+            self.log("❌ No venue partner token available", "ERROR")
             return False
         
         headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
@@ -402,7 +402,7 @@ class KhelOnTester:
         self.log("Testing backward compatibility...")
         
         if not self.venue_owner_token:
-            self.log("❌ No venue owner token available", "ERROR")
+            self.log("❌ No venue partner token available", "ERROR")
             return False
         
         headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
@@ -438,7 +438,7 @@ class KhelOnTester:
         
         tests = [
             ("Health Check", self.test_1_health_check),
-            ("Venue Owner Authentication", self.test_2_venue_owner_auth),
+            ("Venue Partner Authentication", self.test_2_venue_owner_auth),
             ("Venue Creation with Arenas", self.test_3_venue_creation_with_arenas),
             ("Arena Listing", self.test_4_arena_listing),
             ("Booking Creation with Arena", self.test_5_booking_creation_with_arena),

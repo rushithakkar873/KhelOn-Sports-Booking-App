@@ -24,8 +24,8 @@ export interface Arena {
 export interface Venue {
   id: string;
   name: string;
-  owner_id: string;
-  owner_name: string;
+  partner_id: string;
+  partner_name: string;
   sports_supported: string[];
   address: string;
   city: string;

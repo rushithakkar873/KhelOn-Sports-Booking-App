@@ -62,8 +62,8 @@ def test_arena_system():
         token = login_data.get("access_token")
         user = login_data.get("user", {})
         
-        if user.get("role") == "venue_owner":
-            print(f"✅ PASS: Venue owner authenticated - {user.get('name')} (+919876543210)")
+        if user.get("role") == "venue_partner":
+            print(f"✅ PASS: Venue partner authenticated - {user.get('name')} (+919876543210)")
             results.append(True)
         else:
             print(f"❌ FAIL: Wrong role - {user.get('role')}")

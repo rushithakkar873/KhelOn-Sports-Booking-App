@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Venue Owner Booking Creation Testing for Playon Sports Booking App
-Tests venue owner authentication and booking creation functionality with payment & SMS integration
+Comprehensive Venue Partner Booking Creation Testing for Playon Sports Booking App
+Tests venue partner authentication and booking creation functionality with payment & SMS integration
 """
 
 import requests
@@ -23,7 +23,7 @@ class VenueOwnerBookingTester:
         self.test_venue_ids = []
         self.test_booking_ids = []
         
-        # Test data for venue owner (Rajesh Kumar)
+        # Test data for venue partner (Rajesh Kumar)
         self.venue_owner_mobile = "+919876543212"  # Updated mobile number
         self.venue_owner_name = "Rajesh Kumar"
         
@@ -84,11 +84,11 @@ class VenueOwnerBookingTester:
             }
 
     def test_venue_owner_authentication(self):
-        """Test venue owner authentication with mobile OTP"""
-        print("\n=== Testing Venue Owner Authentication ===")
+        """Test venue partner authentication with mobile OTP"""
+        print("\n=== Testing Venue Partner Authentication ===")
         
-        # Step 1: Send OTP to venue owner mobile
-        print(f"📱 Sending OTP to venue owner: {self.venue_owner_mobile}")
+        # Step 1: Send OTP to venue partner mobile
+        print(f"📱 Sending OTP to venue partner: {self.venue_owner_mobile}")
         otp_request = {"mobile": self.venue_owner_mobile}
         result = self.make_request("POST", "/auth/send-otp", otp_request)
         
@@ -105,7 +105,7 @@ class VenueOwnerBookingTester:
             return False
         
         # Step 2: Login with mobile and OTP
-        print(f"🔐 Logging in venue owner with mobile and OTP")
+        print(f"🔐 Logging in venue partner with mobile and OTP")
         login_request = {
             "mobile": self.venue_owner_mobile,
             "otp": dev_otp
@@ -113,14 +113,14 @@ class VenueOwnerBookingTester:
         result = self.make_request("POST", "/auth/login", login_request)
         
         if not result["success"]:
-            print(f"❌ Venue owner login failed: {result}")
+            print(f"❌ Venue partner login failed: {result}")
             return False
         
         self.venue_owner_token = result["data"].get("access_token")
         user_data = result["data"].get("user", {})
         self.venue_owner_id = user_data.get("id")
         
-        print("✅ Venue owner login successful")
+        print("✅ Venue partner login successful")
         print(f"   Name: {user_data.get('name')}")
         print(f"   Role: {user_data.get('role')}")
         print(f"   Mobile: {user_data.get('mobile')}")
@@ -128,18 +128,18 @@ class VenueOwnerBookingTester:
         
         # Verify the user is Rajesh Kumar
         if user_data.get("name") != self.venue_owner_name:
-            print(f"❌ Expected venue owner name '{self.venue_owner_name}', got '{user_data.get('name')}'")
+            print(f"❌ Expected venue partner name '{self.venue_owner_name}', got '{user_data.get('name')}'")
             return False
         
-        if user_data.get("role") != "venue_owner":
-            print(f"❌ Expected role 'venue_owner', got '{user_data.get('role')}'")
+        if user_data.get("role") != "venue_partner":
+            print(f"❌ Expected role 'venue_partner', got '{user_data.get('role')}'")
             return False
         
         return True
 
     def test_get_venue_owner_venues(self):
-        """Get venues owned by the venue owner"""
-        print("\n=== Getting Venue Owner's Venues ===")
+        """Get venues owned by the venue partner"""
+        print("\n=== Getting Venue Partner's Venues ===")
         
         result = self.make_request("GET", "/venue-owner/venues", auth_required=True)
         
@@ -355,7 +355,7 @@ class VenueOwnerBookingTester:
         return True
 
     def test_booking_management_endpoints(self):
-        """Test venue owner booking management endpoints"""
+        """Test venue partner booking management endpoints"""
         print("\n=== Testing Booking Management Endpoints ===")
         
         # Test GET /api/venue-owner/bookings (list bookings)
@@ -479,16 +479,16 @@ class VenueOwnerBookingTester:
         return True
 
     def run_all_tests(self):
-        """Run all venue owner booking creation tests"""
-        print("🚀 Starting Venue Owner Booking Creation Tests")
+        """Run all venue partner booking creation tests"""
+        print("🚀 Starting Venue Partner Booking Creation Tests")
         print(f"Testing against: {self.base_url}")
         
         test_results = []
         
         # Run test suites in order
         test_suites = [
-            ("Venue Owner Authentication", self.test_venue_owner_authentication),
-            ("Get Venue Owner Venues", self.test_get_venue_owner_venues),
+            ("Venue Partner Authentication", self.test_venue_owner_authentication),
+            ("Get Venue Partner Venues", self.test_get_venue_owner_venues),
             ("Create Booking for Existing Player", self.test_create_booking_existing_player),
             ("Create Booking for New Player", self.test_create_booking_new_player),
             ("Validation Errors", self.test_validation_errors),
@@ -524,7 +524,7 @@ class VenueOwnerBookingTester:
         print(f"\nOverall: {passed}/{total} test suites passed")
         
         if passed == total:
-            print("🎉 All venue owner booking creation tests passed!")
+            print("🎉 All venue partner booking creation tests passed!")
             print("✅ Authentication working with mobile OTP")
             print("✅ Booking creation for existing and new players working")
             print("✅ Payment link generation working")

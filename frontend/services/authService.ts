@@ -20,7 +20,7 @@ export interface User {
   sports_interests?: string[];
   location?: string;
   
-  // Venue Owner fields
+  // Venue Partner fields
   business_name?: string;
   business_address?: string;
   gst_number?: string;
@@ -54,7 +54,7 @@ export interface RegisterData {
   sports_interests?: string[];
   location?: string;
   
-  // Venue Owner fields
+  // Venue Partner fields
   business_name?: string;
   business_address?: string;
   gst_number?: string;
@@ -194,6 +194,8 @@ class AuthService {
         body: JSON.stringify({ mobile, otp }),
       });
 
+      console.log(response, " ==> login response");
+      
       if (response.success && response.access_token) {
         // Store auth data
         this.authToken = response.access_token;

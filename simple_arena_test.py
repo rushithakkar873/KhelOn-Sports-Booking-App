@@ -13,7 +13,7 @@ def test_conflict_detection():
     print("=== TESTING ARENA-SPECIFIC CONFLICT DETECTION ===")
     
     # Step 1: Authenticate
-    print("1. Authenticating venue owner...")
+    print("1. Authenticating venue partner...")
     otp_response = requests.post(f"{BASE_URL}/auth/send-otp", 
                                 json={"mobile": "+919876543210"})
     if otp_response.status_code != 200:

@@ -19,7 +19,7 @@ export default function RegisterScreen() {
     name: '',
     email: '',
     mobile: '',
-    role: 'venue_owner' as 'venue_owner',
+    role: 'venue_partner' as 'venue_partner',
     businessName: '',
     businessAddress: '',
     gstNumber: '',
@@ -69,7 +69,7 @@ export default function RegisterScreen() {
     }
 
     // Additional validation for venue owners
-    if (role === 'venue_owner') {
+    if (role === 'venue_partner') {
       if (!businessName) {
         Alert.alert('Error', 'Business name is required for venue owners');
         return false;
@@ -152,8 +152,8 @@ export default function RegisterScreen() {
         email: formData.email.toLowerCase().trim() || undefined,
         role: formData.role,
         
-        // Venue Owner fields
-        ...(formData.role === 'venue_owner' && {
+        // Venue Partner fields
+        ...(formData.role === 'venue_partner' && {
           business_name: formData.businessName.trim(),
           business_address: formData.businessAddress.trim() || undefined,
           gst_number: formData.gstNumber.trim() || undefined,
@@ -244,18 +244,18 @@ export default function RegisterScreen() {
             <TouchableOpacity
               style={[
                 styles.roleButton,
-                formData.role === 'venue_owner' && styles.roleButtonActive
+                formData.role === 'venue_partner' && styles.roleButtonActive
               ]}
-              onPress={() => updateField('role', 'venue_owner')}
+              onPress={() => updateField('role', 'venue_partner')}
             >
               <Ionicons 
                 name="business-outline" 
                 size={20} 
-                color={formData.role === 'venue_owner' ? '#ffffff' : '#6b7280'} 
+                color={formData.role === 'venue_partner' ? '#ffffff' : '#6b7280'} 
               />
               <Text style={[
                 styles.roleButtonText,
-                formData.role === 'venue_owner' && styles.roleButtonTextActive
+                formData.role === 'venue_partner' && styles.roleButtonTextActive
               ]}>
                 Manage Venues
               </Text>
@@ -350,7 +350,7 @@ export default function RegisterScreen() {
           )}
 
           {/* Business Information - Only show for venue owners */}
-          {formData.role === 'venue_owner' && (
+          {formData.role === 'venue_partner' && (
             <>
               <View style={styles.sectionDivider}>
                 <Text style={styles.sectionTitle}>Business Information</Text>

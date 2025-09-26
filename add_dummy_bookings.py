@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to add dummy booking data for testing venue owner booking functionality
+Script to add dummy booking data for testing venue partner booking functionality
 """
 
 import asyncio
@@ -76,12 +76,12 @@ async def add_dummy_data():
             player["_id"] = existing["_id"]
             print(f"⚡ Using existing player: {player['name']} ({player['mobile']})")
     
-    # 2. Create venue owner if not exists
-    venue_owner = {
+    # 2. Create venue partner if not exists
+    venue_partner = {
         "_id": str(uuid.uuid4()),
         "mobile": "+919876543211",
         "name": "Rajesh Kumar",
-        "role": "venue_owner",
+        "role": "venue_partner",
         "email": "rajesh.kumar@elitesports.com",
         "business_name": "Elite Sports Complex",
         "gst_number": "24ABCDE1234F1Z5",
@@ -90,13 +90,13 @@ async def add_dummy_data():
         "created_at": datetime.utcnow() - timedelta(days=45)
     }
     
-    existing_owner = await db.users.find_one({"mobile": venue_owner["mobile"]})
+    existing_owner = await db.users.find_one({"mobile": venue_partner["mobile"]})
     if not existing_owner:
-        await db.users.insert_one(venue_owner)
-        print(f"✅ Created venue owner: {venue_owner['name']} ({venue_owner['mobile']})")
+        await db.users.insert_one(venue_partner)
+        print(f"✅ Created venue partner: {venue_partner['name']} ({venue_partner['mobile']})")
     else:
-        venue_owner["_id"] = existing_owner["_id"]
-        print(f"⚡ Using existing venue owner: {venue_owner['name']} ({venue_owner['mobile']})")
+        venue_partner["_id"] = existing_owner["_id"]
+        print(f"⚡ Using existing venue partner: {venue_partner['name']} ({venue_partner['mobile']})")
     
     # 3. Create dummy venues
     dummy_venues = [
@@ -104,7 +104,7 @@ async def add_dummy_data():
             "_id": str(uuid.uuid4()),
             "name": "Elite Cricket Ground Mumbai",
             "sports_supported": ["Cricket", "Football"],
-            "owner_id": venue_owner["_id"],
+            "owner_id": venue_partner["_id"],
             "address": "456 Sports Complex, Bandra West",
             "city": "Mumbai",
             "state": "Maharashtra", 
@@ -132,7 +132,7 @@ async def add_dummy_data():
             "_id": str(uuid.uuid4()),
             "name": "Elite Football Ground Mumbai",
             "sports_supported": ["Football", "Cricket"],
-            "owner_id": venue_owner["_id"],
+            "owner_id": venue_partner["_id"],
             "address": "789 Sports Hub, Andheri East",
             "city": "Mumbai",
             "state": "Maharashtra",
@@ -160,7 +160,7 @@ async def add_dummy_data():
     
     # Insert venues if they don't exist
     for venue in dummy_venues:
-        existing = await db.venues.find_one({"name": venue["name"], "owner_id": venue_owner["_id"]})
+        existing = await db.venues.find_one({"name": venue["name"], "owner_id": venue_partner["_id"]})
         if not existing:
             await db.venues.insert_one(venue)
             print(f"✅ Created venue: {venue['name']}")
@@ -191,7 +191,7 @@ async def add_dummy_data():
             "created_at": base_date - timedelta(hours=5),
             "updated_at": base_date - timedelta(hours=4),
             "created_by_owner": True,
-            "owner_id": venue_owner["_id"],
+            "owner_id": venue_partner["_id"],
             "payment_link_id": f"plink_test_{uuid.uuid4().hex[:12]}",
             "payment_link_url": "https://mock-payment.playon.com/pay/test123",
             "payment_id": f"pay_{uuid.uuid4().hex[:12]}"
@@ -216,7 +216,7 @@ async def add_dummy_data():
             "created_at": base_date - timedelta(hours=2),
             "updated_at": base_date - timedelta(hours=2),
             "created_by_owner": True,
-            "owner_id": venue_owner["_id"],
+            "owner_id": venue_partner["_id"],
             "payment_link_id": f"plink_test_{uuid.uuid4().hex[:12]}",
             "payment_link_url": "https://mock-payment.playon.com/pay/test456"
         },
@@ -240,7 +240,7 @@ async def add_dummy_data():
             "created_at": base_date - timedelta(days=5),
             "updated_at": base_date - timedelta(days=2),
             "created_by_owner": True,
-            "owner_id": venue_owner["_id"],
+            "owner_id": venue_partner["_id"],
             "payment_link_id": f"plink_test_{uuid.uuid4().hex[:12]}",
             "payment_link_url": "https://mock-payment.playon.com/pay/test789",
             "payment_id": f"pay_{uuid.uuid4().hex[:12]}"
@@ -265,7 +265,7 @@ async def add_dummy_data():
             "created_at": base_date - timedelta(days=3),
             "updated_at": base_date - timedelta(hours=6),
             "created_by_owner": True,
-            "owner_id": venue_owner["_id"],
+            "owner_id": venue_partner["_id"],
             "payment_link_id": f"plink_test_{uuid.uuid4().hex[:12]}",
             "payment_link_url": "https://mock-payment.playon.com/pay/test101",
             "payment_id": f"pay_{uuid.uuid4().hex[:12]}"
@@ -290,7 +290,7 @@ async def add_dummy_data():
             "created_at": base_date - timedelta(minutes=30),
             "updated_at": base_date - timedelta(minutes=30),
             "created_by_owner": True,
-            "owner_id": venue_owner["_id"],
+            "owner_id": venue_partner["_id"],
             "payment_link_id": f"plink_test_{uuid.uuid4().hex[:12]}",
             "payment_link_url": "https://mock-payment.playon.com/pay/test202"
         }
@@ -323,16 +323,16 @@ async def add_dummy_data():
     print(f"\n🎉 Dummy data setup complete!")
     print(f"📊 Summary:")
     print(f"   • {len(dummy_players)} players created/updated")
-    print(f"   • 1 venue owner created/updated") 
+    print(f"   • 1 venue partner created/updated") 
     print(f"   • {len(dummy_venues)} venues created/updated")
     print(f"   • {booking_count} new bookings created")
     print(f"\n🔑 Test Login Credentials:")
-    print(f"   Venue Owner: {venue_owner['mobile']} (Rajesh Kumar)")
+    print(f"   Venue Partner: {venue_partner['mobile']} (Rajesh Kumar)")
     print(f"   Players: {', '.join([p['mobile'] for p in dummy_players])}")
     print(f"\n💡 You can now:")
-    print(f"   1. Login as venue owner to see booking dashboard")
+    print(f"   1. Login as venue partner to see booking dashboard")
     print(f"   2. View bookings with different statuses (pending, confirmed, completed, cancelled)")
-    print(f"   3. Test creating new bookings from venue owner dashboard")
+    print(f"   3. Test creating new bookings from venue partner dashboard")
     print(f"   4. Test the payment links and SMS functionality")
     
     client.close()

@@ -39,7 +39,7 @@ class UnifiedAuthTester:
         self.test_venue_owner_data = {
             "name": "Rajesh Kumar",
             "email": "rajesh.kumar@example.com", 
-            "role": "venue_owner",
+            "role": "venue_partner",
             "business_name": "Elite Sports Complex",
             "business_address": "Sector 15, Noida, Uttar Pradesh",
             "gst_number": "24ABCDE1234F1Z5"
@@ -236,22 +236,22 @@ class UnifiedAuthTester:
             print(f"❌ Player registration failed: {result}")
             return False
         
-        # Test Venue Owner Registration
-        print("\n--- Testing Venue Owner Registration ---")
+        # Test Venue Partner Registration
+        print("\n--- Testing Venue Partner Registration ---")
         
-        # Send OTP for venue owner
+        # Send OTP for venue partner
         otp_request = {"mobile": self.test_venue_owner_mobile}
         result = self.make_request("POST", "/auth/send-otp", otp_request)
         if not result["success"]:
-            print(f"❌ Failed to send OTP for venue owner registration: {result}")
+            print(f"❌ Failed to send OTP for venue partner registration: {result}")
             return False
         
         owner_otp = result['data'].get('dev_info', '').replace('OTP: ', '') if 'dev_info' in result['data'] else None
         if not owner_otp:
-            print("❌ Could not extract OTP for venue owner registration")
+            print("❌ Could not extract OTP for venue partner registration")
             return False
         
-        # Register venue owner
+        # Register venue partner
         registration_data = self.test_venue_owner_data.copy()
         registration_data.update({
             "mobile": self.test_venue_owner_mobile,
@@ -260,15 +260,15 @@ class UnifiedAuthTester:
         
         result = self.make_request("POST", "/auth/register", registration_data)
         if result["success"]:
-            print("✅ Venue owner registration successful")
+            print("✅ Venue partner registration successful")
             self.venue_owner_token = result['data'].get('access_token')
             self.venue_owner_id = result['data'].get('user', {}).get('id')
-            print(f"   Venue Owner ID: {self.venue_owner_id}")
+            print(f"   Venue Partner ID: {self.venue_owner_id}")
             print(f"   Token: {self.venue_owner_token[:20]}..." if self.venue_owner_token else "No token")
             print(f"   Role: {result['data'].get('user', {}).get('role')}")
             print(f"   Business: {result['data'].get('user', {}).get('business_name')}")
         else:
-            print(f"❌ Venue owner registration failed: {result}")
+            print(f"❌ Venue partner registration failed: {result}")
             return False
         
         # Test duplicate registration
@@ -318,22 +318,22 @@ class UnifiedAuthTester:
             print(f"❌ Player login failed: {result}")
             return False
         
-        # Test Venue Owner Login
-        print("\n--- Testing Venue Owner Login ---")
+        # Test Venue Partner Login
+        print("\n--- Testing Venue Partner Login ---")
         
-        # Send OTP for venue owner login
+        # Send OTP for venue partner login
         otp_request = {"mobile": self.test_venue_owner_mobile}
         result = self.make_request("POST", "/auth/send-otp", otp_request)
         if not result["success"]:
-            print(f"❌ Failed to send OTP for venue owner login: {result}")
+            print(f"❌ Failed to send OTP for venue partner login: {result}")
             return False
         
         owner_otp = result['data'].get('dev_info', '').replace('OTP: ', '') if 'dev_info' in result['data'] else None
         if not owner_otp:
-            print("❌ Could not extract OTP for venue owner login")
+            print("❌ Could not extract OTP for venue partner login")
             return False
         
-        # Login venue owner
+        # Login venue partner
         login_data = {
             "mobile": self.test_venue_owner_mobile,
             "otp": owner_otp
@@ -341,14 +341,14 @@ class UnifiedAuthTester:
         
         result = self.make_request("POST", "/auth/login", login_data)
         if result["success"]:
-            print("✅ Venue owner login successful")
+            print("✅ Venue partner login successful")
             new_token = result['data'].get('access_token')
             print(f"   New Token: {new_token[:20]}..." if new_token else "No token")
             print(f"   User: {result['data'].get('user', {}).get('name')}")
             print(f"   Role: {result['data'].get('user', {}).get('role')}")
             print(f"   Business: {result['data'].get('user', {}).get('business_name')}")
         else:
-            print(f"❌ Venue owner login failed: {result}")
+            print(f"❌ Venue partner login failed: {result}")
             return False
         
         # Test login with unregistered mobile
@@ -391,17 +391,17 @@ class UnifiedAuthTester:
             print(f"❌ Player profile retrieval failed: {result}")
             return False
         
-        # Test venue owner profile
+        # Test venue partner profile
         result = self.make_request("GET", "/auth/profile", auth_required=True, token=self.venue_owner_token)
         if result["success"]:
-            print("✅ Venue owner profile retrieval successful")
+            print("✅ Venue partner profile retrieval successful")
             profile = result['data']
             print(f"   Name: {profile.get('name')}")
             print(f"   Business: {profile.get('business_name')}")
             print(f"   GST: {profile.get('gst_number')}")
             print(f"   Total Venues: {profile.get('total_venues')}")
         else:
-            print(f"❌ Venue owner profile retrieval failed: {result}")
+            print(f"❌ Venue partner profile retrieval failed: {result}")
             return False
         
         # Test without token
@@ -423,8 +423,8 @@ class UnifiedAuthTester:
         return True
 
     def test_venue_owner_routes(self):
-        """Test Venue Owner Specific Routes"""
-        print("\n=== Testing Venue Owner Routes ===")
+        """Test Venue Partner Specific Routes"""
+        print("\n=== Testing Venue Partner Routes ===")
         
         # Test venue creation by player (should fail)
         print("\n--- Testing Role-Based Access Control ---")
@@ -436,26 +436,26 @@ class UnifiedAuthTester:
             print(f"❌ Venue creation by player not handled properly: {result}")
             return False
         
-        # Test venue creation by venue owner
-        print("\n--- Testing Venue Creation by Venue Owner ---")
+        # Test venue creation by venue partner
+        print("\n--- Testing Venue Creation by Venue Partner ---")
         result = self.make_request("POST", "/venue-owner/venues", self.test_venue_data,
                                  auth_required=True, token=self.venue_owner_token)
         if result["success"]:
-            print("✅ Venue creation by venue owner successful")
+            print("✅ Venue creation by venue partner successful")
             self.test_venue_id = result['data'].get('venue_id')
             print(f"   Venue ID: {self.test_venue_id}")
             print(f"   Message: {result['data'].get('message')}")
         else:
-            print(f"❌ Venue creation by venue owner failed: {result}")
+            print(f"❌ Venue creation by venue partner failed: {result}")
             return False
         
-        # Test venue listing for venue owner
-        print("\n--- Testing Venue Owner Venue Listing ---")
+        # Test venue listing for venue partner
+        print("\n--- Testing Venue Partner Venue Listing ---")
         result = self.make_request("GET", "/venue-owner/venues", 
                                  auth_required=True, token=self.venue_owner_token)
         if result["success"]:
             venues = result['data']
-            print(f"✅ Venue owner venue listing successful ({len(venues)} venues)")
+            print(f"✅ Venue partner venue listing successful ({len(venues)} venues)")
             if venues:
                 venue = venues[0]
                 print(f"   Venue: {venue.get('name')}")
@@ -463,22 +463,22 @@ class UnifiedAuthTester:
                 print(f"   City: {venue.get('city')}")
                 print(f"   Slots: {len(venue.get('slots', []))}")
         else:
-            print(f"❌ Venue owner venue listing failed: {result}")
+            print(f"❌ Venue partner venue listing failed: {result}")
             return False
         
-        # Test venue owner analytics
-        print("\n--- Testing Venue Owner Analytics ---")
+        # Test venue partner analytics
+        print("\n--- Testing Venue Partner Analytics ---")
         result = self.make_request("GET", "/venue-owner/analytics/dashboard",
                                  auth_required=True, token=self.venue_owner_token)
         if result["success"]:
             analytics = result['data']
-            print("✅ Venue owner analytics retrieval successful")
+            print("✅ Venue partner analytics retrieval successful")
             print(f"   Total Venues: {analytics.get('total_venues')}")
             print(f"   Total Bookings: {analytics.get('total_bookings')}")
             print(f"   Total Revenue: ₹{analytics.get('total_revenue')}")
             print(f"   Occupancy Rate: {analytics.get('occupancy_rate')}%")
         else:
-            print(f"❌ Venue owner analytics retrieval failed: {result}")
+            print(f"❌ Venue partner analytics retrieval failed: {result}")
             return False
         
         return True
@@ -528,7 +528,7 @@ class UnifiedAuthTester:
             ("User Registration", self.test_user_registration),
             ("User Login", self.test_user_login),
             ("Protected Routes", self.test_protected_routes),
-            ("Venue Owner Routes", self.test_venue_owner_routes),
+            ("Venue Partner Routes", self.test_venue_owner_routes),
             ("Error Scenarios", self.test_error_scenarios)
         ]
         
@@ -562,11 +562,11 @@ class UnifiedAuthTester:
         if passed == total:
             print("🎉 All unified authentication tests passed!")
             print("✅ Mobile OTP verification working correctly")
-            print("✅ User registration (player & venue owner) working")
+            print("✅ User registration (player & venue partner) working")
             print("✅ JWT token authentication working")
             print("✅ Role-based access control working")
             print("✅ Protected routes secured properly")
-            print("✅ Venue owner specific routes working")
+            print("✅ Venue partner specific routes working")
             return True
         else:
             print("⚠️  Some tests failed. Please check the issues above.")

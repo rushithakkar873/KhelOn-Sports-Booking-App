@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive Testing for Venue Owner Booking Creation Functionality
+Comprehensive Testing for Venue Partner Booking Creation Functionality
 Tests the new POST /api/venue-owner/bookings endpoint with real API integration
 """
 
@@ -23,7 +23,7 @@ class VenueOwnerBookingTester:
         self.test_venue_id = None
         self.test_booking_id = None
         
-        # Test data for venue owner (should exist from previous testing)
+        # Test data for venue partner (should exist from previous testing)
         self.venue_owner_mobile = "+919876543210"
         
         # Test data for new player
@@ -72,8 +72,8 @@ class VenueOwnerBookingTester:
             }
 
     def setup_venue_owner_authentication(self):
-        """Setup venue owner authentication using unified auth system"""
-        print("\n=== Setting up Venue Owner Authentication ===")
+        """Setup venue partner authentication using unified auth system"""
+        print("\n=== Setting up Venue Partner Authentication ===")
         
         # Step 1: Send OTP
         otp_request = {"mobile": self.venue_owner_mobile}
@@ -97,12 +97,12 @@ class VenueOwnerBookingTester:
         if result["success"]:
             self.venue_owner_token = result["data"]["access_token"]
             self.venue_owner_id = result["data"]["user"]["id"]
-            print(f"✅ Venue owner authenticated successfully")
+            print(f"✅ Venue partner authenticated successfully")
             print(f"   User ID: {self.venue_owner_id}")
             print(f"   Role: {result['data']['user']['role']}")
             return True
         else:
-            print(f"❌ Venue owner login failed: {result}")
+            print(f"❌ Venue partner login failed: {result}")
             return False
 
     def setup_test_venue(self):
@@ -539,15 +539,15 @@ class VenueOwnerBookingTester:
             return False
 
     def run_comprehensive_booking_tests(self):
-        """Run all venue owner booking creation tests"""
-        print("🚀 Starting Venue Owner Booking Creation Tests")
+        """Run all venue partner booking creation tests"""
+        print("🚀 Starting Venue Partner Booking Creation Tests")
         print(f"Testing against: {self.base_url}")
         
         test_results = []
         
         # Setup phase
         setup_tests = [
-            ("Venue Owner Authentication", self.setup_venue_owner_authentication),
+            ("Venue Partner Authentication", self.setup_venue_owner_authentication),
             ("Test Venue Setup", self.setup_test_venue),
             ("Existing Player Setup", self.setup_existing_player)
         ]
@@ -600,7 +600,7 @@ class VenueOwnerBookingTester:
         print(f"\nOverall: {passed}/{total} tests passed")
         
         if passed == total:
-            print("🎉 All venue owner booking creation tests passed!")
+            print("🎉 All venue partner booking creation tests passed!")
             print("✅ API endpoint working correctly")
             print("✅ User lookup and creation functionality working")
             print("✅ Payment link generation working")

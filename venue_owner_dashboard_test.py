@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Venue Owner Dashboard API Testing for Playon Sports Booking App
-Tests all venue owner authentication, venue management, booking management, analytics, and profile endpoints
+Comprehensive Venue Partner Dashboard API Testing for Playon Sports Booking App
+Tests all venue partner authentication, venue management, booking management, analytics, and profile endpoints
 """
 
 import requests
@@ -25,7 +25,7 @@ class VenueOwnerDashboardTester:
         self.player_token = None
         self.player_id = None
         
-        # Realistic Indian venue owner test data
+        # Realistic Indian venue partner test data
         self.venue_owner_data = {
             "name": "Rajesh Kumar",
             "email": "rajesh.kumar@elitesports.com",
@@ -135,13 +135,13 @@ class VenueOwnerDashboardTester:
             }
 
     def test_venue_owner_authentication(self):
-        """Test venue owner authentication endpoints"""
-        print("\n=== Testing Venue Owner Authentication ===")
+        """Test venue partner authentication endpoints"""
+        print("\n=== Testing Venue Partner Authentication ===")
         
-        # Test venue owner registration
+        # Test venue partner registration
         result = self.make_request("POST", "/venue-owner/register", self.venue_owner_data)
         if result["success"]:
-            print("✅ Venue owner registration successful")
+            print("✅ Venue partner registration successful")
             self.venue_owner_id = result["data"].get("owner_id")
             print(f"   Owner ID: {self.venue_owner_id}")
             print(f"   Business: {self.venue_owner_data['business_name']}")
@@ -149,19 +149,19 @@ class VenueOwnerDashboardTester:
         else:
             # Check if already exists
             if result["status_code"] == 400 and "already exists" in str(result["data"]):
-                print("✅ Venue owner already exists (expected for repeat tests)")
+                print("✅ Venue partner already exists (expected for repeat tests)")
             else:
-                print(f"❌ Venue owner registration failed: {result}")
+                print(f"❌ Venue partner registration failed: {result}")
                 return False
         
-        # Test venue owner login
+        # Test venue partner login
         login_data = {
             "email": self.venue_owner_data["email"],
             "password": self.venue_owner_data["password"]
         }
         result = self.make_request("POST", "/venue-owner/login", login_data)
         if result["success"]:
-            print("✅ Venue owner login successful")
+            print("✅ Venue partner login successful")
             self.venue_owner_token = result["data"].get("access_token")
             user_type = result["data"].get("user_type")
             owner_name = result["data"].get("name")
@@ -169,24 +169,24 @@ class VenueOwnerDashboardTester:
             print(f"   User type: {user_type}")
             print(f"   Owner name: {owner_name}")
             
-            if user_type != "venue_owner":
+            if user_type != "venue_partner":
                 print(f"❌ Incorrect user type returned: {user_type}")
                 return False
         else:
-            print(f"❌ Venue owner login failed: {result}")
+            print(f"❌ Venue partner login failed: {result}")
             return False
         
-        # Test venue owner profile retrieval
+        # Test venue partner profile retrieval
         result = self.make_request("GET", "/venue-owner/profile", auth_token=self.venue_owner_token)
         if result["success"]:
-            print("✅ Venue owner profile retrieval successful")
+            print("✅ Venue partner profile retrieval successful")
             profile = result["data"]
             print(f"   Name: {profile.get('name')}")
             print(f"   Business: {profile.get('business_name')}")
             print(f"   Total venues: {profile.get('total_venues', 0)}")
             print(f"   Total revenue: ₹{profile.get('total_revenue', 0)}")
         else:
-            print(f"❌ Venue owner profile retrieval failed: {result}")
+            print(f"❌ Venue partner profile retrieval failed: {result}")
             return False
         
         # Test invalid login
@@ -196,27 +196,27 @@ class VenueOwnerDashboardTester:
         }
         result = self.make_request("POST", "/venue-owner/login", invalid_login)
         if not result["success"] and result["status_code"] == 401:
-            print("✅ Invalid venue owner login properly rejected")
+            print("✅ Invalid venue partner login properly rejected")
         else:
-            print(f"❌ Invalid venue owner login not handled properly: {result}")
+            print(f"❌ Invalid venue partner login not handled properly: {result}")
             return False
         
         # Test duplicate registration
         result = self.make_request("POST", "/venue-owner/register", self.venue_owner_data)
         if not result["success"] and result["status_code"] == 400:
-            print("✅ Duplicate venue owner registration properly rejected")
+            print("✅ Duplicate venue partner registration properly rejected")
         else:
-            print(f"❌ Duplicate venue owner registration not handled properly: {result}")
+            print(f"❌ Duplicate venue partner registration not handled properly: {result}")
             return False
         
         return True
 
     def test_venue_management(self):
-        """Test venue owner venue management endpoints"""
-        print("\n=== Testing Venue Owner Venue Management ===")
+        """Test venue partner venue management endpoints"""
+        print("\n=== Testing Venue Partner Venue Management ===")
         
         if not self.venue_owner_token:
-            print("❌ No venue owner token available")
+            print("❌ No venue partner token available")
             return False
         
         # Test venue creation
@@ -358,11 +358,11 @@ class VenueOwnerDashboardTester:
         return True
 
     def test_booking_management(self):
-        """Test venue owner booking management endpoints"""
-        print("\n=== Testing Venue Owner Booking Management ===")
+        """Test venue partner booking management endpoints"""
+        print("\n=== Testing Venue Partner Booking Management ===")
         
         if not self.venue_owner_token:
-            print("❌ No venue owner token available")
+            print("❌ No venue partner token available")
             return False
         
         # Setup test booking first
@@ -370,12 +370,12 @@ class VenueOwnerDashboardTester:
             print("❌ Failed to setup test booking")
             return False
         
-        # Test booking listing for venue owner
+        # Test booking listing for venue partner
         result = self.make_request("GET", "/venue-owner/bookings", auth_token=self.venue_owner_token, 
                                  params={"skip": 0, "limit": 10})
         if result["success"]:
             bookings = result["data"]
-            print(f"✅ Venue owner booking listing successful ({len(bookings)} bookings)")
+            print(f"✅ Venue partner booking listing successful ({len(bookings)} bookings)")
             if bookings:
                 booking = bookings[0]
                 print(f"   Sample booking: {booking['venue_name']} on {booking['booking_date']}")
@@ -383,7 +383,7 @@ class VenueOwnerDashboardTester:
                 print(f"   Amount: ₹{booking['total_amount']}")
                 print(f"   Status: {booking['status']}")
         else:
-            print(f"❌ Venue owner booking listing failed: {result}")
+            print(f"❌ Venue partner booking listing failed: {result}")
             return False
         
         # Test booking filtering by venue
@@ -457,11 +457,11 @@ class VenueOwnerDashboardTester:
         return True
 
     def test_analytics_dashboard(self):
-        """Test venue owner analytics dashboard endpoint"""
-        print("\n=== Testing Venue Owner Analytics Dashboard ===")
+        """Test venue partner analytics dashboard endpoint"""
+        print("\n=== Testing Venue Partner Analytics Dashboard ===")
         
         if not self.venue_owner_token:
-            print("❌ No venue owner token available")
+            print("❌ No venue partner token available")
             return False
         
         # Test analytics dashboard without date filter
@@ -530,11 +530,11 @@ class VenueOwnerDashboardTester:
         return True
 
     def test_profile_management(self):
-        """Test venue owner profile management"""
-        print("\n=== Testing Venue Owner Profile Management ===")
+        """Test venue partner profile management"""
+        print("\n=== Testing Venue Partner Profile Management ===")
         
         if not self.venue_owner_token:
-            print("❌ No venue owner token available")
+            print("❌ No venue partner token available")
             return False
         
         # Test profile retrieval (already tested in authentication, but verify again)
@@ -579,11 +579,11 @@ class VenueOwnerDashboardTester:
         return True
 
     def test_error_handling_and_validation(self):
-        """Test error handling and validation for venue owner endpoints"""
+        """Test error handling and validation for venue partner endpoints"""
         print("\n=== Testing Error Handling and Validation ===")
         
         if not self.venue_owner_token:
-            print("❌ No venue owner token available")
+            print("❌ No venue partner token available")
             return False
         
         # Test invalid venue status update
@@ -627,16 +627,16 @@ class VenueOwnerDashboardTester:
         return True
 
     def run_all_tests(self):
-        """Run all venue owner dashboard test suites"""
-        print("🚀 Starting Venue Owner Dashboard API Tests")
+        """Run all venue partner dashboard test suites"""
+        print("🚀 Starting Venue Partner Dashboard API Tests")
         print(f"Testing against: {self.base_url}")
-        print(f"Venue Owner: {self.venue_owner_data['name']} ({self.venue_owner_data['business_name']})")
+        print(f"Venue Partner: {self.venue_owner_data['name']} ({self.venue_owner_data['business_name']})")
         
         test_results = []
         
         # Run test suites in order
         test_suites = [
-            ("Venue Owner Authentication", self.test_venue_owner_authentication),
+            ("Venue Partner Authentication", self.test_venue_owner_authentication),
             ("Venue Management", self.test_venue_management),
             ("Booking Management", self.test_booking_management),
             ("Analytics Dashboard", self.test_analytics_dashboard),
@@ -672,7 +672,7 @@ class VenueOwnerDashboardTester:
         print(f"\nOverall: {passed}/{total} test suites passed")
         
         if passed == total:
-            print("🎉 All venue owner dashboard tests passed! APIs are working correctly.")
+            print("🎉 All venue partner dashboard tests passed! APIs are working correctly.")
             return True
         else:
             print("⚠️  Some tests failed. Please check the issues above.")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Venue Owner API Endpoints Testing
-Tests the specific venue owner endpoints that were just added to fix integration issues
+Venue Partner API Endpoints Testing
+Tests the specific venue partner endpoints that were just added to fix integration issues
 """
 
 import requests
@@ -23,12 +23,12 @@ class VenueOwnerAPITester:
         self.test_venue_id = None
         self.test_booking_id = None
         
-        # Test venue owner data
+        # Test venue partner data
         self.test_venue_owner = {
             "mobile": "+919876543210",
             "name": "Rajesh Kumar",
             "email": "rajesh.kumar@example.com",
-            "role": "venue_owner",
+            "role": "venue_partner",
             "business_name": "Elite Sports Complex",
             "business_address": "Sector 15, Noida, Uttar Pradesh 201301",
             "gst_number": "24ABCDE1234F1Z5"
@@ -118,8 +118,8 @@ class VenueOwnerAPITester:
             }
 
     def setup_venue_owner_auth(self):
-        """Setup venue owner authentication using unified auth system"""
-        print("\n=== Setting up Venue Owner Authentication ===")
+        """Setup venue partner authentication using unified auth system"""
+        print("\n=== Setting up Venue Partner Authentication ===")
         
         # Step 1: Send OTP
         otp_request = {"mobile": self.test_venue_owner["mobile"]}
@@ -133,21 +133,21 @@ class VenueOwnerAPITester:
         dev_otp = result["data"].get("dev_info", "").replace("OTP: ", "")
         print(f"   Development OTP: {dev_otp}")
         
-        # Step 2: Register venue owner (includes OTP verification)
+        # Step 2: Register venue partner (includes OTP verification)
         registration_data = self.test_venue_owner.copy()
         registration_data["otp"] = dev_otp
         
         result = self.make_request("POST", "/auth/register", registration_data)
         
         if result["success"]:
-            print("✅ Venue owner registration successful")
+            print("✅ Venue partner registration successful")
             self.venue_owner_token = result["data"].get("access_token")
             self.venue_owner_id = result["data"]["user"]["id"]
-            print(f"   Venue Owner ID: {self.venue_owner_id}")
+            print(f"   Venue Partner ID: {self.venue_owner_id}")
             print(f"   Token: {self.venue_owner_token[:20]}...")
             return True
         elif "already exists" in result["data"].get("detail", ""):
-            print("ℹ️  Venue owner already exists, attempting login...")
+            print("ℹ️  Venue partner already exists, attempting login...")
             
             # Step 3: Login if user already exists
             # First send OTP for login
@@ -166,16 +166,16 @@ class VenueOwnerAPITester:
             result = self.make_request("POST", "/auth/login", login_data)
             
             if result["success"]:
-                print("✅ Venue owner login successful")
+                print("✅ Venue partner login successful")
                 self.venue_owner_token = result["data"].get("access_token")
                 self.venue_owner_id = result["data"]["user"]["id"]
-                print(f"   Venue Owner ID: {self.venue_owner_id}")
+                print(f"   Venue Partner ID: {self.venue_owner_id}")
                 return True
             else:
-                print(f"❌ Venue owner login failed: {result}")
+                print(f"❌ Venue partner login failed: {result}")
                 return False
         else:
-            print(f"❌ Venue owner registration failed: {result}")
+            print(f"❌ Venue partner registration failed: {result}")
             return False
 
     def create_test_venue(self):
@@ -303,7 +303,7 @@ class VenueOwnerAPITester:
                     "payment_status": "pending",
                     "player_name": self.test_player["name"],
                     "player_phone": self.test_player["mobile"],
-                    "notes": "Test booking for venue owner API testing",
+                    "notes": "Test booking for venue partner API testing",
                     "created_at": datetime.utcnow(),
                     "updated_at": datetime.utcnow()
                 }
@@ -386,14 +386,14 @@ class VenueOwnerAPITester:
 
     def test_get_venue_owner_bookings(self):
         """Test GET /api/venue-owner/bookings"""
-        print("\n=== Testing Get Venue Owner Bookings ===")
+        print("\n=== Testing Get Venue Partner Bookings ===")
         
         # Test basic bookings retrieval
         result = self.make_request("GET", "/venue-owner/bookings", auth_required=True)
         
         if result["success"]:
             bookings = result["data"]
-            print(f"✅ Get venue owner bookings successful ({len(bookings)} bookings)")
+            print(f"✅ Get venue partner bookings successful ({len(bookings)} bookings)")
             
             if bookings:
                 booking = bookings[0]
@@ -437,7 +437,7 @@ class VenueOwnerAPITester:
             
             return True
         else:
-            print(f"❌ Get venue owner bookings failed: {result}")
+            print(f"❌ Get venue partner bookings failed: {result}")
             return False
 
     def test_get_specific_booking_details(self):
@@ -568,7 +568,7 @@ class VenueOwnerAPITester:
             return False
 
     def test_authentication_and_authorization(self):
-        """Test authentication and authorization for venue owner endpoints"""
+        """Test authentication and authorization for venue partner endpoints"""
         print("\n=== Testing Authentication & Authorization ===")
         
         # Test without authentication
@@ -593,7 +593,7 @@ class VenueOwnerAPITester:
         # Restore valid token
         self.venue_owner_token = old_token
         
-        # Test venue owner accessing non-existent venue
+        # Test venue partner accessing non-existent venue
         result = self.make_request("GET", "/venue-owner/venues/non-existent-venue-id", auth_required=True)
         if not result["success"] and result["status_code"] == 404:
             print("✅ Non-existent venue properly handled")
@@ -601,7 +601,7 @@ class VenueOwnerAPITester:
             print(f"❌ Non-existent venue not handled properly: {result}")
             return False
         
-        # Test venue owner accessing non-existent booking
+        # Test venue partner accessing non-existent booking
         result = self.make_request("GET", "/venue-owner/bookings/non-existent-booking-id", auth_required=True)
         if not result["success"] and result["status_code"] in [404, 403]:
             print("✅ Non-existent booking properly handled")
@@ -611,13 +611,13 @@ class VenueOwnerAPITester:
             return False
 
     def run_all_tests(self):
-        """Run all venue owner API tests"""
-        print("🚀 Starting Venue Owner API Tests")
+        """Run all venue partner API tests"""
+        print("🚀 Starting Venue Partner API Tests")
         print(f"Testing against: {self.base_url}")
         
         # Setup phase
         if not self.setup_venue_owner_auth():
-            print("❌ Failed to setup venue owner authentication")
+            print("❌ Failed to setup venue partner authentication")
             return False
         
         if not self.create_test_venue():
@@ -634,7 +634,7 @@ class VenueOwnerAPITester:
         test_suites = [
             ("GET Specific Venue Details", self.test_get_specific_venue_details),
             ("Update Venue Status", self.test_update_venue_status),
-            ("Get Venue Owner Bookings", self.test_get_venue_owner_bookings),
+            ("Get Venue Partner Bookings", self.test_get_venue_owner_bookings),
             ("Get Specific Booking Details", self.test_get_specific_booking_details),
             ("Update Booking Status", self.test_update_booking_status),
             ("Analytics Dashboard", self.test_analytics_dashboard),
@@ -666,7 +666,7 @@ class VenueOwnerAPITester:
         print(f"\nOverall: {passed}/{total} test suites passed")
         
         if passed == total:
-            print("🎉 All venue owner API tests passed! Endpoints are working correctly.")
+            print("🎉 All venue partner API tests passed! Endpoints are working correctly.")
             return True
         else:
             print("⚠️  Some tests failed. Please check the issues above.")

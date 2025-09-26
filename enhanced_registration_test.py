@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test the enhanced venue owner registration flow with venue details
+Test the enhanced venue partner registration flow with venue details
 """
 
 import requests
@@ -31,13 +31,13 @@ def test_enhanced_registration():
     print(f"✅ OTP sent successfully. Dev OTP: {dev_otp}")
     
     # Step 2: Register with enhanced venue details
-    print("\n2. Registering venue owner with venue details...")
+    print("\n2. Registering venue partner with venue details...")
     registration_data = {
         "mobile": mobile,
         "otp": dev_otp,
         "name": "Priya Patel",
         "email": "priya@newagesports.com",
-        "role": "venue_owner",
+        "role": "venue_partner",
         # Business details
         "business_name": "New Age Sports Center", 
         "business_address": "321 Sports Avenue, Mumbai",

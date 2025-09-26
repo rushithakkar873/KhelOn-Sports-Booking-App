@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Critical Venue Owner Booking Functionality Testing
+Critical Venue Partner Booking Functionality Testing
 Focus on Day-of-Week Conversion, Conflict Detection, Time Slot Validation, and Booking Submission
 
 Testing the specific fixes mentioned in the review request:
@@ -29,7 +29,7 @@ class VenueOwnerBookingTester:
         self.test_venue_id = None
         self.test_booking_ids = []
         
-        # Test venue owner from test history
+        # Test venue partner from test history
         self.venue_owner_mobile = "+919876543210"
         self.venue_owner_name = "Rajesh Kumar"
         
@@ -83,8 +83,8 @@ class VenueOwnerBookingTester:
             }
 
     def test_venue_owner_authentication(self):
-        """Test venue owner authentication with mobile OTP"""
-        print("\n=== Testing Venue Owner Authentication ===")
+        """Test venue partner authentication with mobile OTP"""
+        print("\n=== Testing Venue Partner Authentication ===")
         
         # Step 1: Send OTP
         otp_request = {"mobile": self.venue_owner_mobile}
@@ -109,13 +109,13 @@ class VenueOwnerBookingTester:
             self.venue_owner_token = result["data"]["access_token"]
             user_data = result["data"]["user"]
             self.venue_owner_id = user_data["id"]
-            print(f"✅ Venue owner login successful")
+            print(f"✅ Venue partner login successful")
             print(f"   Name: {user_data['name']}")
             print(f"   Role: {user_data['role']}")
             print(f"   Token: {self.venue_owner_token[:20]}...")
             return True
         else:
-            print(f"❌ Venue owner login failed: {result}")
+            print(f"❌ Venue partner login failed: {result}")
             return False
 
     def test_venue_creation_with_slots(self):
@@ -123,7 +123,7 @@ class VenueOwnerBookingTester:
         print("\n=== Testing Venue Creation with Time Slots ===")
         
         if not self.venue_owner_token:
-            print("❌ No venue owner token available")
+            print("❌ No venue partner token available")
             return False
         
         # Create venue with slots for different days of week
@@ -540,8 +540,8 @@ class VenueOwnerBookingTester:
         return today + timedelta(days=days_ahead)
 
     def run_critical_tests(self):
-        """Run all critical venue owner booking tests"""
-        print("🚀 Starting Critical Venue Owner Booking Tests")
+        """Run all critical venue partner booking tests"""
+        print("🚀 Starting Critical Venue Partner Booking Tests")
         print(f"Testing against: {self.base_url}")
         print("Focus: Day-of-Week Conversion, Conflict Detection, Time Slot Validation, Booking Submission")
         
@@ -549,7 +549,7 @@ class VenueOwnerBookingTester:
         
         # Run test suites in order
         test_suites = [
-            ("Venue Owner Authentication", self.test_venue_owner_authentication),
+            ("Venue Partner Authentication", self.test_venue_owner_authentication),
             ("Venue Creation with Slots", self.test_venue_creation_with_slots),
             ("Day-of-Week Conversion", self.test_day_of_week_conversion),
             ("Booking Creation with Conflict Detection", self.test_booking_creation_with_conflict_detection),
@@ -585,7 +585,7 @@ class VenueOwnerBookingTester:
         print(f"\nOverall: {passed}/{total} test suites passed")
         
         if passed == total:
-            print("🎉 All critical tests passed! Venue owner booking functionality is working correctly.")
+            print("🎉 All critical tests passed! Venue partner booking functionality is working correctly.")
             print("\n✅ CONFIRMED FIXES:")
             print("   - Day-of-Week Conversion: Backend day_of_week field working correctly")
             print("   - Real-Time Booking Conflict Detection: Preventing overlapping bookings")

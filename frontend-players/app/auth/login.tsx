@@ -90,7 +90,7 @@ export default function LoginScreen() {
       if (result.success && result.user) {
         // Check if user role is player
         if (result.user.role !== 'player') {
-          Alert.alert('Error', 'This app is for players only. Please download KhelON Venue Partner app if you are a venue owner.');
+          Alert.alert('Error', 'This app is for players only. Please download KhelON Venue Partner app if you are a venue partner.');
           return;
         }
         

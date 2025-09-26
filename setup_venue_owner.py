@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup script to create venue owner Rajesh Kumar for testing
+Setup script to create venue partner Rajesh Kumar for testing
 """
 
 import requests
@@ -10,10 +10,10 @@ BASE_URL = "https://playonapp.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 def setup_venue_owner():
-    """Create venue owner Rajesh Kumar"""
-    print("🏗️  Setting up venue owner Rajesh Kumar...")
+    """Create venue partner Rajesh Kumar"""
+    print("🏗️  Setting up venue partner Rajesh Kumar...")
     
-    # Use a different mobile number for venue owner
+    # Use a different mobile number for venue partner
     venue_owner_mobile = "+919876543212"  # Different from existing player
     venue_owner_name = "Rajesh Kumar"
     
@@ -30,13 +30,13 @@ def setup_venue_owner():
     dev_otp = otp_data.get("dev_info", "").replace("OTP: ", "")
     print(f"✅ OTP sent: {dev_otp}")
     
-    # Step 2: Register as venue owner
-    print(f"👤 Registering {venue_owner_name} as venue owner")
+    # Step 2: Register as venue partner
+    print(f"👤 Registering {venue_owner_name} as venue partner")
     registration_data = {
         "mobile": venue_owner_mobile,
         "otp": dev_otp,
         "name": venue_owner_name,
-        "role": "venue_owner",
+        "role": "venue_partner",
         "email": "rajesh.kumar@example.com",
         "business_name": "Elite Sports Complex",
         "business_address": "Bandra West, Mumbai, Maharashtra 400050",
@@ -52,7 +52,7 @@ def setup_venue_owner():
     reg_data = response.json()
     user_data = reg_data.get("user", {})
     
-    print("✅ Venue owner registered successfully")
+    print("✅ Venue partner registered successfully")
     print(f"   Name: {user_data.get('name')}")
     print(f"   Role: {user_data.get('role')}")
     print(f"   Mobile: {user_data.get('mobile')}")
@@ -158,7 +158,7 @@ def setup_venue_owner():
     print(f"✅ Football venue created: {football_venue_id}")
     
     print("\n🎉 Setup completed successfully!")
-    print(f"Venue Owner: {venue_owner_name} ({venue_owner_mobile})")
+    print(f"Venue Partner: {venue_owner_name} ({venue_owner_mobile})")
     print(f"Cricket Venue ID: {cricket_venue_id}")
     print(f"Football Venue ID: {football_venue_id}")
     
@@ -167,6 +167,6 @@ def setup_venue_owner():
 if __name__ == "__main__":
     success, mobile = setup_venue_owner()
     if success:
-        print(f"\n✅ Use mobile number {mobile} for venue owner testing")
+        print(f"\n✅ Use mobile number {mobile} for venue partner testing")
     else:
         print("\n❌ Setup failed")

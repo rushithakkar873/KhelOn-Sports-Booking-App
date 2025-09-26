@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Enhanced Venue Owner Registration Flow Testing
-Tests the updated venue owner registration with automatic venue creation
+Enhanced Venue Partner Registration Flow Testing
+Tests the updated venue partner registration with automatic venue creation
 """
 
 import requests
@@ -13,12 +13,12 @@ from datetime import datetime
 BASE_URL = "http://localhost:8001/api"
 HEADERS = {"Content-Type": "application/json"}
 
-# Test Data - Realistic Indian venue owner data
+# Test Data - Realistic Indian venue partner data
 VENUE_OWNER_DATA = {
     "mobile": "+919876543210",
     "name": "Rajesh Kumar",
     "email": "rajesh.kumar@elitesports.com",
-    "role": "venue_owner",
+    "role": "venue_partner",
     "business_name": "Elite Sports Complex",
     "business_address": "123 Sports Avenue, Andheri West, Mumbai",
     "gst_number": "27ABCDE1234F1Z5",
@@ -175,7 +175,7 @@ def test_otp_verification():
     return results
 
 def test_venue_owner_registration():
-    """Test enhanced venue owner registration with venue details"""
+    """Test enhanced venue partner registration with venue details"""
     results = TestResults()
     
     try:
@@ -197,7 +197,7 @@ def test_venue_owner_registration():
         if otp_response.status_code == 200:
             fresh_otp = otp_response.json().get("dev_info", "").replace("OTP: ", "")
             
-            # Test complete venue owner registration
+            # Test complete venue partner registration
             registration_data = VENUE_OWNER_DATA.copy()
             registration_data["otp"] = fresh_otp
             
@@ -210,7 +210,7 @@ def test_venue_owner_registration():
             if response.status_code == 200:
                 data = response.json()
                 results.add_result(
-                    "Venue Owner Registration - Complete Data",
+                    "Venue Partner Registration - Complete Data",
                     data.get("success") == True and "access_token" in data,
                     f"Response: {data}"
                 )
@@ -223,12 +223,12 @@ def test_venue_owner_registration():
                 user_data = data.get("user", {})
                 results.add_result(
                     "Registration Response - User Data",
-                    user_data.get("role") == "venue_owner" and user_data.get("business_name") == "Elite Sports Complex",
+                    user_data.get("role") == "venue_partner" and user_data.get("business_name") == "Elite Sports Complex",
                     f"User data: {user_data}"
                 )
                 
             else:
-                results.add_result("Venue Owner Registration - Complete Data", False, f"Status: {response.status_code}, Response: {response.text}")
+                results.add_result("Venue Partner Registration - Complete Data", False, f"Status: {response.status_code}, Response: {response.text}")
         
         # Test registration with missing required venue fields
         time.sleep(1)
@@ -243,7 +243,7 @@ def test_venue_owner_registration():
                 "mobile": "+919876543211",
                 "otp": incomplete_otp,
                 "name": "Test Owner",
-                "role": "venue_owner",
+                "role": "venue_partner",
                 "business_name": "Test Business"
                 # Missing venue_name, venue_address, etc.
             }
@@ -261,7 +261,7 @@ def test_venue_owner_registration():
             )
         
     except Exception as e:
-        results.add_result("Venue Owner Registration Tests", False, str(e))
+        results.add_result("Venue Partner Registration Tests", False, str(e))
     
     return results
 
@@ -271,7 +271,7 @@ def test_automatic_venue_creation():
     
     try:
         if 'VENUE_OWNER_TOKEN' not in globals():
-            results.add_result("Automatic Venue Creation", False, "No venue owner token available")
+            results.add_result("Automatic Venue Creation", False, "No venue partner token available")
             return results
         
         # Test venue retrieval
@@ -363,7 +363,7 @@ def test_error_cases():
                 "mobile": "9876543210",  # Missing +91
                 "otp": "123456",
                 "name": "Test User",
-                "role": "venue_owner",
+                "role": "venue_partner",
                 "business_name": "Test Business",
                 "venue_name": "Test Venue",
                 "venue_address": "Test Address",
@@ -396,7 +396,7 @@ def test_error_cases():
                     "mobile": "+919876543212",
                     "otp": test_otp,
                     "name": "Test User",
-                    "role": "venue_owner",
+                    "role": "venue_partner",
                     "business_name": "Test Business",
                     "venue_name": "Test Venue",
                     "venue_address": "Test Address",
@@ -449,7 +449,7 @@ def test_venue_retrieval_single_venue_mvp():
     
     try:
         if 'VENUE_OWNER_TOKEN' not in globals():
-            results.add_result("Single Venue MVP", False, "No venue owner token available")
+            results.add_result("Single Venue MVP", False, "No venue partner token available")
             return results
         
         auth_headers = {
@@ -492,7 +492,7 @@ def test_venue_retrieval_single_venue_mvp():
                 
                 # Verify owner information
                 results.add_result(
-                    "Venue Owner Info - Name",
+                    "Venue Partner Info - Name",
                     venue.get("owner_name") == VENUE_OWNER_DATA["name"],
                     f"Expected: {VENUE_OWNER_DATA['name']}, Got: {venue.get('owner_name')}"
                 )
@@ -526,7 +526,7 @@ def run_all_tests():
         ("API Health Check", test_api_health),
         ("OTP Sending", test_send_otp),
         ("OTP Verification", test_otp_verification),
-        ("Enhanced Venue Owner Registration", test_venue_owner_registration),
+        ("Enhanced Venue Partner Registration", test_venue_owner_registration),
         ("Automatic Venue Creation", test_automatic_venue_creation),
         ("Single Venue MVP", test_venue_retrieval_single_venue_mvp),
         ("Error Cases", test_error_cases)

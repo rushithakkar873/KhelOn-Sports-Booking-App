@@ -22,7 +22,7 @@ export default function LoginScreen() {
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [devOtp, setDevOtp] = useState(''); // For development
-  const [userRole, setUserRole] = useState<'venue_owner'>('venue_owner');
+  const [userRole, setUserRole] = useState<'venue_partner'>('venue_partner');
   
   const router = useRouter();
   const authService = AuthService.getInstance();
@@ -85,11 +85,13 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const result = await authService.login(mobile, otp);
+      console.log(mobile, " ==> otp ==> ", otp);
       
+      const result = await authService.login(mobile, otp);
+      console.log(result, " ==> login response");
       if (result.success && result.user) {
-        // Check if user role is venue_owner
-        if (result.user.role !== 'venue_owner') {
+        // Check if user role is venue_partner
+        if (result.user.role !== 'venue_partner') {
           Alert.alert('Error', 'This app is for venue partners only. Please download KhelON Player app if you are a player.');
           return;
         }
