@@ -1,6 +1,6 @@
 /**
- * Venue Owner API Service
- * Handles API calls for venue owner dashboard functionality
+ * Venue Partner API Service
+ * Handles API calls for venue partner dashboard functionality
  */
 
 import AuthService from './authService';
@@ -214,7 +214,7 @@ class VenuePartnerService {
    * Create a new venue
    */
   async createVenue(venueData: CreateVenueData): Promise<{success: boolean; message: string; venue_id: string}> {
-    return await this.makeRequest('/venue-owner/venues', {
+    return await this.makeRequest('/venue-partner/venues', {
       method: 'POST',
       body: JSON.stringify(venueData),
     });
@@ -224,7 +224,7 @@ class VenuePartnerService {
    * Get specific venue details
    */
   async getVenue(venueId: string): Promise<Venue> {
-    return await this.makeRequest(`/venue-owner/venues/${venueId}`, {
+    return await this.makeRequest(`/venue-partner/venues/${venueId}`, {
       method: 'GET',
     });
   }
@@ -233,7 +233,7 @@ class VenuePartnerService {
    * Update venue status (activate/deactivate)
    */
   async updateVenueStatus(venueId: string, isActive: boolean): Promise<{message: string}> {
-    return await this.makeRequest(`/venue-owner/venues/${venueId}/status?is_active=${isActive}`, {
+    return await this.makeRequest(`/venue-partner/venues/${venueId}/status?is_active=${isActive}`, {
       method: 'PUT',
     });
   }
@@ -253,7 +253,7 @@ class VenuePartnerService {
     }
 
     const queryString = params.toString();
-    const endpoint = `/venue-owner/analytics/dashboard${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/venue-partner/analytics/dashboard${queryString ? `?${queryString}` : ''}`;
 
     return await this.makeRequest(endpoint, {
       method: 'GET',
@@ -261,7 +261,7 @@ class VenuePartnerService {
   }
 
   /**
-   * Get bookings for venue owner
+   * Get bookings for venue partner
    */
   async getBookings(
     venueId?: string,
@@ -281,7 +281,7 @@ class VenuePartnerService {
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
 
-    return await this.makeRequest(`/venue-owner/bookings?${params.toString()}`, {
+    return await this.makeRequest(`/venue-partner/bookings?${params.toString()}`, {
       method: 'GET',
     });
   }
@@ -290,7 +290,7 @@ class VenuePartnerService {
    * Get specific booking details
    */
   async getBooking(bookingId: string): Promise<any> {
-    return await this.makeRequest(`/venue-owner/bookings/${bookingId}`, {
+    return await this.makeRequest(`/venue-partner/bookings/${bookingId}`, {
       method: 'GET',
     });
   }
@@ -299,16 +299,16 @@ class VenuePartnerService {
    * Update booking status
    */
   async updateBookingStatus(bookingId: string, status: 'confirmed' | 'cancelled' | 'completed'): Promise<{message: string}> {
-    return await this.makeRequest(`/venue-owner/bookings/${bookingId}/status?new_status=${status}`, {
+    return await this.makeRequest(`/venue-partner/bookings/${bookingId}/status?new_status=${status}`, {
       method: 'PUT',
     });
   }
 
   /**
-   * Create booking by venue owner with payment link and SMS
+   * Create booking by venue partner with payment link and SMS
    */
   async createBooking(bookingData: CreateBookingData): Promise<CreateBookingResponse> {
-    return await this.makeRequest('/venue-owner/bookings', {
+    return await this.makeRequest('/venue-partner/bookings', {
       method: 'POST',
       body: JSON.stringify(bookingData),
     });
