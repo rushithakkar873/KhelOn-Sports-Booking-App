@@ -56,7 +56,7 @@ export default function MyVenueScreen() {
   const loadVenue = async () => {
     try {
       // Check if user is authenticated and is venue owner
-      if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
+      if (!authService.isAuthenticated() || !authService.isVenuePartner()) {
         Alert.alert('Authentication Error', 'Please log in as a venue owner', [
           { text: 'OK', onPress: () => router.replace('/auth/login') }
         ]);
