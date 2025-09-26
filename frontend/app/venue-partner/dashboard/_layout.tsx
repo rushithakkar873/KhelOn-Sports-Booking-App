@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import VenueOwnerBottomNavigation from '../../../components/VenueOwnerBottomNavigation';
+import VenuePartnerBottomNavigation from '../../../components/VenuePartnerBottomNavigation';
 
 export default function VenueOwnerDashboardLayout() {
   return (
