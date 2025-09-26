@@ -193,7 +193,7 @@ class VenuePartnerService {
   }
 
   /**
-   * Get venues owned by current venue owner
+   * Get venues owned by current venue partner
    */
   async getVenues(skip: number = 0, limit: number = 10, is_active?: boolean): Promise<Venue[]> {
     const params = new URLSearchParams({
@@ -205,7 +205,7 @@ class VenuePartnerService {
       params.append('is_active', is_active.toString());
     }
 
-    return await this.makeRequest(`/venue-owner/venues?${params.toString()}`, {
+    return await this.makeRequest(`/venue-partner/venues?${params.toString()}`, {
       method: 'GET',
     });
   }
