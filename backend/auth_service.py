@@ -308,7 +308,7 @@ class AuthService:
                     "sports_interests": registration_data.sports_interests or [],
                     "location": registration_data.location
                 })
-            elif registration_data.role == "venue_owner":
+            elif registration_data.role == "venue_partner":
                 user_doc.update({
                     "business_name": registration_data.business_name,
                     "business_address": registration_data.business_address,
