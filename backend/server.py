@@ -341,9 +341,9 @@ async def create_venue_by_partner(venue_data: VenueCreate, current_partner: dict
     
     await db.venues.insert_one(new_venue)
     
-    # Update venue owner's venue count
+    # Update venue partner's venue count
     await db.users.update_one(
-        {"_id": current_owner["_id"]},
+        {"_id": current_partner["_id"]},
         {"$inc": {"total_venues": 1}}
     )
     
