@@ -111,7 +111,7 @@ async def verify_otp(request: OTPVerifyRequest):
 
 @api_router.post("/auth/register")
 async def register_user(registration_data: UserRegistrationRequest):
-    """Register new user (player or venue owner)"""
+    """Register new user (player or venue partner)"""
     result = await auth_service.register_user(registration_data)
     
     if result["success"]:
@@ -168,7 +168,7 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
     )
 
 # ================================
-# VENUE OWNER SPECIFIC ROUTES
+# VENUE PARTNER SPECIFIC ROUTES
 # ================================
 
 # Import venue models from original server
@@ -315,8 +315,8 @@ async def create_venue_by_partner(venue_data: VenueCreate, current_partner: dict
     new_venue = {
         "_id": venue_id,
         "name": venue_data.name,
-        "owner_id": current_owner["_id"],
-        "owner_name": current_owner["name"],
+        "owner_id": current_partner["_id"],
+        "owner_name": current_partner["name"],
         "sports_supported": venue_data.sports_supported,
         "address": venue_data.address,
         "city": venue_data.city,
@@ -353,15 +353,15 @@ async def create_venue_by_partner(venue_data: VenueCreate, current_partner: dict
         "venue_id": venue_id
     }
 
-@api_router.get("/venue-owner/venues", response_model=List[VenueResponse])
-async def get_owner_venues(
-    current_owner: dict = Depends(get_current_venue_owner),
+@api_router.get("/venue-partner/venues", response_model=List[VenueResponse])
+async def get_partner_venues(
+    current_partner: dict = Depends(get_current_venue_partner),
     skip: int = 0,
     limit: int = 10,
     is_active: Optional[bool] = None
 ):
-    """Get venues owned by current venue owner"""
-    query = {"owner_id": current_owner["_id"]}
+    """Get venues owned by current venue partner"""
+    query = {"owner_id": current_partner["_id"]}
     if is_active is not None:
         query["is_active"] = is_active
     
@@ -432,15 +432,15 @@ async def get_owner_venues(
     
     return venue_responses
 
-@api_router.get("/venue-owner/venues/{venue_id}/arenas")
+@api_router.get("/venue-partner/venues/{venue_id}/arenas")
 async def get_venue_arenas(
     venue_id: str,
-    current_owner: dict = Depends(get_current_venue_owner)
+    current_partner: dict = Depends(get_current_venue_partner)
 ):
     """Get all arenas for a specific venue"""
     venue = await db.venues.find_one({
         "_id": venue_id, 
-        "owner_id": current_owner["_id"]
+        "owner_id": current_partner["_id"]
     })
     if not venue:
         raise HTTPException(
@@ -487,15 +487,15 @@ async def get_venue_arenas(
         "arenas": arena_responses
     }
 
-@api_router.get("/venue-owner/analytics/dashboard")
+@api_router.get("/venue-partner/analytics/dashboard")
 async def get_analytics_dashboard(
-    current_owner: dict = Depends(get_current_venue_owner),
+    current_partner: dict = Depends(get_current_venue_partner),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
 ):
-    """Get venue owner analytics dashboard"""
-    # Get owner's venues
-    venues = await db.venues.find({"owner_id": current_owner["_id"]}).to_list(length=None)
+    """Get venue partner analytics dashboard"""
+    # Get partner's venues
+    venues = await db.venues.find({"owner_id": current_partner["_id"]}).to_list(length=None)
     venue_ids = [venue["_id"] for venue in venues]
     
     if not venue_ids:
@@ -601,10 +601,10 @@ async def get_analytics_dashboard(
         ]
     }
 
-@api_router.get("/venue-owner/venues/{venue_id}", response_model=VenueResponse)
-async def get_owner_venue(venue_id: str, current_owner: dict = Depends(get_current_venue_owner)):
-    """Get specific venue details for venue owner"""
-    venue = await db.venues.find_one({"_id": venue_id, "owner_id": current_owner["_id"]})
+@api_router.get("/venue-partner/venues/{venue_id}", response_model=VenueResponse)
+async def get_partner_venue(venue_id: str, current_partner: dict = Depends(get_current_venue_partner)):
+    """Get specific venue details for venue partner"""
+    venue = await db.venues.find_one({"_id": venue_id, "owner_id": current_partner["_id"]})
     if not venue:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -637,15 +637,15 @@ async def get_owner_venue(venue_id: str, current_owner: dict = Depends(get_curre
         created_at=venue["created_at"]
     )
 
-@api_router.put("/venue-owner/venues/{venue_id}/status")
+@api_router.put("/venue-partner/venues/{venue_id}/status")
 async def update_venue_status(
     venue_id: str, 
     is_active: bool,
-    current_owner: dict = Depends(get_current_venue_owner)
+    current_partner: dict = Depends(get_current_venue_partner)
 ):
     """Update venue status (activate/deactivate)"""
     result = await db.venues.update_one(
-        {"_id": venue_id, "owner_id": current_owner["_id"]},
+        {"_id": venue_id, "owner_id": current_partner["_id"]},
         {
             "$set": {
                 "is_active": is_active,
@@ -664,10 +664,10 @@ async def update_venue_status(
         "message": f"Venue {'activated' if is_active else 'deactivated'} successfully"
     }
 
-# Venue Owner - Booking Management Routes
-@api_router.get("/venue-owner/bookings", response_model=List[BookingResponse])
-async def get_owner_bookings(
-    current_owner: dict = Depends(get_current_venue_owner),
+# Venue Partner - Booking Management Routes
+@api_router.get("/venue-partner/bookings", response_model=List[BookingResponse])
+async def get_partner_bookings(
+    current_partner: dict = Depends(get_current_venue_partner),
     venue_id: Optional[str] = None,
     status: Optional[str] = None,
     start_date: Optional[str] = None,
@@ -675,10 +675,10 @@ async def get_owner_bookings(
     skip: int = 0,
     limit: int = 10
 ):
-    """Get bookings for venue owner's venues"""
-    # First get all venues owned by this owner
-    owner_venues = await db.venues.find({"owner_id": current_owner["_id"]}).to_list(length=None)
-    venue_ids = [venue["_id"] for venue in owner_venues]
+    """Get bookings for venue partner's venues"""
+    # First get all venues owned by this partner
+    partner_venues = await db.venues.find({"owner_id": current_partner["_id"]}).to_list(length=None)
+    venue_ids = [venue["_id"] for venue in partner_venues]
     
     if not venue_ids:
         return []
@@ -702,7 +702,7 @@ async def get_owner_bookings(
     booking_responses = []
     for booking in bookings:
         # Get venue details
-        venue = next((v for v in owner_venues if v["_id"] == booking["venue_id"]), None)
+        venue = next((v for v in partner_venues if v["_id"] == booking["venue_id"]), None)
         venue_name = venue["name"] if venue else "Unknown Venue"
         
         booking_responses.append(BookingResponse(
@@ -732,8 +732,8 @@ async def get_owner_bookings(
     
     return booking_responses
 
-@api_router.get("/venue-owner/bookings/{booking_id}", response_model=BookingResponse)
-async def get_booking_details(booking_id: str, current_owner: dict = Depends(get_current_venue_owner)):
+@api_router.get("/venue-partner/bookings/{booking_id}", response_model=BookingResponse)
+async def get_booking_details(booking_id: str, current_partner: dict = Depends(get_current_venue_partner)):
     """Get specific booking details"""
     booking = await db.bookings.find_one({"_id": booking_id})
     if not booking:
@@ -742,8 +742,8 @@ async def get_booking_details(booking_id: str, current_owner: dict = Depends(get
             detail="Booking not found"
         )
     
-    # Verify the booking belongs to owner's venue
-    venue = await db.venues.find_one({"_id": booking["venue_id"], "owner_id": current_owner["_id"]})
+    # Verify the booking belongs to partner's venue
+    venue = await db.venues.find_one({"_id": booking["venue_id"], "owner_id": current_partner["_id"]})
     if not venue:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -775,11 +775,11 @@ async def get_booking_details(booking_id: str, current_owner: dict = Depends(get
         updated_at=booking.get("updated_at", booking["created_at"])
     )
 
-@api_router.put("/venue-owner/bookings/{booking_id}/status")
+@api_router.put("/venue-partner/bookings/{booking_id}/status")
 async def update_booking_status(
     booking_id: str,
     new_status: str,
-    current_owner: dict = Depends(get_current_venue_owner)
+    current_partner: dict = Depends(get_current_venue_partner)
 ):
     """Update booking status"""
     valid_statuses = ["confirmed", "cancelled", "completed"]
@@ -796,8 +796,8 @@ async def update_booking_status(
             detail="Booking not found"
         )
     
-    # Verify the booking belongs to owner's venue
-    venue = await db.venues.find_one({"_id": booking["venue_id"], "owner_id": current_owner["_id"]})
+    # Verify the booking belongs to partner's venue
+    venue = await db.venues.find_one({"_id": booking["venue_id"], "owner_id": current_partner["_id"]})
     if not venue:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -826,7 +826,7 @@ async def update_booking_status(
 # ================================
 
 # ================================
-# VENUE OWNER BOOKING CREATION WITH PAYMENT & SMS
+# VENUE PARTNER BOOKING CREATION WITH PAYMENT & SMS
 # ================================
 
 import razorpay
@@ -839,7 +839,7 @@ razorpay_client = razorpay.Client(auth=(
     os.environ.get('RAZORPAY_KEY_SECRET')
 ))
 
-class VenueOwnerBookingCreate(BaseModel):
+class VenuePartnerBookingCreate(BaseModel):
     venue_id: str
     arena_id: str  # Required field for arena selection
     player_mobile: str = Field(..., min_length=13, max_length=13)
@@ -856,7 +856,7 @@ class VenueOwnerBookingCreate(BaseModel):
             raise ValueError('Invalid Indian mobile number. Format: +91XXXXXXXXXX')
         return v
 
-class VenueOwnerBookingResponse(BaseModel):
+class VenuePartnerBookingResponse(BaseModel):
     booking_id: str
     payment_link: str
     message: str
@@ -905,17 +905,17 @@ Questions? Call: {booking_details['venue_contact']}
                 "mobile": mobile
             }
 
-@api_router.post("/venue-owner/bookings", response_model=VenueOwnerBookingResponse)
-async def create_booking_by_owner(
-    booking_data: VenueOwnerBookingCreate, 
-    current_owner: dict = Depends(get_current_venue_owner)
+@api_router.post("/venue-partner/bookings", response_model=VenuePartnerBookingResponse)
+async def create_booking_by_partner(
+    booking_data: VenuePartnerBookingCreate, 
+    current_partner: dict = Depends(get_current_venue_partner)
 ):
-    """Create booking by venue owner with payment link and SMS notification"""
+    """Create booking by venue partner with payment link and SMS notification"""
     
     # 1. Verify venue ownership
     venue = await db.venues.find_one({
         "_id": booking_data.venue_id, 
-        "owner_id": current_owner["_id"],
+        "owner_id": current_partner["_id"],
         "is_active": True
     })
     if not venue:
@@ -971,7 +971,7 @@ async def create_booking_by_owner(
             "role": "player",
             "is_verified": False,
             "created_at": datetime.utcnow(),
-            "created_by_venue_owner": current_owner["_id"]
+            "created_by_venue_partner": current_partner["_id"]
         }
         await db.users.insert_one(new_user)
     
@@ -1052,8 +1052,8 @@ async def create_booking_by_owner(
         "notes": booking_data.notes,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),
-        "created_by_owner": True,
-        "owner_id": current_owner["_id"]
+        "created_by_partner": True,
+        "partner_id": current_partner["_id"]
     }
     
     await db.bookings.insert_one(booking_record)
@@ -1085,7 +1085,7 @@ async def create_booking_by_owner(
                 "notes": {
                     "booking_id": booking_id,
                     "venue_id": booking_data.venue_id,
-                    "owner_id": current_owner["_id"]
+                    "partner_id": current_partner["_id"]
                 },
                 "callback_url": f"https://your-frontend-domain.com/booking-success/{booking_id}",
                 "callback_method": "get"
@@ -1152,7 +1152,7 @@ async def create_booking_by_owner(
         {"$inc": {"total_bookings": 1}}
     )
     
-    return VenueOwnerBookingResponse(
+    return VenuePartnerBookingResponse(
         booking_id=booking_id,
         payment_link=payment_link_url,
         message="Booking created successfully. Payment link sent via SMS.",
