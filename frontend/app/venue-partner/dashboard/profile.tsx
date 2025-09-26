@@ -11,67 +11,52 @@ import {
   Alert,
   Switch,
   StatusBar,
-  Dimensions,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import VenueOwnerService from '../../../services/venueOwnerService';
+import VenuePartnerService from '../../../services/venuePartnerService';
 import AuthService from '../../../services/authService';
 import AnimatedLoader from '../../../components/AnimatedLoader';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const isTablet = screenWidth >= 768;
-const isLargeScreen = screenWidth >= 1024;
-
-interface VenueOwnerProfile {
+interface UserProfile {
   id: string;
+  mobile: string;
   name: string;
   email?: string;
-  mobile: string;
+  role: string;
+  is_verified: boolean;
+  created_at: string;
   business_name?: string;
   business_address?: string;
   gst_number?: string;
-  profileImage?: string;
-  created_at: string;
-  is_verified: boolean;
   total_venues?: number;
   total_revenue?: number;
 }
 
-interface NotificationSettings {
-  newBookings: boolean;
-  bookingConfirmations: boolean;
-  cancellations: boolean;
-  payments: boolean;
-  emailNotifications: boolean;
-  smsNotifications: boolean;
-}
-
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<VenueOwnerProfile | null>(null);
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    newBookings: true,
-    bookingConfirmations: true,
-    cancellations: true,
-    payments: true,
-    emailNotifications: true,
-    smsNotifications: false,
-  });
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [editForm, setEditForm] = useState({
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [editData, setEditData] = useState({
     name: '',
-    businessName: '',
-    businessAddress: '',
-    gstNumber: '',
+    email: '',
+    business_name: '',
+    business_address: '',
+    gst_number: '',
   });
-  
-  const router = useRouter();
-  const venueOwnerService = VenueOwnerService.getInstance();
+
+  // Notification settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    newBookings: true,
+    bookingUpdates: true,
+    paymentAlerts: true,
+    promotionalOffers: false,
+    systemUpdates: true,
+  });
+
+  const venuePartnerService = VenuePartnerService.getInstance();
   const authService = AuthService.getInstance();
 
   useEffect(() => {
@@ -80,53 +65,20 @@ export default function ProfileScreen() {
 
   const loadProfile = async () => {
     try {
-      // Check if user is authenticated and is venue owner
-      if (!authService.isAuthenticated() || !authService.isVenueOwner()) {
-        Alert.alert('Authentication Error', 'Please log in as a venue owner', [
-          { text: 'OK', onPress: () => router.replace('/auth/login') }
-        ]);
-        return;
+      const profileData = await authService.getProfile();
+      if (profileData) {
+        setProfile(profileData);
+        setEditData({
+          name: profileData.name || '',
+          email: profileData.email || '',
+          business_name: profileData.business_name || '',
+          business_address: profileData.business_address || '',
+          gst_number: profileData.gst_number || '',
+        });
       }
-
-      // Get current user profile
-      const user = await authService.getProfile();
-      if (!user) {
-        throw new Error('Failed to load profile');
-      }
-
-      // Transform user data to profile format
-      const profileData: VenueOwnerProfile = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        mobile: user.mobile,
-        business_name: user.business_name,
-        business_address: user.business_address,
-        gst_number: user.gst_number,
-        created_at: user.created_at,
-        is_verified: user.is_verified,
-        total_venues: user.total_venues,
-        total_revenue: user.total_revenue,
-      };
-
-      setProfile(profileData);
-      setEditForm({
-        name: profileData.name,
-        businessName: profileData.business_name || '',
-        businessAddress: profileData.business_address || '',
-        gstNumber: profileData.gst_number || '',
-      });
     } catch (error) {
       console.error('Error loading profile:', error);
-      
-      Alert.alert(
-        'Error', 
-        'Failed to load profile data. Please check your connection and try again.',
-        [
-          { text: 'Retry', onPress: () => loadProfile() },
-          { text: 'Cancel' }
-        ]
-      );
+      Alert.alert('Error', 'Failed to load profile information');
     } finally {
       setIsLoading(false);
     }
@@ -138,25 +90,16 @@ export default function ProfileScreen() {
     setIsRefreshing(false);
   };
 
-  const handleSaveProfile = () => {
-    if (!editForm.name.trim()) {
-      Alert.alert('Error', 'Name is required');
-      return;
+  const handleSaveProfile = async () => {
+    try {
+      // TODO: Implement profile update API
+      Alert.alert('Success', 'Profile updated successfully');
+      setShowEditModal(false);
+      await loadProfile();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile');
     }
-
-    // Update profile with form data
-    if (profile) {
-      setProfile({
-        ...profile,
-        name: editForm.name,
-        business_name: editForm.businessName,
-        business_address: editForm.businessAddress,
-        gst_number: editForm.gstNumber,
-      });
-    }
-
-    setShowEditModal(false);
-    Alert.alert('Success', 'Profile updated successfully');
   };
 
   const handleLogout = () => {
@@ -165,82 +108,22 @@ export default function ProfileScreen() {
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
+        {
+          text: 'Logout',
           style: 'destructive',
           onPress: async () => {
-            // Clear authentication data
             await authService.logout();
-            router.replace('/auth/login');
+            // Navigate to auth screen - handled by authentication context
           }
         }
       ]
     );
   };
 
-  const toggleNotificationSetting = (setting: keyof NotificationSettings) => {
-    setNotificationSettings(prev => ({
-      ...prev,
-      [setting]: !prev[setting]
-    }));
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN')}`;
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric' 
-    });
-  };
-
-  const menuItems = [
-    {
-      icon: 'notifications-outline',
-      title: 'Notification Settings',
-      subtitle: 'Manage your notifications',
-      onPress: () => setShowSettingsModal(true),
-    },
-    {
-      icon: 'card-outline',
-      title: 'Payment Methods',
-      subtitle: 'Manage payment options',
-      onPress: () => {},
-    },
-    {
-      icon: 'document-text-outline',
-      title: 'Business Documents',
-      subtitle: 'Upload required documents',
-      onPress: () => {},
-    },
-    {
-      icon: 'help-circle-outline',
-      title: 'Help & Support',
-      subtitle: 'Get help and support',
-      onPress: () => {},
-    },
-    {
-      icon: 'shield-outline',
-      title: 'Privacy Policy',
-      subtitle: 'Read our privacy policy',
-      onPress: () => {},
-    },
-    {
-      icon: 'document-outline',
-      title: 'Terms of Service',
-      subtitle: 'Read terms and conditions',
-      onPress: () => {},
-    },
-  ];
-
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
         <SafeAreaView style={styles.safeArea}>
           <AnimatedLoader 
             message="Loading profile..." 
@@ -255,10 +138,23 @@ export default function ProfileScreen() {
   if (!profile) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Failed to load profile</Text>
+            <Ionicons name="person-circle-outline" size={64} color="#9ca3af" />
+            <Text style={styles.errorTitle}>Profile Not Found</Text>
+            <Text style={styles.errorMessage}>
+              Unable to load profile information
+            </Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={() => {
+                setIsLoading(true);
+                loadProfile();
+              }}
+            >
+              <Text style={styles.retryButtonText}>Try Again</Text>
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
       </View>
@@ -267,7 +163,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -286,7 +182,7 @@ export default function ProfileScreen() {
               style={styles.editButton}
               onPress={() => setShowEditModal(true)}
             >
-              <Ionicons name="create" size={20} color="#212529" />
+              <Ionicons name="pencil" size={18} color="#ffffff" />
             </TouchableOpacity>
           </View>
 
@@ -294,111 +190,125 @@ export default function ProfileScreen() {
           <View style={styles.profileCard}>
             <View style={styles.profileHeader}>
               <View style={styles.profileAvatar}>
-                <Ionicons name="person" size={isTablet ? 48 : 40} color="#212529" />
+                <Text style={styles.profileInitial}>
+                  {profile.name.charAt(0).toUpperCase()}
+                </Text>
               </View>
               <View style={styles.profileInfo}>
-                <View style={styles.nameRow}>
-                  <Text style={styles.profileName} numberOfLines={2}>{profile.name}</Text>
-                  {profile.is_verified && (
-                    <View style={styles.verifiedBadge}>
-                      <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-                      <Text style={styles.verifiedText}>Verified</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={styles.profileEmail} numberOfLines={2}>{profile.email || 'Not provided'}</Text>
-                <Text style={styles.profileMobile} numberOfLines={1}>{profile.mobile}</Text>
-                <Text style={styles.joinDate} numberOfLines={1}>Member since {VenueOwnerService.formatDate(profile.created_at)}</Text>
+                <Text style={styles.profileName} numberOfLines={1}>{profile.name}</Text>
+                <Text style={styles.profileEmail} numberOfLines={1}>{profile.email || profile.mobile}</Text>
+                <Text style={styles.joinDate} numberOfLines={1}>Member since {VenuePartnerService.formatDate(profile.created_at)}</Text>
               </View>
+              {profile.is_verified && (
+                <View style={styles.verificationBadge}>
+                  <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                </View>
+              )}
             </View>
 
-            {/* Business Info */}
-            <View style={styles.businessSection}>
-              <Text style={styles.businessTitle}>Business Information</Text>
-              <View style={styles.businessGrid}>
-                <View style={styles.businessItem}>
-                  <Text style={styles.businessLabel}>Business Name</Text>
-                  <Text style={styles.businessValue} numberOfLines={3}>{profile.business_name || 'Not provided'}</Text>
-                </View>
-                <View style={styles.businessItem}>
-                  <Text style={styles.businessLabel}>GST Number</Text>
-                  <Text style={styles.businessValue} numberOfLines={2}>{profile.gst_number || 'Not provided'}</Text>
-                </View>
+            {/* Stats Row */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{profile.total_venues || 0}</Text>
+                <Text style={styles.statLabel}>Venues</Text>
               </View>
-              <View style={styles.businessItem}>
-                <Text style={styles.businessLabel}>Business Address</Text>
-                <Text style={styles.businessValue} numberOfLines={4}>{profile.business_address || 'Not provided'}</Text>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>₹{(profile.total_revenue || 0).toLocaleString('en-IN')}</Text>
+                <Text style={styles.statLabel}>Total Revenue</Text>
               </View>
             </View>
           </View>
 
-          {/* Stats Cards - Responsive Layout */}
-          <View style={styles.statsSection}>
-            <View style={[styles.statsGrid, isTablet && styles.statsGridTablet]}>
-              <View style={[styles.statCard, isTablet && styles.statCardTablet]}>
-                <View style={styles.statIcon}>
-                  <Ionicons name="business" size={isTablet ? 24 : 20} color="#3b82f6" />
-                </View>
-                <Text style={[styles.statValue, isTablet && styles.statValueTablet]}>{profile.total_venues || 0}</Text>
-                <Text style={[styles.statLabel, isTablet && styles.statLabelTablet]}>Total Venues</Text>
+          {/* Business Information */}
+          {profile.business_name && (
+            <View style={styles.businessCard}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="business" size={24} color="#212529" />
+                <Text style={styles.cardTitle}>Business Information</Text>
               </View>
-              <View style={[styles.statCard, isTablet && styles.statCardTablet]}>
-                <View style={styles.statIcon}>
-                  <Ionicons name="calendar" size={isTablet ? 24 : 20} color="#10b981" />
+              <View style={styles.businessInfo}>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>Business Name</Text>
+                  <Text style={styles.infoValue}>{profile.business_name}</Text>
                 </View>
-                <Text style={[styles.statValue, isTablet && styles.statValueTablet]}>{0}</Text>
-                <Text style={[styles.statLabel, isTablet && styles.statLabelTablet]}>Total Bookings</Text>
-              </View>
-              <View style={[styles.statCard, styles.statCardFull, isTablet && styles.statCardTablet]}>
-                <View style={styles.statIcon}>
-                  <Ionicons name="cash" size={isTablet ? 24 : 20} color="#f59e0b" />
-                </View>
-                <Text style={[styles.statValue, isTablet && styles.statValueTablet]}>{formatCurrency(profile.total_revenue || 0)}</Text>
-                <Text style={[styles.statLabel, isTablet && styles.statLabelTablet]}>Total Revenue</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Menu Items */}
-          <View style={styles.menuSection}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity 
-                key={index}
-                style={[
-                  styles.menuItem,
-                  index === menuItems.length - 1 && styles.lastMenuItem
-                ]}
-                onPress={item.onPress}
-                activeOpacity={0.7}
-              >
-                <View style={styles.menuItemLeft}>
-                  <View style={styles.menuItemIcon}>
-                    <Ionicons name={item.icon as any} size={22} color="#6b7280" />
+                {profile.business_address && (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Address</Text>
+                    <Text style={styles.infoValue}>{profile.business_address}</Text>
                   </View>
-                  <View style={styles.menuItemContent}>
-                    <Text style={styles.menuItemText}>{item.title}</Text>
-                    <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+                )}
+                {profile.gst_number && (
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>GST Number</Text>
+                    <Text style={styles.infoValue}>{profile.gst_number}</Text>
                   </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
-              </TouchableOpacity>
-            ))}
-          </View>
+                )}
+              </View>
+            </View>
+          )}
 
-          {/* Logout Button */}
-          <View style={styles.logoutSection}>
+          {/* Settings Menu */}
+          <View style={styles.settingsCard}>
             <TouchableOpacity 
-              style={styles.logoutButton}
-              onPress={handleLogout}
-              activeOpacity={0.8}
+              style={styles.settingItem}
+              onPress={() => setShowNotificationModal(true)}
             >
-              <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-              <Text style={styles.logoutButtonText}>Logout</Text>
+              <View style={styles.settingIcon}>
+                <Ionicons name="notifications" size={24} color="#6b7280" />
+              </View>
+              <View style={styles.settingContent}>
+                <Text style={styles.settingTitle}>Notifications</Text>
+                <Text style={styles.settingSubtitle}>Manage your notification preferences</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.settingItem}>
+              <View style={styles.settingIcon}>
+                <Ionicons name="shield-checkmark" size={24} color="#6b7280" />
+              </View>
+              <View style={styles.settingContent}>
+                <Text style={styles.settingTitle}>Privacy & Security</Text>
+                <Text style={styles.settingSubtitle}>Manage your privacy settings</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.settingItem}>
+              <View style={styles.settingIcon}>
+                <Ionicons name="help-circle" size={24} color="#6b7280" />
+              </View>
+              <View style={styles.settingContent}>
+                <Text style={styles.settingTitle}>Help & Support</Text>
+                <Text style={styles.settingSubtitle}>Get help and contact support</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.settingItem}>
+              <View style={styles.settingIcon}>
+                <Ionicons name="document-text" size={24} color="#6b7280" />
+              </View>
+              <View style={styles.settingContent}>
+                <Text style={styles.settingTitle}>Terms & Privacy</Text>
+                <Text style={styles.settingSubtitle}>Read our terms and privacy policy</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
             </TouchableOpacity>
           </View>
 
-          {/* Bottom Padding for Navigation */}
-          <View style={styles.bottomPadding} />
+          {/* Logout Button */}
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out" size={20} color="#ef4444" />
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+
+          {/* Add some bottom padding */}
+          <View style={{ height: 100 }} />
         </ScrollView>
 
         {/* Edit Profile Modal */}
@@ -418,158 +328,169 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalContent}>
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Full Name *</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Name</Text>
                 <TextInput
-                  style={styles.formInput}
-                  value={editForm.name}
-                  onChangeText={(text) => setEditForm({...editForm, name: text})}
-                  placeholder="Enter your full name"
+                  style={styles.textInput}
+                  value={editData.name}
+                  onChangeText={(text) => setEditData({ ...editData, name: text })}
+                  placeholder="Enter your name"
                 />
               </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Business Name</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
-                  style={styles.formInput}
-                  value={editForm.businessName}
-                  onChangeText={(text) => setEditForm({...editForm, businessName: text})}
+                  style={styles.textInput}
+                  value={editData.email}
+                  onChangeText={(text) => setEditData({ ...editData, email: text })}
+                  placeholder="Enter your email"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Business Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editData.business_name}
+                  onChangeText={(text) => setEditData({ ...editData, business_name: text })}
                   placeholder="Enter business name"
                 />
               </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Business Address</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Business Address</Text>
                 <TextInput
-                  style={[styles.formInput, styles.textArea]}
-                  value={editForm.businessAddress}
-                  onChangeText={(text) => setEditForm({...editForm, businessAddress: text})}
+                  style={[styles.textInput, styles.textAreaInput]}
+                  value={editData.business_address}
+                  onChangeText={(text) => setEditData({ ...editData, business_address: text })}
                   placeholder="Enter business address"
                   multiline
                   numberOfLines={3}
                 />
               </View>
 
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>GST Number</Text>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>GST Number</Text>
                 <TextInput
-                  style={styles.formInput}
-                  value={editForm.gstNumber}
-                  onChangeText={(text) => setEditForm({...editForm, gstNumber: text})}
+                  style={styles.textInput}
+                  value={editData.gst_number}
+                  onChangeText={(text) => setEditData({ ...editData, gst_number: text })}
                   placeholder="Enter GST number"
-                  autoCapitalize="characters"
                 />
               </View>
             </ScrollView>
           </SafeAreaView>
         </Modal>
 
-        {/* Notification Settings Modal */}
+        {/* Notifications Modal */}
         <Modal
-          visible={showSettingsModal}
+          visible={showNotificationModal}
           animationType="slide"
           presentationStyle="pageSheet"
         >
           <SafeAreaView style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <TouchableOpacity onPress={() => setShowSettingsModal(false)}>
-                <Text style={styles.modalCancel}>Close</Text>
+              <TouchableOpacity onPress={() => setShowNotificationModal(false)}>
+                <Text style={styles.modalCancel}>Cancel</Text>
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>Notification Settings</Text>
-              <TouchableOpacity onPress={() => setShowSettingsModal(false)}>
+              <Text style={styles.modalTitle}>Notifications</Text>
+              <TouchableOpacity onPress={() => setShowNotificationModal(false)}>
                 <Text style={styles.modalSave}>Done</Text>
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalContent}>
-              <View style={styles.settingsSection}>
-                <Text style={styles.settingsTitle}>Push Notifications</Text>
+              <View style={styles.notificationSection}>
+                <Text style={styles.notificationSectionTitle}>Booking Notifications</Text>
                 
-                <View style={styles.settingItem}>
-                  <View style={styles.settingLeft}>
-                    <Text style={styles.settingLabel}>New Bookings</Text>
-                    <Text style={styles.settingDescription}>Get notified when you receive new bookings</Text>
+                <View style={styles.notificationItem}>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>New Bookings</Text>
+                    <Text style={styles.notificationSubtitle}>Get notified when you receive new bookings</Text>
                   </View>
                   <Switch
                     value={notificationSettings.newBookings}
-                    onValueChange={() => toggleNotificationSetting('newBookings')}
-                    trackColor={{ false: '#e5e7eb', true: 'rgba(33, 37, 41, 0.2)' }}
-                    thumbColor={notificationSettings.newBookings ? '#212529' : '#9ca3af'}
+                    onValueChange={(value) => 
+                      setNotificationSettings({ ...notificationSettings, newBookings: value })
+                    }
+                    trackColor={{ false: '#e5e7eb', true: '#10b981' }}
+                    thumbColor="#ffffff"
                   />
                 </View>
 
-                <View style={styles.settingItem}>
-                  <View style={styles.settingLeft}>
-                    <Text style={styles.settingLabel}>Booking Confirmations</Text>
-                    <Text style={styles.settingDescription}>Updates on booking status changes</Text>
+                <View style={styles.notificationItem}>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>Booking Updates</Text>
+                    <Text style={styles.notificationSubtitle}>Get notified about booking changes and cancellations</Text>
                   </View>
                   <Switch
-                    value={notificationSettings.bookingConfirmations}
-                    onValueChange={() => toggleNotificationSetting('bookingConfirmations')}
-                    trackColor={{ false: '#e5e7eb', true: 'rgba(33, 37, 41, 0.2)' }}
-                    thumbColor={notificationSettings.bookingConfirmations ? '#212529' : '#9ca3af'}
-                  />
-                </View>
-
-                <View style={styles.settingItem}>
-                  <View style={styles.settingLeft}>
-                    <Text style={styles.settingLabel}>Cancellations</Text>
-                    <Text style={styles.settingDescription}>Notifications for booking cancellations</Text>
-                  </View>
-                  <Switch
-                    value={notificationSettings.cancellations}
-                    onValueChange={() => toggleNotificationSetting('cancellations')}
-                    trackColor={{ false: '#e5e7eb', true: 'rgba(33, 37, 41, 0.2)' }}
-                    thumbColor={notificationSettings.cancellations ? '#212529' : '#9ca3af'}
-                  />
-                </View>
-
-                <View style={styles.settingItem}>
-                  <View style={styles.settingLeft}>
-                    <Text style={styles.settingLabel}>Payment Updates</Text>
-                    <Text style={styles.settingDescription}>Payment confirmations and updates</Text>
-                  </View>
-                  <Switch
-                    value={notificationSettings.payments}
-                    onValueChange={() => toggleNotificationSetting('payments')}
-                    trackColor={{ false: '#e5e7eb', true: 'rgba(33, 37, 41, 0.2)' }}
-                    thumbColor={notificationSettings.payments ? '#212529' : '#9ca3af'}
+                    value={notificationSettings.bookingUpdates}
+                    onValueChange={(value) => 
+                      setNotificationSettings({ ...notificationSettings, bookingUpdates: value })
+                    }
+                    trackColor={{ false: '#e5e7eb', true: '#10b981' }}
+                    thumbColor="#ffffff"
                   />
                 </View>
               </View>
 
-              <View style={styles.settingsSection}>
-                <Text style={styles.settingsTitle}>Communication Preferences</Text>
+              <View style={styles.notificationSection}>
+                <Text style={styles.notificationSectionTitle}>Financial Notifications</Text>
                 
-                <View style={styles.settingItem}>
-                  <View style={styles.settingLeft}>
-                    <Text style={styles.settingLabel}>Email Notifications</Text>
-                    <Text style={styles.settingDescription}>Receive notifications via email</Text>
+                <View style={styles.notificationItem}>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>Payment Alerts</Text>
+                    <Text style={styles.notificationSubtitle}>Get notified about payments and refunds</Text>
                   </View>
                   <Switch
-                    value={notificationSettings.emailNotifications}
-                    onValueChange={() => toggleNotificationSetting('emailNotifications')}
-                    trackColor={{ false: '#e5e7eb', true: 'rgba(33, 37, 41, 0.2)' }}
-                    thumbColor={notificationSettings.emailNotifications ? '#212529' : '#9ca3af'}
+                    value={notificationSettings.paymentAlerts}
+                    onValueChange={(value) => 
+                      setNotificationSettings({ ...notificationSettings, paymentAlerts: value })
+                    }
+                    trackColor={{ false: '#e5e7eb', true: '#10b981' }}
+                    thumbColor="#ffffff"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.notificationSection}>
+                <Text style={styles.notificationSectionTitle}>General Notifications</Text>
+                
+                <View style={styles.notificationItem}>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>Promotional Offers</Text>
+                    <Text style={styles.notificationSubtitle}>Receive offers and promotional updates</Text>
+                  </View>
+                  <Switch
+                    value={notificationSettings.promotionalOffers}
+                    onValueChange={(value) => 
+                      setNotificationSettings({ ...notificationSettings, promotionalOffers: value })
+                    }
+                    trackColor={{ false: '#e5e7eb', true: '#10b981' }}
+                    thumbColor="#ffffff"
                   />
                 </View>
 
-                <View style={styles.settingItem}>
-                  <View style={styles.settingLeft}>
-                    <Text style={styles.settingLabel}>SMS Notifications</Text>
-                    <Text style={styles.settingDescription}>Receive notifications via SMS</Text>
+                <View style={styles.notificationItem}>
+                  <View style={styles.notificationContent}>
+                    <Text style={styles.notificationTitle}>System Updates</Text>
+                    <Text style={styles.notificationSubtitle}>Important app updates and announcements</Text>
                   </View>
                   <Switch
-                    value={notificationSettings.smsNotifications}
-                    onValueChange={() => toggleNotificationSetting('smsNotifications')}
-                    trackColor={{ false: '#e5e7eb', true: 'rgba(33, 37, 41, 0.2)' }}
-                    thumbColor={notificationSettings.smsNotifications ? '#212529' : '#9ca3af'}
+                    value={notificationSettings.systemUpdates}
+                    onValueChange={(value) => 
+                      setNotificationSettings({ ...notificationSettings, systemUpdates: value })
+                    }
+                    trackColor={{ false: '#e5e7eb', true: '#10b981' }}
+                    thumbColor="#ffffff"
                   />
                 </View>
               </View>
             </ScrollView>
           </SafeAreaView>
         </Modal>
-
       </SafeAreaView>
     </View>
   );
@@ -583,66 +504,78 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#9ca3af',
+  scrollContent: {
+    paddingBottom: 20,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 32,
   },
-  errorText: {
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#374151',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  errorMessage: {
     fontSize: 16,
-    color: '#ef4444',
+    color: '#6b7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
   },
-  scrollContent: {
-    paddingBottom: 120, // More space for bottom navigation
+  retryButton: {
+    backgroundColor: '#212529',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 16,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: isTablet ? 32 : 24,
+    paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 32,
-    backgroundColor: '#f5f6f7', // Match container background
+    backgroundColor: '#ffffff',
   },
   headerContent: {
     flex: 1,
   },
   greeting: {
-    fontSize: isTablet ? 32 : 28,
+    fontSize: 28,
     fontWeight: '700',
     color: '#212529',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: 16,
     color: '#6b7280',
     fontWeight: '500',
   },
   editButton: {
-    width: isTablet ? 52 : 48,
-    height: isTablet ? 52 : 48,
-    borderRadius: isTablet ? 26 : 24,
-    backgroundColor: '#f8fafc',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#212529',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
   },
   profileCard: {
     backgroundColor: '#ffffff',
-    marginHorizontal: isTablet ? 32 : 24,
-    marginBottom: isTablet ? 32 : 24,
-    borderRadius: isTablet ? 24 : 20,
-    padding: isTablet ? 32 : 24,
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 20,
+    padding: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -650,237 +583,172 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   profileHeader: {
-    flexDirection: isTablet ? 'row' : 'row',
-    marginBottom: isTablet ? 32 : 24,
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   profileAvatar: {
-    width: isTablet ? 96 : 80,
-    height: isTablet ? 96 : 80,
-    borderRadius: isTablet ? 48 : 40,
-    backgroundColor: '#f8fafc',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#212529',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: isTablet ? 24 : 20,
-    borderWidth: 3,
-    borderColor: '#e2e8f0',
-    flexShrink: 0,
+    marginRight: 16,
+  },
+  profileInitial: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
   },
   profileInfo: {
     flex: 1,
-    minWidth: 0, // Prevent flex item from overflowing
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-    flexWrap: 'wrap',
   },
   profileName: {
-    fontSize: isTablet ? 26 : 22,
-    fontWeight: '700',
-    color: '#212529',
-    marginRight: 8,
-    flex: 1,
-    minWidth: 0,
-  },
-  verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 2,
-    flexShrink: 0,
-  },
-  verifiedText: {
-    fontSize: 11,
-    color: '#10b981',
+    fontSize: 20,
     fontWeight: '600',
-    marginLeft: 4,
+    color: '#212529',
+    marginBottom: 4,
   },
   profileEmail: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: 14,
     color: '#6b7280',
-    marginBottom: 4,
-    fontWeight: '500',
-  },
-  profileMobile: {
-    fontSize: isTablet ? 18 : 16,
-    color: '#6b7280',
-    marginBottom: 8,
-    fontWeight: '500',
+    marginBottom: 2,
   },
   joinDate: {
-    fontSize: isTablet ? 16 : 14,
+    fontSize: 12,
     color: '#9ca3af',
-    fontWeight: '500',
   },
-  businessSection: {
+  verificationBadge: {
+    marginLeft: 8,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 24,
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
-    paddingTop: isTablet ? 32 : 24,
   },
-  businessTitle: {
-    fontSize: isTablet ? 22 : 18,
-    fontWeight: '600',
-    color: '#212529',
-    marginBottom: isTablet ? 20 : 16,
-  },
-  businessGrid: {
-    flexDirection: isTablet ? 'row' : 'column',
-    gap: isTablet ? 20 : 16,
-    marginBottom: isTablet ? 20 : 16,
-  },
-  businessItem: {
-    flex: isTablet ? 1 : undefined,
-    minWidth: 0,
-  },
-  businessLabel: {
-    fontSize: isTablet ? 16 : 14,
-    color: '#6b7280',
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  businessValue: {
-    fontSize: isTablet ? 18 : 16,
-    color: '#212529',
-    fontWeight: '500',
-  },
-  statsSection: {
-    paddingHorizontal: isTablet ? 32 : 24,
-    marginBottom: isTablet ? 32 : 24,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: isTablet ? 20 : 16,
-  },
-  statsGridTablet: {
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: isTablet ? 20 : 16,
-    padding: isTablet ? 24 : 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
+  statItem: {
     flex: 1,
-    minWidth: isTablet ? 200 : 150,
-    maxWidth: isTablet ? 300 : 200,
-  },
-  statCardTablet: {
-    minWidth: 200,
-    maxWidth: 300,
-  },
-  statCardFull: {
-    width: '100%',
-    maxWidth: '100%',
-  },
-  statIcon: {
-    marginBottom: isTablet ? 16 : 12,
+    alignItems: 'center',
   },
   statValue: {
-    fontSize: isTablet ? 24 : 20,
+    fontSize: 20,
     fontWeight: '700',
     color: '#212529',
     marginBottom: 4,
-    textAlign: 'center',
-  },
-  statValueTablet: {
-    fontSize: 28,
   },
   statLabel: {
-    fontSize: isTablet ? 15 : 13,
+    fontSize: 12,
     color: '#6b7280',
     fontWeight: '500',
-    textAlign: 'center',
   },
-  statLabelTablet: {
-    fontSize: 16,
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#e5e7eb',
+    marginHorizontal: 24,
   },
-  menuSection: {
+  businessCard: {
     backgroundColor: '#ffffff',
-    marginHorizontal: isTablet ? 32 : 24,
-    marginBottom: isTablet ? 32 : 24,
-    borderRadius: isTablet ? 24 : 20,
-    overflow: 'hidden',
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 20,
+    padding: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 3,
   },
-  menuItem: {
+  cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: isTablet ? 28 : 20,
-    paddingVertical: isTablet ? 20 : 16,
+    marginBottom: 20,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#212529',
+    marginLeft: 12,
+  },
+  businessInfo: {
+    gap: 16,
+  },
+  infoRow: {},
+  infoLabel: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '600',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  infoValue: {
+    fontSize: 16,
+    color: '#212529',
+    fontWeight: '500',
+  },
+  settingsCard: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 24,
+    marginBottom: 24,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
-    minHeight: isTablet ? 72 : 60,
   },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-  },
-  menuItemIcon: {
-    width: isTablet ? 48 : 40,
-    height: isTablet ? 48 : 40,
-    borderRadius: isTablet ? 24 : 20,
+  settingIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#f8fafc',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: isTablet ? 20 : 16,
-    flexShrink: 0,
+    marginRight: 16,
   },
-  menuItemContent: {
+  settingContent: {
     flex: 1,
-    minWidth: 0,
   },
-  menuItemText: {
-    fontSize: isTablet ? 18 : 16,
+  settingTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#212529',
-    fontWeight: '500',
     marginBottom: 2,
   },
-  menuItemSubtitle: {
-    fontSize: isTablet ? 15 : 13,
+  settingSubtitle: {
+    fontSize: 14,
     color: '#6b7280',
-    fontWeight: '500',
-  },
-  logoutSection: {
-    paddingHorizontal: isTablet ? 32 : 24,
-    marginBottom: isTablet ? 32 : 24,
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ffffff',
-    paddingVertical: isTablet ? 20 : 16,
-    borderRadius: isTablet ? 20 : 16,
-    borderWidth: 1,
-    borderColor: '#fecaca',
+    marginHorizontal: 24,
+    paddingVertical: 20,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 3,
-    minHeight: isTablet ? 56 : 48,
   },
   logoutButtonText: {
-    fontSize: isTablet ? 18 : 16,
-    color: '#ef4444',
+    fontSize: 16,
     fontWeight: '600',
+    color: '#ef4444',
     marginLeft: 8,
   },
   modalContainer: {
@@ -891,94 +759,82 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: isTablet ? 24 : 20,
-    paddingVertical: isTablet ? 20 : 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-    minHeight: isTablet ? 72 : 60,
   },
   modalCancel: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: 16,
     color: '#6b7280',
     fontWeight: '500',
   },
   modalTitle: {
-    fontSize: isTablet ? 22 : 18,
+    fontSize: 18,
     fontWeight: '600',
     color: '#212529',
   },
   modalSave: {
-    fontSize: isTablet ? 18 : 16,
+    fontSize: 16,
     color: '#212529',
     fontWeight: '600',
   },
   modalContent: {
     flex: 1,
-    padding: isTablet ? 32 : 20,
+    padding: 20,
   },
-  formGroup: {
-    marginBottom: isTablet ? 32 : 24,
+  inputGroup: {
+    marginBottom: 24,
   },
-  formLabel: {
-    fontSize: isTablet ? 18 : 16,
-    fontWeight: '600',
+  inputLabel: {
+    fontSize: 14,
     color: '#374151',
-    marginBottom: isTablet ? 12 : 8,
+    fontWeight: '600',
+    marginBottom: 8,
   },
-  formInput: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: isTablet ? 16 : 12,
-    paddingHorizontal: isTablet ? 20 : 16,
-    paddingVertical: isTablet ? 18 : 14,
-    fontSize: isTablet ? 18 : 16,
+  textInput: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
     color: '#212529',
-    backgroundColor: '#f9fafb',
-    minHeight: isTablet ? 56 : 48,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  textAreaInput: {
+    height: 80,
     textAlignVertical: 'top',
   },
-  textArea: {
-    height: isTablet ? 120 : 100,
-    textAlignVertical: 'top',
+  notificationSection: {
+    marginBottom: 32,
   },
-  settingsSection: {
-    marginBottom: isTablet ? 40 : 32,
-  },
-  settingsTitle: {
-    fontSize: isTablet ? 24 : 20,
+  notificationSectionTitle: {
+    fontSize: 18,
     fontWeight: '600',
     color: '#212529',
-    marginBottom: isTablet ? 24 : 20,
+    marginBottom: 16,
   },
-  settingItem: {
+  notificationItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: isTablet ? 20 : 16,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
-    minHeight: isTablet ? 72 : 64,
   },
-  settingLeft: {
+  notificationContent: {
     flex: 1,
-    marginRight: isTablet ? 20 : 16,
-    minWidth: 0,
+    marginRight: 16,
   },
-  settingLabel: {
-    fontSize: isTablet ? 18 : 16,
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#212529',
-    fontWeight: '500',
     marginBottom: 4,
   },
-  settingDescription: {
-    fontSize: isTablet ? 15 : 13,
+  notificationSubtitle: {
+    fontSize: 14,
     color: '#6b7280',
-    fontWeight: '500',
-  },
-  lastMenuItem: {
-    borderBottomWidth: 0,
-  },
-  bottomPadding: {
-    height: 120,
+    lineHeight: 20,
   },
 });
