@@ -180,9 +180,9 @@ class UserRegistrationRequest(BaseModel):
     
     @validator('venue_name')
     def validate_venue_fields(cls, v, values):
-        if values.get('role') == 'venue_owner':
+        if values.get('role') == 'venue_partner':
             if not v:
-                raise ValueError('Venue name is required for venue owners')
+                raise ValueError('Venue name is required for venue partners')
         return v
     
     @validator('venue_address')
