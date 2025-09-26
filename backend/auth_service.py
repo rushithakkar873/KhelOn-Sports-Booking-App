@@ -193,8 +193,8 @@ class UserRegistrationRequest(BaseModel):
     
     @validator('venue_pincode')
     def validate_venue_pincode(cls, v, values):
-        if values.get('role') == 'venue_owner' and not v:
-            raise ValueError('Venue pincode is required for venue owners')
+        if values.get('role') == 'venue_partner' and not v:
+            raise ValueError('Venue pincode is required for venue partners')
         return v
     
     @validator('base_price_per_hour')
