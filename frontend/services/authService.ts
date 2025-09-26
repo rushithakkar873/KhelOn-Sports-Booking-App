@@ -294,9 +294,9 @@ class AuthService {
   }
 
   /**
-   * Check if current user is venue owner
+   * Check if current user is venue partner
    */
-  isVenueOwner(): boolean {
+  isVenuePartner(): boolean {
     return this.currentUser?.role === 'venue_partner';
   }
 
