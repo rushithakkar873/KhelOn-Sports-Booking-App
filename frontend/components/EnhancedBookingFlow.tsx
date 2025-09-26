@@ -16,7 +16,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import VenueOwnerService from '../services/venueOwnerService';
+import VenuePartnerService from '../services/venuePartnerService';
 import AuthService from '@/services/authService';
 
 const { width } = Dimensions.get('window');
@@ -131,7 +131,7 @@ export default function EnhancedBookingFlow({
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [dateOptions, setDateOptions] = useState<DateOption[]>([]);
-  const venueOwnerService = VenueOwnerService.getInstance();
+  const venuePartnerService = VenuePartnerService.getInstance();
 
   // Initialize date options (7 days from today)
   useEffect(() => {
@@ -215,7 +215,7 @@ export default function EnhancedBookingFlow({
       // Get existing bookings for conflict detection
       let existingBookings: any[] = [];
       try {
-        existingBookings = await venueOwnerService.getBookings(
+        existingBookings = await venuePartnerService.getBookings(
           venue.id, 
           undefined,
           bookingData.bookingDate, 
@@ -427,7 +427,7 @@ export default function EnhancedBookingFlow({
 
       console.log('Submitting booking payload:', bookingPayload);
 
-      const response = await venueOwnerService.createBooking(bookingPayload);
+      const response = await venuePartnerService.createBooking(bookingPayload);
       
       Alert.alert(
         'Booking Created Successfully! 🎉',

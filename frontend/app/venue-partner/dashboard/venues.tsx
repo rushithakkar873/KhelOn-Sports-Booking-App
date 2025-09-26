@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import VenueOwnerService, { Venue, Arena } from '../../../services/venueOwnerService';
+import VenuePartnerService, { Venue, Arena } from '../../../services/venuePartnerService';
 import AuthService from '../../../services/authService';
 import ArenaFormModal from '../../../components/ArenaFormModal';
 import ArenaCard from '../../../components/ArenaCard';
@@ -44,7 +44,7 @@ export default function MyVenueScreen() {
   });
   
   const router = useRouter();
-  const venueOwnerService = VenueOwnerService.getInstance();
+  const venuePartnerService = VenuePartnerService.getInstance();
   const authService = AuthService.getInstance();
 
   const facilityOptions = ['Parking', 'Washroom', 'Changing Room', 'Floodlights', 'AC', 'Equipment Rental', 'Seating', 'Canteen', 'WiFi', 'First Aid'];
@@ -64,7 +64,7 @@ export default function MyVenueScreen() {
       }
 
       // Fetch venue from API - get first venue (single venue MVP)
-      const venuesData = await venueOwnerService.getVenues(0, 1, undefined);
+      const venuesData = await venuePartnerService.getVenues(0, 1, undefined);
       if (venuesData && venuesData.length > 0) {
         setVenue(venuesData[0]);
         // Populate form with existing data
@@ -220,7 +220,7 @@ export default function MyVenueScreen() {
   };
 
   const formatCurrency = (amount: number) => {
-    return VenueOwnerService.formatCurrency(amount);
+    return VenuePartnerService.formatCurrency(amount);
   };
 
   const getSportsSummary = () => {

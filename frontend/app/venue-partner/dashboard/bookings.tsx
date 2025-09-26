@@ -19,7 +19,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import VenueOwnerService from '../../../services/venueOwnerService';
+import VenuePartnerService from '../../../services/venuePartnerService';
 import AuthService from '../../../services/authService';
 import EnhancedBookingFlow from '../../../components/EnhancedBookingFlow';
 
@@ -76,7 +76,7 @@ export default function EnhancedBookingsScreen() {
   });
   
   const router = useRouter();
-  const venueOwnerService = VenueOwnerService.getInstance();
+  const venuePartnerService = VenuePartnerService.getInstance();
   const authService = AuthService.getInstance();
 
   const statusOptions = [
@@ -122,8 +122,8 @@ export default function EnhancedBookingsScreen() {
 
       // Fetch bookings and venues
       const [bookingsData, venuesData] = await Promise.all([
-        venueOwnerService.getBookings(undefined, undefined, undefined, undefined, 0, 100),
-        venueOwnerService.getVenues(0, 50, true)
+        venuePartnerService.getBookings(undefined, undefined, undefined, undefined, 0, 100),
+        venuePartnerService.getVenues(0, 50, true)
       ]);
       
       setBookings(Array.isArray(bookingsData) ? bookingsData : []);
@@ -230,7 +230,7 @@ export default function EnhancedBookingsScreen() {
               // Update each selected booking
               await Promise.all(
                 selectedBookings.map(bookingId => 
-                  venueOwnerService.updateBookingStatus(bookingId, action as any)
+                  venuePartnerService.updateBookingStatus(bookingId, action as any)
                 )
               );
               
@@ -255,7 +255,7 @@ export default function EnhancedBookingsScreen() {
 
   const updateBookingStatus = async (bookingId: string, newStatus: Booking['status']) => {
     try {
-      await venueOwnerService.updateBookingStatus(bookingId, newStatus);
+      await venuePartnerService.updateBookingStatus(bookingId, newStatus);
       
       setBookings(bookings.map(booking =>
         booking.id === bookingId ? { ...booking, status: newStatus } : booking
@@ -284,11 +284,11 @@ export default function EnhancedBookingsScreen() {
   };
 
   const formatCurrency = (amount: number) => {
-    return VenueOwnerService.formatCurrency(amount);
+    return VenuePartnerService.formatCurrency(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return VenueOwnerService.formatDate(dateString);
+    return VenuePartnerService.formatDate(dateString);
   };
 
   const renderBookingCard = ({ item: booking }: { item: Booking }) => (

@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Arena } from '../services/venueOwnerService';
+import { Arena } from '../services/venuePartnerService';
 
 const { width } = Dimensions.get('window');
 

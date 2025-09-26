@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CreateArena, CreateVenueSlot } from '../services/venueOwnerService';
+import { CreateArena, CreateVenueSlot } from '../services/venuePartnerService';
 
 const { width } = Dimensions.get('window');
 
@@ -563,7 +563,7 @@ export default function ArenaFormModal({
     <Modal
       visible={isVisible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
       <View style={[styles.container, { paddingTop: insets.top }]}>
