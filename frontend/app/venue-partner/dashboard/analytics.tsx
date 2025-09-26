@@ -21,7 +21,7 @@ const { width } = Dimensions.get('window');
 
 export default function AnalyticsScreen() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsDashboard | null>(null);
-  const venueOwnerService = VenueOwnerService.getInstance();
+  const venuePartnerService = VenuePartnerService.getInstance();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState('30');
