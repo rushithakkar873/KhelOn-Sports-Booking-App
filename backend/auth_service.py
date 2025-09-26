@@ -142,7 +142,7 @@ class UserRegistrationRequest(BaseModel):
     otp: str = Field(..., min_length=6, max_length=6)
     name: str = Field(..., min_length=2, max_length=100)
     email: Optional[EmailStr] = None
-    role: str = Field(..., pattern="^(player|venue_owner)$")
+    role: str = Field(..., pattern="^(player|venue_partner)$")
     
     # Player specific fields
     sports_interests: Optional[list] = []
