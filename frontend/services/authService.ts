@@ -12,7 +12,7 @@ export interface User {
   mobile: string;
   name: string;
   email?: string;
-  role: 'player' | 'venue_owner';
+  role: 'player' | 'venue_partner';
   is_verified: boolean;
   created_at: string;
   
@@ -48,7 +48,7 @@ export interface RegisterData {
   otp: string;
   name: string;
   email?: string;
-  role: 'player' | 'venue_owner';
+  role: 'player' | 'venue_partner';
   
   // Player fields
   sports_interests?: string[];
@@ -297,7 +297,7 @@ class AuthService {
    * Check if current user is venue owner
    */
   isVenueOwner(): boolean {
-    return this.currentUser?.role === 'venue_owner';
+    return this.currentUser?.role === 'venue_partner';
   }
 
   /**
