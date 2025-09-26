@@ -363,7 +363,7 @@ class AuthService:
             }
     
     async def create_initial_venue(self, owner_id: str, registration_data: UserRegistrationRequest):
-        """Create initial venue for venue owner during registration"""
+        """Create initial venue for venue partner during registration"""
         try:
             venue_id = str(uuid.uuid4())
             
