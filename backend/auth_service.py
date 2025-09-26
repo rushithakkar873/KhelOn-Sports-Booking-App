@@ -199,9 +199,9 @@ class UserRegistrationRequest(BaseModel):
     
     @validator('base_price_per_hour')
     def validate_base_price(cls, v, values):
-        if values.get('role') == 'venue_owner':
+        if values.get('role') == 'venue_partner':
             if v is None or v <= 0:
-                raise ValueError('Valid base price per hour is required for venue owners')
+                raise ValueError('Valid base price per hour is required for venue partners')
         return v
 
 class UserResponse(BaseModel):
