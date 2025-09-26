@@ -321,8 +321,8 @@ class AuthService:
             # Insert user
             await self.db.users.insert_one(user_doc)
             
-            # Create venue automatically for venue owners
-            if registration_data.role == "venue_owner":
+            # Create venue automatically for venue partners
+            if registration_data.role == "venue_partner":
                 await self.create_initial_venue(user_id, registration_data)
             
             # Create access token
