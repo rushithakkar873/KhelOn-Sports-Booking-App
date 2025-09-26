@@ -60,13 +60,13 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-# Dependency for venue owners only
-async def get_current_venue_owner(current_user: dict = Depends(get_current_user)):
-    """Get current user and verify they are a venue owner"""
-    if current_user["role"] != "venue_owner":
+# Dependency for venue partners only
+async def get_current_venue_partner(current_user: dict = Depends(get_current_user)):
+    """Get current user and verify they are a venue partner"""
+    if current_user["role"] != "venue_partner":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Venue owner role required."
+            detail="Access denied. Venue partner role required."
         )
     return current_user
 
