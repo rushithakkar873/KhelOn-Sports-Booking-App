@@ -56,7 +56,7 @@ export default function AnalyticsScreen() {
       const endDateStr = endDate.toISOString().split('T')[0];
 
       // Get real analytics data from API
-      const data = await venueOwnerService.getAnalyticsDashboard(startDateStr, endDateStr);
+      const data = await venuePartnerService.getAnalyticsDashboard(startDateStr, endDateStr);
       
       // Ensure data structure is valid
       if (data && typeof data === 'object') {
