@@ -85,7 +85,7 @@ export default function AnalyticsScreen() {
   };
 
   const formatCurrency = (amount: number) => {
-    return VenueOwnerService.formatCurrency(amount);
+    return VenuePartnerService.formatCurrency(amount);
   };
 
   const chartConfig = {
