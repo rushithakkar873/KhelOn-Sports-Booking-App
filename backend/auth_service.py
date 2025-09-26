@@ -187,8 +187,8 @@ class UserRegistrationRequest(BaseModel):
     
     @validator('venue_address')
     def validate_venue_address(cls, v, values):
-        if values.get('role') == 'venue_owner' and not v:
-            raise ValueError('Venue address is required for venue owners')
+        if values.get('role') == 'venue_partner' and not v:
+            raise ValueError('Venue address is required for venue partners')
         return v
     
     @validator('venue_pincode')
