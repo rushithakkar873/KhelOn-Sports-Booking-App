@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import VenuePartnerBottomNavigation from '../../../components/VenuePartnerBottomNavigation';
 
-export default function VenueOwnerDashboardLayout() {
+export default function VenuePartnerDashboardLayout() {
   return (
     <View style={styles.container}>
       <Stack
