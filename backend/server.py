@@ -274,7 +274,7 @@ class BookingResponse(BaseModel):
 
 @api_router.post("/venue-partner/venues")
 async def create_venue_by_partner(venue_data: VenueCreate, current_partner: dict = Depends(get_current_venue_partner)):
-    """Create venue by venue owner with multiple arenas"""
+    """Create venue by venue partner with multiple arenas"""
     venue_id = str(uuid.uuid4())
     
     # Process arenas
