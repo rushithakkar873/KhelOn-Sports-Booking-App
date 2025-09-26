@@ -174,8 +174,8 @@ class UserRegistrationRequest(BaseModel):
     
     @validator('business_name')
     def validate_business_fields(cls, v, values):
-        if values.get('role') == 'venue_owner' and not v:
-            raise ValueError('Business name is required for venue owners')
+        if values.get('role') == 'venue_partner' and not v:
+            raise ValueError('Business name is required for venue partners')
         return v
     
     @validator('venue_name')
