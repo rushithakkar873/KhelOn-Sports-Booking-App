@@ -529,8 +529,22 @@ class AuthService:
             if user_id is None:
                 return None
             
-            user = await self.get_user_by_id(user_id)
-            return user
+            # Check if this is a temp user token
+            is_temp = payload.get("temp", False)
+            
+            if is_temp:
+                # Look for temp user
+                user = await self.db.temp_users.find_one({"_id": user_id})
+                if user:
+                    # Add the _id field for consistency
+                    user["_id"] = user_id
+                    return user
+            else:
+                # Look for permanent user
+                user = await self.get_user_by_id(user_id)
+                return user
+            
+            return None
             
         except jwt.PyJWTError:
             return None
