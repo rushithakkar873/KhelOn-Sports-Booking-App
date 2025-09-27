@@ -320,7 +320,8 @@ class SecureOnboardingTester:
         print(f"\n3️⃣ Testing onboarding step1 with valid JWT")
         
         # First get a valid JWT token
-        mobile = "+919111222444"  # Different number for this test
+        import random
+        mobile = f"+9191112{random.randint(20000, 29999)}"  # Different number for this test
         
         # Send OTP
         otp_result = await self.send_otp(mobile)
