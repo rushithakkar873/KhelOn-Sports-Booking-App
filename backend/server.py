@@ -265,7 +265,7 @@ async def get_onboarding_status(current_user: dict = Depends(get_current_user)):
     result = await auth_service.get_onboarding_status(current_user["_id"])
     
     if result["success"]:
-        return OnboardingStatusResponse(**result["data"])
+        return result["status"]
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
