@@ -877,7 +877,9 @@ class AuthService:
     async def create_temp_user(self, mobile: str) -> str:
         """Create temporary user record for onboarding process"""
         try:
+            temp_user_id = str(uuid.uuid4())
             temp_user = {
+                "_id": temp_user_id,
                 "mobile": mobile,
                 "role": "venue_partner",
                 "temp_user": True,
@@ -887,8 +889,8 @@ class AuthService:
                 "completed_steps": []
             }
             
-            result = await self.db.temp_users.insert_one(temp_user)
-            return str(result.inserted_id)
+            await self.db.temp_users.insert_one(temp_user)
+            return temp_user_id
             
         except Exception as e:
             logger.error(f"Create temp user error: {str(e)}")
