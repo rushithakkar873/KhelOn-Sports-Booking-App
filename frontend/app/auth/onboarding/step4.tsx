@@ -7,7 +7,6 @@ import {
   Alert,
   ScrollView,
   StatusBar,
-  ImageBackground,
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,17 +14,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AuthService from '../../../services/authService';
 
-const AMENITY_OPTIONS = [
+const AMENITIES_OPTIONS = [
   'Parking',
   'Washroom',
   'Changing Room',
   'Floodlights',
-  'AC',
-  'Equipment Rental',
-  'Seating',
+  'Seating Area',
   'Canteen',
-  'WiFi',
   'First Aid',
+  'Equipment Rental',
+  'AC/Cooled Area',
+  'WiFi',
+  'Sound System',
+  'Security',
 ];
 
 export default function OnboardingStep4Screen() {
@@ -37,42 +38,15 @@ export default function OnboardingStep4Screen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const toggleAmenity = (amenity: string) => {
-    setSelectedAmenities(prev => 
-      prev.includes(amenity) 
+    setSelectedAmenities(prev =>
+      prev.includes(amenity)
         ? prev.filter(a => a !== amenity)
         : [...prev, amenity]
     );
   };
 
-  const handleSkip = async () => {
-    setIsLoading(true);
-
-    try {
-      const token = authService.getToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/onboarding/step4`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amenities: [],
-          rules: null,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        router.replace('/auth/onboarding/step5');
-      } else {
-        Alert.alert('Error', result.message || 'Failed to skip step');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSkip = () => {
+    router.replace('/auth/onboarding/step5');
   };
 
   const handleSaveAndContinue = async () => {
@@ -108,101 +82,97 @@ export default function OnboardingStep4Screen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a' }}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
-        <View style={styles.overlay} />
-        <SafeAreaView style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => router.back()}
-              >
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
-              </TouchableOpacity>
-              <View style={styles.progressContainer}>
-                <Text style={styles.progressText}>Step 4 of 5</Text>
+      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="chevron-back" size={24} color="#212529" />
+            </TouchableOpacity>
+            <View style={styles.progressContainer}>
+              <Text style={styles.progressText}>Step 4 of 5</Text>
+            </View>
+          </View>
+
+          {/* Title */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Amenities & Rules</Text>
+            <Text style={styles.subtitle}>Help customers understand what you offer</Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.formContainer}>
+            {/* Progress Bar */}
+            <View style={styles.progressBar}>
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={styles.progressSegment} />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Amenities Available</Text>
+              <Text style={styles.helperText}>Select all that apply to your venue</Text>
+              <View style={styles.amenitiesGrid}>
+                {AMENITIES_OPTIONS.map((amenity) => (
+                  <TouchableOpacity
+                    key={amenity}
+                    style={[
+                      styles.amenityCard,
+                      selectedAmenities.includes(amenity) && styles.amenityCardSelected,
+                    ]}
+                    onPress={() => toggleAmenity(amenity)}
+                  >
+                    <View style={[
+                      styles.checkBox,
+                      selectedAmenities.includes(amenity) && styles.checkBoxSelected,
+                    ]}>
+                      {selectedAmenities.includes(amenity) && (
+                        <Ionicons name="checkmark" size={16} color="#ffffff" />
+                      )}
+                    </View>
+                    <Text style={[
+                      styles.amenityText,
+                      selectedAmenities.includes(amenity) && styles.amenityTextSelected,
+                    ]}>
+                      {amenity}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
 
-            {/* Title */}
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Amenities & Rules</Text>
-              <Text style={styles.subtitle}>Enhance your venue profile (Optional)</Text>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Rules & Guidelines (Optional)</Text>
+              <Text style={styles.helperText}>Any specific rules or guidelines for your venue</Text>
+              <View style={styles.textAreaContainer}>
+                <TextInput
+                  style={styles.textArea}
+                  placeholder="e.g., No outside food allowed, Sports shoes mandatory, etc."
+                  placeholderTextColor="#9ca3af"
+                  value={rules}
+                  onChangeText={setRules}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                />
+              </View>
             </View>
 
-            {/* Form */}
-            <View style={styles.formContainer}>
-              <View style={styles.form}>
-                {/* Progress Bar */}
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={styles.progressSegment} />
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>General Amenities</Text>
-                  <Text style={styles.description}>Select the amenities available at your venue</Text>
-                  <View style={styles.amenitiesGrid}>
-                    {AMENITY_OPTIONS.map((amenity) => (
-                      <TouchableOpacity
-                        key={amenity}
-                        style={[
-                          styles.amenityButton,
-                          selectedAmenities.includes(amenity) && styles.amenityButtonSelected,
-                        ]}
-                        onPress={() => toggleAmenity(amenity)}
-                      >
-                        <Text
-                          style={[
-                            styles.amenityText,
-                            selectedAmenities.includes(amenity) && styles.amenityTextSelected,
-                          ]}
-                        >
-                          {amenity}
-                        </Text>
-                        {selectedAmenities.includes(amenity) && (
-                          <Ionicons name="checkmark-circle" size={16} color="#ffffff" style={styles.checkIcon} />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Venue Rules (Optional)</Text>
-                  <Text style={styles.description}>Any specific rules or guidelines for your venue</Text>
-                  <View style={styles.textAreaContainer}>
-                    <TextInput
-                      style={styles.textArea}
-                      placeholder="e.g., No outside food allowed, Proper sports attire required..."
-                      placeholderTextColor="#9ca3af"
-                      value={rules}
-                      onChangeText={setRules}
-                      multiline
-                      numberOfLines={4}
-                      textAlignVertical="top"
-                    />
-                  </View>
-                </View>
-              </View>
-
-              {/* Footer */}
-              <View style={styles.footer}>
+            {/* Footer */}
+            <View style={styles.footer}>
+              <View style={styles.buttonRow}>
                 <TouchableOpacity
-                  style={styles.secondaryButton}
+                  style={styles.skipButton}
                   onPress={handleSkip}
                   disabled={isLoading}
                 >
-                  <Text style={styles.secondaryButtonText}>Skip for now</Text>
+                  <Text style={styles.skipButtonText}>Skip for Now</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
@@ -216,9 +186,9 @@ export default function OnboardingStep4Screen() {
                 </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
-        </SafeAreaView>
-      </ImageBackground>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }
@@ -226,17 +196,12 @@ export default function OnboardingStep4Screen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: '#f5f6f7',
   },
   safeArea: {
+    flex: 1,
+  },
+  scrollContainer: {
     flex: 1,
   },
   scrollContent: {
@@ -248,54 +213,60 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 20,
-    marginBottom: 40,
+    paddingBottom: 16,
+    backgroundColor: '#f5f6f7',
   },
   backButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   progressContainer: {
     alignItems: 'center',
   },
   progressText: {
-    color: '#ffffff',
+    color: '#212529',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   titleContainer: {
-    marginBottom: 40,
+    marginBottom: 32,
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#212529',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    color: '#9ca3af',
     textAlign: 'center',
   },
   formContainer: {
     flex: 1,
     backgroundColor: '#ffffff',
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 24,
+    borderRadius: 12,
+    padding: 24,
     marginBottom: 24,
-  },
-  form: {
-    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   progressBar: {
     flexDirection: 'row',
-    marginBottom: 32,
+    marginBottom: 24,
     gap: 8,
   },
   progressSegment: {
@@ -305,19 +276,19 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressActive: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#212529',
   },
   inputGroup: {
     marginBottom: 24,
   },
   label: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
+    color: '#212529',
     marginBottom: 8,
   },
-  description: {
-    fontSize: 14,
+  helperText: {
+    fontSize: 12,
     color: '#6b7280',
     marginBottom: 16,
   },
@@ -326,19 +297,35 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 12,
   },
-  amenityButton: {
+  amenityCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e5e7eb',
     backgroundColor: '#f9fafb',
+    marginBottom: 8,
   },
-  amenityButtonSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+  amenityCardSelected: {
+    borderColor: '#212529',
+    backgroundColor: '#ffffff',
+  },
+  checkBox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  checkBoxSelected: {
+    borderColor: '#212529',
+    backgroundColor: '#212529',
   },
   amenityText: {
     fontSize: 14,
@@ -346,48 +333,60 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   amenityTextSelected: {
-    color: '#ffffff',
-  },
-  checkIcon: {
-    marginLeft: 6,
+    color: '#212529',
+    fontWeight: '600',
   },
   textAreaContainer: {
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 12,
-    backgroundColor: '#f9fafb',
-    padding: 16,
+    backgroundColor: '#f5f6f7',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   textArea: {
     fontSize: 16,
-    color: '#000000',
-    minHeight: 80,
+    color: '#212529',
+    minHeight: 100,
+    textAlignVertical: 'top',
   },
   footer: {
     paddingTop: 16,
+  },
+  buttonRow: {
+    flexDirection: 'row',
     gap: 12,
   },
-  secondaryButton: {
+  skipButton: {
+    flex: 1,
+    paddingVertical: 18,
+    borderRadius: 12,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#ffffff',
   },
-  secondaryButtonText: {
+  skipButtonText: {
     color: '#6b7280',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   primaryButton: {
-    backgroundColor: '#3b82f6',
+    flex: 1,
+    backgroundColor: '#212529',
     paddingVertical: 18,
-    borderRadius: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#212529',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryButtonDisabled: {
     backgroundColor: '#9ca3af',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   primaryButtonText: {
     color: '#ffffff',
