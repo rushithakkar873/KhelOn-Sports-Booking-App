@@ -23,7 +23,7 @@ index fe1c528..abc2a4c 100644
 @@ -297,7 +297,7 @@ class AuthService {
     * Check if current user is venue partner
     */
-   isVenueOwner(): boolean {
+   isVenuePartner(): boolean {
 -    return this.currentUser?.role === 'venue_partner';
 +    return this.currentUser?.role === 'venue_partner';
    }
@@ -59,7 +59,7 @@ index 8aa8e1f..e69de29 100644
 -@@ -297,7 +297,7 @@ class AuthService {
 -    * Check if current user is venue partner
 -    */
--   isVenueOwner(): boolean {
+-   isVenuePartner(): boolean {
 --    return this.currentUser?.role === 'venue_partner';
 -+    return this.currentUser?.role === 'venue_partner';
 -   }

@@ -33,7 +33,7 @@ interface DashboardData {
   peakHours: { hour: string; count: number }[];
 }
 
-export default function VenueOwnerDashboard() {
+export default function VenuePartnerDashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     totalVenues: 0,
     totalBookings: 0,

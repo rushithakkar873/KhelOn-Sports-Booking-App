@@ -117,7 +117,7 @@ class UserResponse(BaseModel):
     created_at: datetime
 
 # Venue Partner Models
-class VenueOwnerCreate(BaseModel):
+class VenuePartnerCreate(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     email: EmailStr
     mobile: str = Field(..., min_length=10, max_length=15)
@@ -126,7 +126,7 @@ class VenueOwnerCreate(BaseModel):
     business_address: Optional[str] = Field(None, max_length=500)
     gst_number: Optional[str] = Field(None, max_length=20)
 
-class VenueOwnerResponse(BaseModel):
+class VenuePartnerResponse(BaseModel):
     id: str
     name: str
     email: str
@@ -295,7 +295,7 @@ class TournamentResponse(BaseModel):
 
 # Venue Partner Authentication Routes
 @api_router.post("/venue-owner/register", response_model=Dict[str, str])
-async def register_venue_owner(owner_data: VenueOwnerCreate):
+async def register_venue_owner(owner_data: VenuePartnerCreate):
     # Check if venue partner already exists
     existing_owner = await db.venue_owners.find_one({
         "$or": [
@@ -394,9 +394,9 @@ async def get_current_venue_owner(credentials: HTTPAuthorizationCredentials = De
         )
     return owner
 
-@api_router.get("/venue-owner/profile", response_model=VenueOwnerResponse)
+@api_router.get("/venue-owner/profile", response_model=VenuePartnerResponse)
 async def get_venue_owner_profile(current_owner: dict = Depends(get_current_venue_owner)):
-    return VenueOwnerResponse(
+    return VenuePartnerResponse(
         id=current_owner["_id"],
         name=current_owner["name"],
         email=current_owner["email"],

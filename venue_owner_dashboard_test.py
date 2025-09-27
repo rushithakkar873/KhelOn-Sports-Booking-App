@@ -14,7 +14,7 @@ from typing import Dict, Any, Optional
 BASE_URL = "https://playonapp.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
-class VenueOwnerDashboardTester:
+class VenuePartnerDashboardTester:
     def __init__(self):
         self.base_url = BASE_URL
         self.headers = HEADERS.copy()
@@ -680,7 +680,7 @@ class VenueOwnerDashboardTester:
 
 def main():
     """Main test execution"""
-    tester = VenueOwnerDashboardTester()
+    tester = VenuePartnerDashboardTester()
     success = tester.run_all_tests()
     return success
 
