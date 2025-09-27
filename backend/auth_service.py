@@ -582,13 +582,42 @@ class AuthService:
                     "success": True,
                     "message": "Step 1 completed successfully",
                     "access_token": access_token,
-                "token_type": "bearer",
-                "user_id": user_id,
-                "next_step": 2
-            }
-            
+                    "token_type": "bearer",
+                    "user_id": user_id,
+                    "next_step": 2
+                }
+            else:
+                # For existing users completing remaining onboarding steps
+                existing_user = await self.db.users.find_one({"_id": current_user_id})
+                if not existing_user:
+                    return {
+                        "success": False,
+                        "message": "User not found"
+                    }
+                
+                # Update existing user's basic info
+                await self.db.users.update_one(
+                    {"_id": current_user_id},
+                    {"$set": {
+                        "first_name": step1_data.first_name,
+                        "last_name": step1_data.last_name,
+                        "name": f"{step1_data.first_name} {step1_data.last_name}",
+                        "email": step1_data.email if hasattr(step1_data, 'email') else existing_user.get("email"),
+                        "completed_steps": list(set(existing_user.get("completed_steps", []) + [1])),
+                        "current_step": 2,
+                        "updated_at": datetime.utcnow()
+                    }}
+                )
+                
+                return {
+                    "success": True,
+                    "message": "Step 1 completed successfully",
+                    "user_id": current_user_id,
+                    "next_step": 2
+                }
+                
         except Exception as e:
-            logger.error(f"Onboarding Step 1 error: {str(e)}")
+            logger.error(f"Onboarding Step 1 JWT error: {str(e)}")
             return {
                 "success": False,
                 "message": "Step 1 failed"
