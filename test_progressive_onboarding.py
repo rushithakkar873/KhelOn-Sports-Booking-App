@@ -7,7 +7,7 @@ import requests
 import json
 import time
 
-BASE_URL = "http://localhost:8000/api"
+BASE_URL = "http://localhost:8001/api"
 
 def test_progressive_onboarding():
     """Test the complete progressive onboarding flow"""
