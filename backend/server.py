@@ -332,7 +332,7 @@ async def onboarding_step1(request: OnboardingStep1Request, current_user: dict =
             detail="Onboarding already completed"
         )
     
-    result = await auth_service.onboarding_step1(request)
+    result = await auth_service.onboarding_step1_jwt(request, current_user["_id"])
     
     if result["success"]:
         return {
