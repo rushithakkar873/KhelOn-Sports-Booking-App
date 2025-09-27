@@ -844,37 +844,9 @@ class AuthService:
     async def verify_otp_only(self, mobile: str, otp: str) -> Dict[str, Any]:
         """Verify OTP without creating user or token"""
         try:
-            if mobile not in self.otp_storage:
-                return {
-                    "success": False,
-                    "message": "OTP expired or invalid. Please request a new OTP."
-                }
-            
-            stored_otp = self.otp_storage[mobile]
-            current_time = time.time()
-            
-            # Check if OTP is expired (5 minutes)
-            if current_time - stored_otp["timestamp"] > 300:
-                del self.otp_storage[mobile]
-                return {
-                    "success": False,
-                    "message": "OTP expired. Please request a new OTP."
-                }
-            
-            # Verify OTP
-            if stored_otp["otp"] != otp:
-                return {
-                    "success": False,
-                    "message": "Invalid OTP. Please try again."
-                }
-            
-            # Clean up OTP after successful verification
-            del self.otp_storage[mobile]
-            
-            return {
-                "success": True,
-                "message": "OTP verified successfully"
-            }
+            # Use SMS service to verify OTP
+            result = await self.sms_service.verify_otp(mobile, otp)
+            return result
             
         except Exception as e:
             logger.error(f"Verify OTP only error: {str(e)}")
