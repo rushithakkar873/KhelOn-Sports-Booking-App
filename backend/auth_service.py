@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Optional, Any
 from passlib.context import CryptContext
 from pydantic import BaseModel, Field, EmailStr, validator
+from typing import List
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 # Configure logging
