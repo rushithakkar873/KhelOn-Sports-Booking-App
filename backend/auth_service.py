@@ -140,7 +140,7 @@ class OTPVerifyRequest(BaseModel):
 
 # Progressive onboarding models
 class OnboardingStep1Request(BaseModel):
-    mobile: str = Field(..., regex=r'^\+91[6-9]\d{9}$')
+    mobile: str = Field(..., pattern=r'^\+91[6-9]\d{9}$')
     otp: str = Field(..., min_length=6, max_length=6)
     first_name: str = Field(..., min_length=2, max_length=100)
     last_name: str = Field(..., min_length=2, max_length=100)
@@ -151,12 +151,12 @@ class OnboardingStep2Request(BaseModel):
     address: str = Field(..., min_length=10, max_length=500)
     city: str = Field(..., min_length=2, max_length=100)
     state: str = Field(..., min_length=2, max_length=100)
-    pincode: str = Field(..., regex=r'^\d{6}$')
+    pincode: str = Field(..., pattern=r'^\d{6}$')
     cover_photo: Optional[str] = None  # base64 image
     operating_days: List[str] = Field(..., min_items=1, max_items=7)
     start_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
     end_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
-    contact_phone: str = Field(..., regex=r'^\+91[6-9]\d{9}$')
+    contact_phone: str = Field(..., pattern=r'^\+91[6-9]\d{9}$')
 
 class OnboardingStep3Request(BaseModel):
     sport_type: str = Field(..., min_length=2, max_length=50)
