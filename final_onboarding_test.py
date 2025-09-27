@@ -86,6 +86,7 @@ class FinalOnboardingTester:
             # Step 2: Verify OTP (standalone test)
             print("2️⃣ TESTING: POST /api/auth/verify-otp (Standalone)")
             # Send OTP to different number for standalone test
+            time.sleep(1)  # Ensure different timestamp
             standalone_mobile = f"+919{str(int(time.time()))[-9:]}"
             payload = {"mobile": standalone_mobile}
             response = self.session.post(f"{BASE_URL}/auth/send-otp", json=payload)
