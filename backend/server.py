@@ -187,7 +187,19 @@ async def check_user_exists(request: MobileOTPRequest):
     result = await auth_service.check_user_exists(request.mobile)
     
     if result["success"]:
-        return result
+        # Send OTP automatically for both new and existing users
+        otp_result = await auth_service.send_otp(request.mobile)
+        
+        return {
+            "success": True,
+            "user_exists": result["user_exists"],
+            "message": result["message"],
+            "onboarding_status": result.get("onboarding_status"),
+            "otp_sent": otp_result["success"],
+            "otp_request_id": otp_result.get("request_id"),
+            # For development - remove in production
+            "dev_otp": otp_result.get("dev_otp")
+        }
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
