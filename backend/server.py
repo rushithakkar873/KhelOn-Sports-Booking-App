@@ -13,7 +13,7 @@ from typing import List, Optional, Dict, Any
 # Import our new auth service
 from auth_service import (
     AuthService, MobileOTPRequest, OTPVerifyRequest, UserRegistrationRequest, UserResponse,
-    OnboardingStep1Request, OnboardingStep2Request, OnboardingStep3Request, 
+    OnboardingStep1Request, OnboardingStep1JWTRequest, OnboardingStep2Request, OnboardingStep3Request, 
     OnboardingStep4Request, OnboardingStep5Request, OnboardingStatusResponse
 )
 
