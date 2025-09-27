@@ -527,3 +527,248 @@ class AuthService:
             
         except jwt.PyJWTError:
             return None
+    
+    # Progressive Onboarding Methods
+    async def onboarding_step1(self, step1_data: OnboardingStep1Request) -> Dict[str, Any]:
+        """Step 1: Basic user info with OTP verification"""
+        try:
+            # Verify OTP first
+            otp_result = await self.sms_service.verify_otp(step1_data.mobile, step1_data.otp)
+            if not otp_result["success"]:
+                return otp_result
+            
+            # Check if user already exists
+            existing_user = await self.db.users.find_one({"mobile": step1_data.mobile})
+            if existing_user:
+                return {
+                    "success": False,
+                    "message": "User with this mobile number already exists"
+                }
+            
+            # Create new user with basic info
+            user_id = str(uuid.uuid4())
+            user_doc = {
+                "_id": user_id,
+                "mobile": step1_data.mobile,
+                "first_name": step1_data.first_name,
+                "last_name": step1_data.last_name,
+                "name": f"{step1_data.first_name} {step1_data.last_name}",
+                "email": step1_data.email,
+                "role": "venue_partner",  # Progressive onboarding is for venue partners
+                "is_verified": True,
+                "onboarding_completed": False,
+                "completed_steps": [1],
+                "current_step": 2,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_active": True
+            }
+            
+            await self.db.users.insert_one(user_doc)
+            
+            # Create access token
+            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token = self.create_access_token(
+                data={"sub": user_id, "role": "venue_partner"},
+                expires_delta=access_token_expires
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 1 completed successfully",
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user_id": user_id,
+                "next_step": 2
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 1 error: {str(e)}")
+            return {
+                "success": False,
+                "message": "Step 1 failed"
+            }
+    
+    async def onboarding_step2(self, user_id: str, step2_data: OnboardingStep2Request) -> Dict[str, Any]:
+        """Step 2: Venue basic information"""
+        try:
+            # Update user with venue info
+            user_update = {
+                "venue_name": step2_data.venue_name,
+                "venue_address": step2_data.address,
+                "venue_city": step2_data.city,
+                "venue_state": step2_data.state,
+                "venue_pincode": step2_data.pincode,
+                "cover_photo": step2_data.cover_photo,
+                "operating_days": step2_data.operating_days,
+                "start_time": step2_data.start_time,
+                "end_time": step2_data.end_time,
+                "contact_phone": step2_data.contact_phone,
+                "completed_steps": [1, 2],
+                "current_step": 3,
+                "updated_at": datetime.utcnow()
+            }
+            
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": user_update}
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 2 completed successfully",
+                "next_step": 3
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 2 error: {str(e)}")
+            return {
+                "success": False,
+                "message": "Step 2 failed"
+            }
+    
+    async def onboarding_step3(self, user_id: str, step3_data: OnboardingStep3Request) -> Dict[str, Any]:
+        """Step 3: Arena/Sport configuration"""
+        try:
+            # Create arena document
+            arena_id = str(uuid.uuid4())
+            arena_doc = {
+                "_id": arena_id,
+                "name": f"{step3_data.sport_type} Arena",
+                "sport": step3_data.sport_type,
+                "owner_id": user_id,
+                "number_of_courts": step3_data.number_of_courts,
+                "slot_duration": step3_data.slot_duration,
+                "price_per_slot": step3_data.price_per_slot,
+                "is_active": True,
+                "created_at": datetime.utcnow()
+            }
+            
+            await self.db.arenas.insert_one(arena_doc)
+            
+            # Update user progress
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    "completed_steps": [1, 2, 3],
+                    "current_step": 4,
+                    "has_arena": True,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 3 completed successfully",
+                "arena_id": arena_id,
+                "next_step": 4
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 3 error: {str(e)}")
+            return {
+                "success": False,
+                "message": "Step 3 failed"
+            }
+    
+    async def onboarding_step4(self, user_id: str, step4_data: OnboardingStep4Request) -> Dict[str, Any]:
+        """Step 4: Amenities and rules"""
+        try:
+            # Update user with amenities and rules
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    "amenities": step4_data.amenities,
+                    "rules": step4_data.rules,
+                    "completed_steps": [1, 2, 3, 4],
+                    "current_step": 5,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 4 completed successfully",
+                "next_step": 5
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 4 error: {str(e)}")
+            return {
+                "success": False,
+                "message": "Step 4 failed"
+            }
+    
+    async def onboarding_step5(self, user_id: str, step5_data: OnboardingStep5Request) -> Dict[str, Any]:
+        """Step 5: Payment details (optional)"""
+        try:
+            # Update user with payment info
+            payment_info = {}
+            if step5_data.bank_account_number:
+                payment_info["bank_account_number"] = step5_data.bank_account_number
+            if step5_data.bank_ifsc:
+                payment_info["bank_ifsc"] = step5_data.bank_ifsc
+            if step5_data.bank_account_holder:
+                payment_info["bank_account_holder"] = step5_data.bank_account_holder
+            if step5_data.upi_id:
+                payment_info["upi_id"] = step5_data.upi_id
+            
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    **payment_info,
+                    "completed_steps": [1, 2, 3, 4, 5],
+                    "current_step": 6,
+                    "onboarding_completed": True,
+                    "can_go_live": True,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "message": "Onboarding completed successfully!",
+                "onboarding_completed": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 5 error: {str(e)}")
+            return {
+                "success": False,
+                "message": "Step 5 failed"
+            }
+    
+    async def get_onboarding_status(self, user_id: str) -> Dict[str, Any]:
+        """Get current onboarding status"""
+        try:
+            user = await self.db.users.find_one({"_id": user_id})
+            if not user:
+                return {
+                    "success": False,
+                    "message": "User not found"
+                }
+            
+            # Check if user has venue and arena
+            has_venue = bool(user.get("venue_name"))
+            has_arena = bool(user.get("has_arena", False))
+            
+            return {
+                "success": True,
+                "status": OnboardingStatusResponse(
+                    user_id=user_id,
+                    mobile=user["mobile"],
+                    onboarding_completed=user.get("onboarding_completed", False),
+                    completed_steps=user.get("completed_steps", []),
+                    current_step=user.get("current_step", 1),
+                    has_venue=has_venue,
+                    has_arena=has_arena,
+                    can_go_live=user.get("can_go_live", False)
+                )
+            }
+            
+        except Exception as e:
+            logger.error(f"Get onboarding status error: {str(e)}")
+            return {
+                "success": False,
+                "message": "Failed to get onboarding status"
+            }
