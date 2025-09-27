@@ -178,7 +178,6 @@ export default function OnboardingStep1Screen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
         </ScrollView>
       </SafeAreaView>
     </View>

@@ -355,7 +355,7 @@ export default function VenuePartnerDashboard() {
               <View style={styles.quickActions}>
                 <TouchableOpacity 
                   style={styles.actionButton}
-                  onPress={() => router.push('/venue-owner/dashboard/venues')}
+                  onPress={() => router.push('/venue-partner/dashboard/venues')}
                 >
                   <View style={styles.actionIcon}>
                     <Ionicons name="add-circle-outline" size={20} color="#212529" />
@@ -365,7 +365,7 @@ export default function VenuePartnerDashboard() {
                 
                 <TouchableOpacity 
                   style={styles.actionButton}
-                  onPress={() => router.push('/venue-owner/dashboard/bookings')}
+                  onPress={() => router.push('/venue-partner/dashboard/bookings')}
                 >
                   <View style={styles.actionIcon}>
                     <Ionicons name="calendar-outline" size={20} color="#212529" />
@@ -375,7 +375,7 @@ export default function VenuePartnerDashboard() {
                 
                 <TouchableOpacity 
                   style={styles.actionButton}
-                  onPress={() => router.push('/venue-owner/dashboard/analytics')}
+                  onPress={() => router.push('/venue-partner/dashboard/analytics')}
                 >
                   <View style={styles.actionIcon}>
                     <Ionicons name="analytics-outline" size={20} color="#212529" />
