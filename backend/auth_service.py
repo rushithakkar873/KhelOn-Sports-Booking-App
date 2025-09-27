@@ -530,54 +530,58 @@ class AuthService:
             return None
     
     # Progressive Onboarding Methods
-    async def onboarding_step1(self, step1_data: OnboardingStep1Request) -> Dict[str, Any]:
-        """Step 1: Basic user info with OTP verification"""
+    async def onboarding_step1_jwt(self, step1_data, current_user_id: str) -> Dict[str, Any]:
+        """Step 1: Basic user info (JWT authenticated - no OTP needed)"""
         try:
-            # Verify OTP first
-            otp_result = await self.sms_service.verify_otp(step1_data.mobile, step1_data.otp)
-            if not otp_result["success"]:
-                return otp_result
-            
-            # Check if user already exists
-            existing_user = await self.db.users.find_one({"mobile": step1_data.mobile})
-            if existing_user:
-                return {
-                    "success": False,
-                    "message": "User with this mobile number already exists"
+            # For temp users (new registrations), create permanent user
+            if current_user_id and await self.db.temp_users.find_one({"_id": current_user_id}):
+                # Get temp user data
+                temp_user = await self.db.temp_users.find_one({"_id": current_user_id})
+                mobile = temp_user["mobile"]
+                
+                # Check if user already exists in permanent users table
+                existing_user = await self.db.users.find_one({"mobile": mobile})
+                if existing_user:
+                    return {
+                        "success": False,
+                        "message": "User with this mobile number already exists"
+                    }
+                
+                # Create new permanent user with basic info
+                user_id = str(uuid.uuid4())
+                user_doc = {
+                    "_id": user_id,
+                    "mobile": mobile,
+                    "first_name": step1_data.first_name,
+                    "last_name": step1_data.last_name,
+                    "name": f"{step1_data.first_name} {step1_data.last_name}",
+                    "email": step1_data.email if hasattr(step1_data, 'email') else None,
+                    "role": "venue_partner",
+                    "is_verified": True,
+                    "onboarding_completed": False,
+                    "completed_steps": [1],
+                    "current_step": 2,
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow(),
+                    "is_active": True
                 }
-            
-            # Create new user with basic info
-            user_id = str(uuid.uuid4())
-            user_doc = {
-                "_id": user_id,
-                "mobile": step1_data.mobile,
-                "first_name": step1_data.first_name,
-                "last_name": step1_data.last_name,
-                "name": f"{step1_data.first_name} {step1_data.last_name}",
-                "email": step1_data.email,
-                "role": "venue_partner",  # Progressive onboarding is for venue partners
-                "is_verified": True,
-                "onboarding_completed": False,
-                "completed_steps": [1],
-                "current_step": 2,
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
-                "is_active": True
-            }
-            
-            await self.db.users.insert_one(user_doc)
-            
-            # Create access token
-            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-            access_token = self.create_access_token(
-                data={"sub": user_id, "role": "venue_partner"},
-                expires_delta=access_token_expires
-            )
-            
-            return {
-                "success": True,
-                "message": "Step 1 completed successfully",
-                "access_token": access_token,
+                
+                await self.db.users.insert_one(user_doc)
+                
+                # Clean up temp user
+                await self.db.temp_users.delete_one({"_id": current_user_id})
+                
+                # Create new access token for permanent user
+                access_token_expires = timedelta(minutes=1440)  # 24 hours
+                access_token = self.create_access_token(
+                    data={"sub": user_id, "role": "venue_partner"},
+                    expires_delta=access_token_expires
+                )
+                
+                return {
+                    "success": True,
+                    "message": "Step 1 completed successfully",
+                    "access_token": access_token,
                 "token_type": "bearer",
                 "user_id": user_id,
                 "next_step": 2
