@@ -363,7 +363,8 @@ class SecureOnboardingTester:
         print("\n🔥 TESTING FLOW VALIDATION")
         
         # Test 1: Login API returns proper routing instructions
-        mobile = "+919111222555"
+        import random
+        mobile = f"+9191112{random.randint(30000, 39999)}"
         
         # Send OTP and login
         otp_result = await self.send_otp(mobile)
