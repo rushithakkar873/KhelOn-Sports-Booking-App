@@ -278,6 +278,7 @@ class AuthService:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
         self.sms_service = MockSMSService()
+        self.otp_storage = {}  # In-memory OTP storage for verification
         
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
         """Create JWT access token"""
