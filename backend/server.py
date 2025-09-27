@@ -307,30 +307,19 @@ from auth_service import (
     OnboardingStep4Request, OnboardingStep5Request, OnboardingStatusResponse
 )
 
+# DEPRECATED: Use /auth/login instead (handles OTP verification + user status)
 @api_router.post("/auth/check-user")
 async def check_user_exists(request: MobileOTPRequest):
-    """Check if user exists and return onboarding status"""
-    result = await auth_service.check_user_exists(request.mobile)
-    
-    if result["success"]:
-        # Send OTP automatically for both new and existing users
-        otp_result = await auth_service.send_otp(request.mobile)
-        
-        return {
-            "success": True,
-            "user_exists": result["user_exists"],
-            "message": result["message"],
-            "onboarding_status": result.get("onboarding_status"),
-            "otp_sent": otp_result["success"],
-            "otp_request_id": otp_result.get("request_id"),
-            # For development - remove in production
-            "dev_otp": otp_result.get("dev_otp")
+    """DEPRECATED: Check if user exists - Use /auth/login instead"""
+    return {
+        "success": False,
+        "deprecated": True,
+        "message": "This endpoint is deprecated. Use /auth/send-otp followed by /auth/login for secure authentication.",
+        "new_flow": {
+            "step_1": "POST /auth/send-otp - Send OTP to mobile",
+            "step_2": "POST /auth/login - Verify OTP + Get user status & JWT token"
         }
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=result["message"]
-        )
+    }
 
 @api_router.post("/onboarding/step1")
 async def onboarding_step1(request: OnboardingStep1Request, current_user: dict = Depends(get_current_user)):
