@@ -9,7 +9,7 @@ export default function WelcomeScreen() {
   const router = useRouter();
 
   const handleGetStarted = () => {
-    router.push('/auth/login');
+    router.push('/auth/phone-auth');
   };
 
   return (
