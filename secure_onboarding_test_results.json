@@ -1,0 +1,79 @@
+{
+  "overall_success": false,
+  "test_results": [
+    {
+      "test": "API Health Check",
+      "success": true,
+      "details": "KhelOn API vNone running with mobile OTP auth",
+      "timestamp": "2025-09-27T20:33:02.602236"
+    },
+    {
+      "test": "Deprecated Check User API",
+      "success": true,
+      "details": "Returns proper deprecation message",
+      "timestamp": "2025-09-27T20:33:02.648047"
+    },
+    {
+      "test": "New User - Send OTP",
+      "success": true,
+      "details": "OTP sent successfully, dev OTP: 606951",
+      "timestamp": "2025-09-27T20:33:02.655514"
+    },
+    {
+      "test": "New User - Login with OTP",
+      "success": false,
+      "details": "Incorrect routing: user_exists=True, action=complete_onboarding, redirect_to=onboarding_step_1",
+      "timestamp": "2025-09-27T20:33:04.806436"
+    },
+    {
+      "test": "Existing User - Send OTP",
+      "success": true,
+      "details": "OTP sent successfully, dev OTP: 015455",
+      "timestamp": "2025-09-27T20:33:04.811441"
+    },
+    {
+      "test": "Existing User - Login with OTP",
+      "success": true,
+      "details": "Correct routing: complete_onboarding \u2192 onboarding_step_1",
+      "timestamp": "2025-09-27T20:33:05.083544"
+    },
+    {
+      "test": "Security - Step1 without JWT",
+      "success": true,
+      "details": "Step 1 properly rejected unauthorized access (HTTP 403)",
+      "timestamp": "2025-09-27T20:33:05.088827"
+    },
+    {
+      "test": "Security - Step2 without JWT",
+      "success": true,
+      "details": "Step 2 properly rejected unauthorized access (HTTP 403)",
+      "timestamp": "2025-09-27T20:33:05.141922"
+    },
+    {
+      "test": "Security - Step3 without JWT",
+      "success": true,
+      "details": "Step 3 properly rejected unauthorized access (HTTP 403)",
+      "timestamp": "2025-09-27T20:33:05.147755"
+    },
+    {
+      "test": "Security - Step4 without JWT",
+      "success": true,
+      "details": "Step 4 properly rejected unauthorized access (HTTP 403)",
+      "timestamp": "2025-09-27T20:33:05.193157"
+    },
+    {
+      "test": "Security - Step5 without JWT",
+      "success": true,
+      "details": "Step 5 properly rejected unauthorized access (HTTP 403)",
+      "timestamp": "2025-09-27T20:33:05.197840"
+    },
+    {
+      "test": "Security - Invalid JWT Token",
+      "success": true,
+      "details": "Step 1 properly rejected unauthorized access (HTTP 401)",
+      "timestamp": "2025-09-27T20:33:05.202489"
+    }
+  ],
+  "timestamp": "2025-09-27T20:33:05.202619",
+  "backend_url": "https://sports-book.preview.emergentagent.com/api"
+}
