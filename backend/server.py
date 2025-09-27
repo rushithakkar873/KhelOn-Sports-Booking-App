@@ -1201,7 +1201,12 @@ async def create_booking_by_partner(
                 "callback_method": "get"
             }
             
-            payment_link = razorpay_client.payment_link.create(payment_link_data)
+            # payment_link = razorpay_client.payment_link.create(payment_link_data)
+            # Mock payment link for testing
+            payment_link = {
+                "id": f"plink_mock_{uuid.uuid4().hex[:8]}",
+                "short_url": f"https://mock-payment.com/{uuid.uuid4().hex[:8]}"
+            }
             payment_link_url = payment_link["short_url"]
             payment_link_id = payment_link["id"]
         else:
