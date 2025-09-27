@@ -939,7 +939,7 @@ async def update_booking_status(
 # VENUE PARTNER BOOKING CREATION WITH PAYMENT & SMS
 # ================================
 
-import razorpay
+# import razorpay  # Commented out temporarily
 import requests
 from pydantic import validator
 
