@@ -296,6 +296,14 @@ class AuthService {
   }
 
   /**
+   * Set auth token (for onboarding flow)
+   */
+  async setToken(token: string): Promise<void> {
+    this.authToken = token;
+    await AsyncStorage.setItem('auth_token', token);
+  }
+
+  /**
    * Check if current user is venue partner
    */
   isVenuePartner(): boolean {
