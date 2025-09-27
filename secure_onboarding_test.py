@@ -119,7 +119,7 @@ class SecureOnboardingTester:
         except Exception as e:
             return False, f"Error: {str(e)}"
     
-    def test_onboarding_step_with_token(self, step_num, token, should_work=True):
+    def test_onboarding_step_with_token(self, step_num, token, should_work=True, otp=None):
         """Test onboarding step with JWT token"""
         try:
             headers = {"Authorization": f"Bearer {token}"} if token else {}
@@ -128,12 +128,10 @@ class SecureOnboardingTester:
             step_data = {
                 1: {
                     "mobile": self.new_user_mobile,
+                    "otp": otp or "123456",  # Include OTP for step1
                     "first_name": "Rajesh",
                     "last_name": "Kumar", 
-                    "email": "rajesh.kumar@example.com",
-                    "business_name": "Elite Sports Complex",
-                    "business_address": "123 Sports Street, Mumbai",
-                    "gst_number": "24ABCDE1234F1Z5"
+                    "email": "rajesh.kumar@example.com"
                 },
                 2: {
                     "venue_name": "Elite Cricket Ground",
