@@ -84,33 +84,35 @@ export default function PhoneAuthScreen() {
     setIsLoading(true);
 
     try {
-      // First check if user exists
-      const checkUserResult = await authService.checkUserExists(mobile);
+      // Use enhanced login API that handles OTP verification + user status + routing
+      const loginResult = await authService.login(mobile, otp);
       
-      if (checkUserResult.success && checkUserResult.exists) {
-        // User exists - try login
-        const loginResult = await authService.login(mobile, otp);
-        
-        if (loginResult.success && loginResult.user) {
-          // Check if user role is venue_partner
-          if (loginResult.user.role !== 'venue_partner') {
+      if (loginResult.success) {
+        if (loginResult.user_exists) {
+          // EXISTING USER FLOW
+          if (loginResult.user && loginResult.user.role !== 'venue_partner') {
             Alert.alert('Error', 'This app is for venue partners only. Please download KhelON Player app if you are a player.');
             return;
           }
           
-          // Navigate to venue partner dashboard
-          Alert.alert('Success', 'Welcome back!', [
-            { text: 'OK', onPress: () => router.replace('/venue-partner/dashboard') }
-          ]);
+          // Route based on onboarding completion
+          if (loginResult.action === 'dashboard_access') {
+            Alert.alert('Success', 'Welcome back!', [
+              { text: 'OK', onPress: () => router.replace('/venue-partner/dashboard') }
+            ]);
+          } else if (loginResult.action === 'complete_onboarding') {
+            Alert.alert('Setup Required', 'Please complete your venue setup to continue.', [
+              { text: 'Continue', onPress: () => router.replace(`/auth/onboarding/${loginResult.redirect_to?.replace('onboarding_', '')}`) }
+            ]);
+          }
         } else {
-          Alert.alert('Error', loginResult.message);
+          // NEW USER FLOW
+          Alert.alert('Welcome to KhelON!', 'Let\'s set up your venue profile.', [
+            { text: 'Get Started', onPress: () => router.replace('/auth/onboarding/step1') }
+          ]);
         }
       } else {
-        // User doesn't exist - start onboarding
-        router.replace({
-          pathname: '/auth/onboarding/step1',
-          params: { mobile, otp }
-        });
+        Alert.alert('Error', loginResult.message);
       }
     } catch (error) {
       Alert.alert('Error', 'Verification failed. Please try again.');
