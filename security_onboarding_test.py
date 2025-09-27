@@ -56,11 +56,11 @@ class SecurityOnboardingTester:
         
         try:
             if method.upper() == "GET":
-                response = requests.get(url, headers=headers, params=params, timeout=30)
+                response = requests.get(url, headers=headers, params=params, timeout=10)
             elif method.upper() == "POST":
-                response = requests.post(url, json=data, headers=headers, params=params, timeout=30)
+                response = requests.post(url, json=data, headers=headers, params=params, timeout=10)
             elif method.upper() == "PUT":
-                response = requests.put(url, json=data, headers=headers, params=params, timeout=30)
+                response = requests.put(url, json=data, headers=headers, params=params, timeout=10)
             else:
                 raise ValueError(f"Unsupported method: {method}")
             
