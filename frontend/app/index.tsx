@@ -56,13 +56,6 @@ export default function WelcomeScreen() {
               <TouchableOpacity style={styles.primaryButton} onPress={handleGetStarted}>
                 <Text style={styles.primaryButtonText}>Get Started</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.secondaryButton}
-                onPress={() => router.push('/auth/register')}
-              >
-                <Text style={styles.secondaryButtonText}>Create Partner Account</Text>
-              </TouchableOpacity>
             </View>
           </ScrollView>
         </SafeAreaView>
