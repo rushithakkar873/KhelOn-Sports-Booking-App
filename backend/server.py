@@ -134,21 +134,90 @@ async def register_user(registration_data: UserRegistrationRequest):
 
 @api_router.post("/auth/login")
 async def login_user(request: OTPVerifyRequest):
-    """Login existing user with mobile + OTP"""
-    result = await auth_service.login_user(request.mobile, request.otp)
-    
-    if result["success"]:
-        return {
-            "success": True,
-            "message": result["message"],
-            "access_token": result["access_token"],
-            "token_type": result["token_type"],
-            "user": result["user"]
-        }
-    else:
+    """Enhanced Login: Verify OTP + Determine User Status & Routing"""
+    try:
+        # Step 1: Verify OTP
+        otp_result = await auth_service.verify_otp_only(request.mobile, request.otp)
+        if not otp_result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=otp_result["message"]
+            )
+        
+        # Step 2: Check if user exists
+        user = await auth_service.get_user_by_mobile(request.mobile)
+        
+        if user:
+            # EXISTING USER FLOW
+            # Generate JWT token
+            access_token_expires = timedelta(minutes=1440)  # 24 hours
+            access_token = auth_service.create_access_token(
+                data={"sub": user["_id"], "role": user["role"]},
+                expires_delta=access_token_expires
+            )
+            
+            # Check onboarding completion status
+            onboarding_completed = user.get("onboarding_completed", False)
+            completed_steps = user.get("completed_steps", [])
+            current_step = user.get("current_step", 1)
+            
+            # Determine routing based on onboarding status
+            if onboarding_completed:
+                redirect_to = "dashboard"
+                next_action = "dashboard_access"
+            else:
+                redirect_to = f"onboarding_step_{current_step}"
+                next_action = "complete_onboarding"
+            
+            return {
+                "success": True,
+                "user_exists": True,
+                "action": next_action,
+                "redirect_to": redirect_to,
+                "message": f"Welcome back! Redirecting to {redirect_to}",
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {
+                    "id": user["_id"],
+                    "mobile": user["mobile"],
+                    "name": user.get("name", f"{user.get('first_name', '')} {user.get('last_name', '')}").strip(),
+                    "role": user["role"],
+                    "onboarding_completed": onboarding_completed,
+                    "completed_steps": completed_steps,
+                    "current_step": current_step
+                }
+            }
+        else:
+            # NEW USER FLOW
+            # Create temporary user record for onboarding
+            temp_user_id = await auth_service.create_temp_user(request.mobile)
+            
+            # Generate JWT token for onboarding process
+            access_token_expires = timedelta(minutes=60)  # 1 hour for onboarding
+            access_token = auth_service.create_access_token(
+                data={"sub": temp_user_id, "role": "venue_partner", "temp": True},
+                expires_delta=access_token_expires
+            )
+            
+            return {
+                "success": True,
+                "user_exists": False,
+                "action": "start_onboarding",
+                "redirect_to": "onboarding_step_1",
+                "message": "Welcome to KhelON! Let's set up your venue.",
+                "access_token": access_token,
+                "token_type": "bearer",
+                "temp_user_id": temp_user_id,
+                "mobile_verified": True
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Enhanced login error: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=result["message"]
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Authentication failed. Please try again."
         )
 
 @api_router.post("/auth/verify-otp-and-route")
