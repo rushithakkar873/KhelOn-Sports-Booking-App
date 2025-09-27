@@ -310,6 +310,29 @@ class AuthService {
   }
 
   /**
+   * Check if user exists with given mobile number
+   */
+  async checkUserExists(mobile: string): Promise<{success: boolean; exists: boolean; message?: string}> {
+    try {
+      const response = await this.makeRequest('/auth/check-user', {
+        method: 'POST',
+        body: JSON.stringify({ mobile }),
+      });
+
+      return {
+        success: true,
+        exists: response.exists,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        exists: false,
+        message: (error as Error).message || 'Failed to check user',
+      };
+    }
+  }
+
+  /**
    * Validate Indian mobile number
    */
   static validateIndianMobile(mobile: string): boolean {
