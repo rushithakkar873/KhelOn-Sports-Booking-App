@@ -520,7 +520,7 @@ class ComprehensiveOnboardingTester:
         # Test sequence as specified in review request
         tests = [
             ("1. Send OTP API", self.test_1_send_otp),
-            ("2. Verify OTP API", self.test_2_verify_otp),
+            ("2. Verify OTP API (Standalone)", self.test_2_verify_otp_standalone),
             ("3. Onboarding Step 1 - Basic Info", self.test_3_onboarding_step1),
             ("4. Onboarding Step 2 - Venue Setup", self.test_4_onboarding_step2),
             ("5. Onboarding Step 3 - Sports Arena", self.test_5_onboarding_step3),
