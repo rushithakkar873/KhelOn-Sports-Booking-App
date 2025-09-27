@@ -146,6 +146,12 @@ class OnboardingStep1Request(BaseModel):
     last_name: str = Field(..., min_length=2, max_length=100)
     email: Optional[EmailStr] = None
 
+class OnboardingStep1JWTRequest(BaseModel):
+    """JWT-authenticated Step 1 request (no OTP needed)"""
+    first_name: str = Field(..., min_length=2, max_length=100)
+    last_name: str = Field(..., min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
+
 class OnboardingStep2Request(BaseModel):
     venue_name: str = Field(..., min_length=2, max_length=200)
     address: str = Field(..., min_length=10, max_length=500)
