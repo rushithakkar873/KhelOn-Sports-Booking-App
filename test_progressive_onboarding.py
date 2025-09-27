@@ -15,8 +15,9 @@ def test_progressive_onboarding():
     print("🚀 Testing Progressive Onboarding Flow")
     print("=" * 50)
     
-    # Test data
-    mobile = "+919876543210"
+    # Test data - use a unique mobile number
+    import random
+    mobile = f"+9198765{random.randint(10000, 99999)}"
     
     # Step 1: Send OTP
     print("\n1. Sending OTP...")
