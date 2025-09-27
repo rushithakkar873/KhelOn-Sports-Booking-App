@@ -21,8 +21,8 @@ class SecureOnboardingTester:
         })
         
         # Test data
-        self.new_user_mobile = "+919876543210"  # Should be new user
-        self.existing_user_mobile = "+919909385701"  # Existing user from previous tests
+        self.new_user_mobile = "+919123456789"  # Should be new user
+        self.existing_user_mobile = "+919876543210"  # Existing user from previous tests
         self.test_results = []
         
     def log_result(self, test_name, success, details):
