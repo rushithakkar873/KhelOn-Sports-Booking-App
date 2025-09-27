@@ -167,22 +167,21 @@ export default function OnboardingStep1Screen() {
                 </View>
               </View>
 
-              {/* Footer */}
-              <View style={styles.footer}>
-                <TouchableOpacity
-                  style={[styles.primaryButton, isLoading && styles.primaryButtonDisabled]}
-                  onPress={handleSaveAndContinue}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.primaryButtonText}>
-                    {isLoading ? 'Saving...' : 'Save & Continue'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+            {/* Footer */}
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={[styles.primaryButton, isLoading && styles.primaryButtonDisabled]}
+                onPress={handleSaveAndContinue}
+                disabled={isLoading}
+              >
+                <Text style={styles.primaryButtonText}>
+                  {isLoading ? 'Saving...' : 'Save & Continue'}
+                </Text>
+              </TouchableOpacity>
             </View>
-          </ScrollView>
-        </SafeAreaView>
-      </ImageBackground>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }
