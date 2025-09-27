@@ -35,14 +35,21 @@ export default function OnboardingStep1Screen() {
     setIsLoading(true);
 
     try {
+      // Use AuthService for JWT-authenticated request (no OTP needed)
+      const token = authService.getToken();
+      if (!token) {
+        Alert.alert('Error', 'Authentication required. Please login again.');
+        router.replace('/auth/phone-auth');
+        return;
+      }
+
       const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/onboarding/step1`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          mobile: mobile as string,
-          otp: otp as string,
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           email: email.trim() || undefined,
@@ -52,15 +59,16 @@ export default function OnboardingStep1Screen() {
       const result = await response.json();
 
       if (result.success) {
-        // Store the auth token
-        await authService.setToken(result.access_token);
-        
-        // Navigate to step 2
+        // Store new token if provided (permanent user token)
+        if (result.access_token) {
+          await authService.setToken(result.access_token);
+        }
         router.replace('/auth/onboarding/step2');
       } else {
-        Alert.alert('Error', result.message || 'Failed to save information');
+        Alert.alert('Error', result.message || 'Failed to save basic information');
       }
     } catch (error) {
+      console.error('Onboarding Step 1 error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
