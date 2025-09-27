@@ -230,7 +230,7 @@ class SecureOnboardingTester:
         
         # Step 3: Test onboarding step1 with JWT token (should work)
         jwt_token = login_data.get("access_token")
-        success, details = self.test_onboarding_step_with_token(1, jwt_token, should_work=True)
+        success, details = self.test_onboarding_step_with_token(1, jwt_token, should_work=True, otp=otp)
         self.log_result("New User - Onboarding Step1 with JWT", success, details)
         
         return success
