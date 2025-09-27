@@ -70,46 +70,39 @@ export default function OnboardingStep1Screen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a' }}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
-        <View style={styles.overlay} />
-        <SafeAreaView style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => router.back()}
-              >
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
-              </TouchableOpacity>
-              <View style={styles.progressContainer}>
-                <Text style={styles.progressText}>Step 1 of 5</Text>
-              </View>
+      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="chevron-back" size={24} color="#212529" />
+            </TouchableOpacity>
+            <View style={styles.progressContainer}>
+              <Text style={styles.progressText}>Step 1 of 5</Text>
             </View>
+          </View>
 
-            {/* Title */}
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Setup Your Venue</Text>
-              <Text style={styles.subtitle}>Tell us about yourself</Text>
-              <Text style={styles.description}>Basic information to get started</Text>
+          {/* Title */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Setup Your Venue</Text>
+            <Text style={styles.subtitle}>Tell us about yourself</Text>
+            <Text style={styles.description}>Basic information to get started</Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.formContainer}>
+            {/* Progress Bar */}
+            <View style={styles.progressBar}>
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={styles.progressSegment} />
+              <View style={styles.progressSegment} />
+              <View style={styles.progressSegment} />
+              <View style={styles.progressSegment} />
             </View>
-
-            {/* Form */}
-            <View style={styles.formContainer}>
-              <View style={styles.form}>
-                {/* Progress Bar */}
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={styles.progressSegment} />
-                  <View style={styles.progressSegment} />
-                  <View style={styles.progressSegment} />
-                  <View style={styles.progressSegment} />
-                </View>
 
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>First Name *</Text>
