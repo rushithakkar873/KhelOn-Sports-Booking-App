@@ -24,8 +24,8 @@ export default function OnboardingStep2Screen() {
 
   const [venueName, setVenueName] = useState('');
   const [address, setAddress] = useState('');
-  const [city, setCity] = useState('Mumbai');
-  const [state, setState] = useState('Maharashtra');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
   const [pincode, setPincode] = useState('');
   const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
   const [selectedDays, setSelectedDays] = useState<string[]>(DAYS_OF_WEEK); // All pre-selected
