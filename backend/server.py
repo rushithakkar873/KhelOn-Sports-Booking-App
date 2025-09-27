@@ -172,6 +172,112 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
     )
 
 # ================================
+# PROGRESSIVE ONBOARDING ROUTES
+# ================================
+
+@api_router.post("/onboarding/step1")
+async def onboarding_step1(step1_data: OnboardingStep1Request):
+    """Progressive Onboarding Step 1: Basic user info with OTP verification"""
+    result = await auth_service.onboarding_step1(step1_data)
+    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": result["message"],
+            "access_token": result.get("access_token"),
+            "token_type": result.get("token_type"),
+            "user_id": result.get("user_id"),
+            "next_step": result.get("next_step")
+        }
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step2")
+async def onboarding_step2(step2_data: OnboardingStep2Request, current_user: dict = Depends(get_current_user)):
+    """Progressive Onboarding Step 2: Venue basic information"""
+    result = await auth_service.onboarding_step2(current_user["_id"], step2_data)
+    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": result["message"],
+            "next_step": result.get("next_step")
+        }
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step3")
+async def onboarding_step3(step3_data: OnboardingStep3Request, current_user: dict = Depends(get_current_user)):
+    """Progressive Onboarding Step 3: Arena/Sport configuration"""
+    result = await auth_service.onboarding_step3(current_user["_id"], step3_data)
+    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": result["message"],
+            "arena_id": result.get("arena_id"),
+            "next_step": result.get("next_step")
+        }
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step4")
+async def onboarding_step4(step4_data: OnboardingStep4Request, current_user: dict = Depends(get_current_user)):
+    """Progressive Onboarding Step 4: Amenities and rules"""
+    result = await auth_service.onboarding_step4(current_user["_id"], step4_data)
+    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": result["message"],
+            "next_step": result.get("next_step")
+        }
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step5")
+async def onboarding_step5(step5_data: OnboardingStep5Request, current_user: dict = Depends(get_current_user)):
+    """Progressive Onboarding Step 5: Payment details (optional)"""
+    result = await auth_service.onboarding_step5(current_user["_id"], step5_data)
+    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": result["message"],
+            "onboarding_completed": result.get("onboarding_completed", False)
+        }
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.get("/onboarding/status", response_model=OnboardingStatusResponse)
+async def get_onboarding_status(current_user: dict = Depends(get_current_user)):
+    """Get current onboarding status"""
+    result = await auth_service.get_onboarding_status(current_user["_id"])
+    
+    if result["success"]:
+        return result["status"]
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+# ================================
 # VENUE PARTNER SPECIFIC ROUTES
 # ================================
 
