@@ -772,3 +772,50 @@ class AuthService:
                 "success": False,
                 "message": "Failed to get onboarding status"
             }
+    
+    async def check_user_exists(self, mobile: str) -> Dict[str, Any]:
+        """Check if user exists and return onboarding status"""
+        try:
+            user = await self.db.users.find_one({"mobile": mobile})
+            
+            if not user:
+                return {
+                    "success": True,
+                    "user_exists": False,
+                    "message": "User not found. Ready for new registration.",
+                    "onboarding_status": None
+                }
+            
+            # User exists - check onboarding status
+            completed_steps = user.get("completed_steps", [])
+            current_step = user.get("current_step", 1)
+            onboarding_completed = user.get("onboarding_completed", False)
+            
+            # Check if user has venue and arena
+            has_venue = bool(user.get("venue_name"))
+            has_arena = bool(user.get("has_arena", False))
+            can_go_live = user.get("can_go_live", False)
+            
+            return {
+                "success": True,
+                "user_exists": True,
+                "message": f"User found. Current step: {current_step}",
+                "onboarding_status": {
+                    "user_id": user["_id"],
+                    "mobile": user["mobile"],
+                    "name": user.get("name", f"{user.get('first_name', '')} {user.get('last_name', '')}").strip(),
+                    "onboarding_completed": onboarding_completed,
+                    "completed_steps": completed_steps,
+                    "current_step": current_step,
+                    "has_venue": has_venue,
+                    "has_arena": has_arena,
+                    "can_go_live": can_go_live
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Check user exists error: {str(e)}")
+            return {
+                "success": False,
+                "message": "Failed to check user status"
+            }
