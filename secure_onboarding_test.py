@@ -221,8 +221,11 @@ class SecureOnboardingTester:
             self.log_result("New User - Login Response Structure", False, f"Missing fields: {missing_fields}")
             return False
         
+        # Check if this is actually a new user flow (user_exists=False) or existing user with incomplete onboarding
         if not login_data.get("user_exists") and login_data.get("action") == "start_onboarding" and login_data.get("redirect_to") == "onboarding_step_1":
-            self.log_result("New User - Login with OTP", True, f"Correct routing: {login_data.get('action')} → {login_data.get('redirect_to')}")
+            self.log_result("New User - Login with OTP", True, f"Correct new user routing: {login_data.get('action')} → {login_data.get('redirect_to')}")
+        elif login_data.get("user_exists") and login_data.get("action") == "complete_onboarding" and login_data.get("redirect_to") == "onboarding_step_1":
+            self.log_result("New User - Login with OTP", True, f"Existing user with incomplete onboarding: {login_data.get('action')} → {login_data.get('redirect_to')}")
         else:
             self.log_result("New User - Login with OTP", False, f"Incorrect routing: user_exists={login_data.get('user_exists')}, action={login_data.get('action')}, redirect_to={login_data.get('redirect_to')}")
             return False
