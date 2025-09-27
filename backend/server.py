@@ -151,6 +151,63 @@ async def login_user(request: OTPVerifyRequest):
             detail=result["message"]
         )
 
+@api_router.post("/auth/verify-otp-and-route")
+async def verify_otp_and_route(request: OTPVerifyRequest):
+    """Verify OTP and determine routing for new/existing users"""
+    try:
+        # First verify OTP
+        otp_result = await auth_service.verify_otp_only(request.mobile, request.otp)
+        if not otp_result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=otp_result["message"]
+            )
+        
+        # Check if user exists
+        user = await auth_service.get_user_by_mobile(request.mobile)
+        
+        if user:
+            # Existing user - generate token and return login response
+            access_token_expires = timedelta(minutes=30)
+            access_token = auth_service.create_access_token(
+                data={"sub": user["_id"], "role": user["role"]},
+                expires_delta=access_token_expires
+            )
+            
+            return {
+                "success": True,
+                "user_exists": True,
+                "action": "login",
+                "message": "User authenticated successfully",
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {
+                    "id": user["_id"],
+                    "mobile": user["mobile"],
+                    "name": user["name"],
+                    "role": user["role"],
+                    "onboarding_completed": user.get("onboarding_completed", False)
+                }
+            }
+        else:
+            # New user - needs to start onboarding (no token yet)
+            return {
+                "success": True,
+                "user_exists": False,
+                "action": "onboarding",
+                "message": "OTP verified. Ready for onboarding.",
+                "mobile_verified": True
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Verify OTP and route error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Authentication failed"
+        )
+
 @api_router.get("/auth/profile", response_model=UserResponse)
 async def get_user_profile(current_user: dict = Depends(get_current_user)):
     """Get current user profile"""
