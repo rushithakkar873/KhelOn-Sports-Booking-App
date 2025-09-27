@@ -175,6 +175,107 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
 # PROGRESSIVE ONBOARDING ROUTES
 # ================================
 
+# Import onboarding models
+from auth_service import (
+    OnboardingStep1Request, OnboardingStep2Request, OnboardingStep3Request,
+    OnboardingStep4Request, OnboardingStep5Request, OnboardingStatusResponse
+)
+
+@api_router.post("/auth/check-user")
+async def check_user_exists(request: MobileOTPRequest):
+    """Check if user exists and return onboarding status"""
+    result = await auth_service.check_user_exists(request.mobile)
+    
+    if result["success"]:
+        return result
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step1")
+async def onboarding_step1(request: OnboardingStep1Request):
+    """Onboarding Step 1: Basic user information"""
+    result = await auth_service.onboarding_step1(request)
+    
+    if result["success"]:
+        return result
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step2")
+async def onboarding_step2(request: OnboardingStep2Request, current_user: dict = Depends(get_current_user)):
+    """Onboarding Step 2: Venue basic information"""
+    result = await auth_service.onboarding_step2(current_user["_id"], request)
+    
+    if result["success"]:
+        return result
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step3")
+async def onboarding_step3(request: OnboardingStep3Request, current_user: dict = Depends(get_current_user)):
+    """Onboarding Step 3: Arena/Sport configuration"""
+    result = await auth_service.onboarding_step3(current_user["_id"], request)
+    
+    if result["success"]:
+        return result
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step4")
+async def onboarding_step4(request: OnboardingStep4Request, current_user: dict = Depends(get_current_user)):
+    """Onboarding Step 4: Amenities and rules"""
+    result = await auth_service.onboarding_step4(current_user["_id"], request)
+    
+    if result["success"]:
+        return result
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.post("/onboarding/step5")
+async def onboarding_step5(request: OnboardingStep5Request, current_user: dict = Depends(get_current_user)):
+    """Onboarding Step 5: Payment details"""
+    result = await auth_service.onboarding_step5(current_user["_id"], request)
+    
+    if result["success"]:
+        return result
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+@api_router.get("/onboarding/status", response_model=OnboardingStatusResponse)
+async def get_onboarding_status(current_user: dict = Depends(get_current_user)):
+    """Get current onboarding status"""
+    result = await auth_service.get_onboarding_status(current_user["_id"])
+    
+    if result["success"]:
+        return OnboardingStatusResponse(**result["data"])
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=result["message"]
+        )
+
+# ================================
+# PROGRESSIVE ONBOARDING ROUTES
+# ================================
+
 @api_router.post("/onboarding/step1")
 async def onboarding_step1(step1_data: OnboardingStep1Request):
     """Progressive Onboarding Step 1: Basic user info with OTP verification"""
