@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     flexDirection: 'row',
-    marginBottom: 32,
+    marginBottom: 24,
     gap: 8,
   },
   progressSegment: {
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressActive: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#212529',
   },
   inputGroup: {
     marginBottom: 20,
@@ -283,26 +283,28 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
+    color: '#212529',
     marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f5f6f7',
-    borderRadius: 16,
+    borderRadius: 12,
     paddingHorizontal: 16,
     height: 56,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
   inputContainerDisabled: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f9fafb',
-    borderRadius: 16,
+    borderRadius: 12,
     paddingHorizontal: 16,
     height: 56,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#d1d5db',
   },
   inputIcon: {
     marginRight: 12,
@@ -326,13 +328,20 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   primaryButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#212529',
     paddingVertical: 18,
-    borderRadius: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#212529',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryButtonDisabled: {
     backgroundColor: '#9ca3af',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   primaryButtonText: {
     color: '#ffffff',
