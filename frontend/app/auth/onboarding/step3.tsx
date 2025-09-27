@@ -7,7 +7,6 @@ import {
   Alert,
   ScrollView,
   StatusBar,
-  ImageBackground,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -92,163 +91,154 @@ export default function OnboardingStep3Screen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      <ImageBackground
-        source={{ uri: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a' }}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
-        <View style={styles.overlay} />
-        <SafeAreaView style={styles.safeArea}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {/* Header */}
-            <View style={styles.header}>
-              <TouchableOpacity 
-                style={styles.backButton}
-                onPress={() => router.back()}
-              >
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
-              </TouchableOpacity>
-              <View style={styles.progressContainer}>
-                <Text style={styles.progressText}>Step 3 of 5</Text>
+      <StatusBar barStyle="dark-content" backgroundColor="#f5f6f7" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="chevron-back" size={24} color="#212529" />
+            </TouchableOpacity>
+            <View style={styles.progressContainer}>
+              <Text style={styles.progressText}>Step 3 of 5</Text>
+            </View>
+          </View>
+
+          {/* Title */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Add Your Sports Arena</Text>
+            <Text style={styles.subtitle}>Set up at least one sport to start receiving bookings</Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.formContainer}>
+            {/* Progress Bar */}
+            <View style={styles.progressBar}>
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={[styles.progressSegment, styles.progressActive]} />
+              <View style={styles.progressSegment} />
+              <View style={styles.progressSegment} />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Select Sport</Text>
+              <View style={styles.sportsGrid}>
+                {SPORTS_OPTIONS.map((sport) => (
+                  <TouchableOpacity
+                    key={sport.value}
+                    style={[
+                      styles.sportCard,
+                      selectedSport === sport.value && styles.sportCardSelected,
+                    ]}
+                    onPress={() => setSelectedSport(sport.value)}
+                  >
+                    <Text style={[
+                      styles.sportName,
+                      selectedSport === sport.value && styles.sportNameSelected,
+                    ]}>
+                      {sport.label}
+                    </Text>
+                    <Text style={[
+                      styles.sportPrice,
+                      selectedSport === sport.value && styles.sportPriceSelected,
+                    ]}>
+                      Suggested: {sport.price}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
 
-            {/* Title */}
-            <View style={styles.titleContainer}>
-              <Text style={styles.title}>Add Your Sports Arena</Text>
-              <Text style={styles.subtitle}>Set up at least one sport to start receiving bookings</Text>
-            </View>
-
-            {/* Form */}
-            <View style={styles.formContainer}>
-              <View style={styles.form}>
-                {/* Progress Bar */}
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={[styles.progressSegment, styles.progressActive]} />
-                  <View style={styles.progressSegment} />
-                  <View style={styles.progressSegment} />
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Select Sport</Text>
-                  <View style={styles.sportsGrid}>
-                    {SPORTS_OPTIONS.map((sport) => (
-                      <TouchableOpacity
-                        key={sport.value}
-                        style={[
-                          styles.sportCard,
-                          selectedSport === sport.value && styles.sportCardSelected,
-                        ]}
-                        onPress={() => setSelectedSport(sport.value)}
-                      >
-                        <Text style={[
-                          styles.sportName,
-                          selectedSport === sport.value && styles.sportNameSelected,
-                        ]}>
-                          {sport.label}
-                        </Text>
-                        <Text style={[
-                          styles.sportPrice,
-                          selectedSport === sport.value && styles.sportPriceSelected,
-                        ]}>
-                          Suggested: {sport.price}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Number of Courts/Turfs</Text>
-                  <View style={styles.counterContainer}>
-                    <TouchableOpacity 
-                      style={styles.counterButton}
-                      onPress={decrementCourts}
-                      disabled={numberOfCourts <= 1}
-                    >
-                      <Ionicons name="remove" size={20} color="#3b82f6" />
-                    </TouchableOpacity>
-                    <Text style={styles.counterValue}>{numberOfCourts}</Text>
-                    <TouchableOpacity 
-                      style={styles.counterButton}
-                      onPress={incrementCourts}
-                      disabled={numberOfCourts >= 20}
-                    >
-                      <Ionicons name="add" size={20} color="#3b82f6" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Slot Duration</Text>
-                  <View style={styles.pickerContainer}>
-                    <Picker
-                      selectedValue={slotDuration}
-                      onValueChange={(itemValue) => setSlotDuration(itemValue)}
-                      style={styles.picker}
-                    >
-                      {SLOT_DURATIONS.map((duration) => (
-                        <Picker.Item 
-                          key={duration.value} 
-                          label={duration.label} 
-                          value={duration.value} 
-                        />
-                      ))}
-                    </Picker>
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Price per Slot (₹)</Text>
-                  <View style={styles.priceContainer}>
-                    <Text style={styles.currencySymbol}>₹</Text>
-                    <View style={styles.priceInputContainer}>
-                      <Text 
-                        style={styles.priceInput}
-                        onPress={() => {
-                          Alert.prompt(
-                            'Set Price',
-                            'Enter price per slot:',
-                            (text) => {
-                              if (text && !isNaN(parseFloat(text))) {
-                                setPricePerSlot(text);
-                              }
-                            },
-                            'plain-text',
-                            pricePerSlot
-                          );
-                        }}
-                      >
-                        {pricePerSlot}
-                      </Text>
-                    </View>
-                    <Text style={styles.priceUnit}>per {slotDuration} min</Text>
-                  </View>
-                  <Text style={styles.helperText}>
-                    Suggested: ₹{Math.round((parseFloat(pricePerSlot) || 1000) / (slotDuration / 60))}/hour
-                  </Text>
-                </View>
-              </View>
-
-              {/* Footer */}
-              <View style={styles.footer}>
-                <TouchableOpacity
-                  style={[styles.primaryButton, isLoading && styles.primaryButtonDisabled]}
-                  onPress={handleSaveAndContinue}
-                  disabled={isLoading}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Number of Courts/Turfs</Text>
+              <View style={styles.counterContainer}>
+                <TouchableOpacity 
+                  style={styles.counterButton}
+                  onPress={decrementCourts}
+                  disabled={numberOfCourts <= 1}
                 >
-                  <Text style={styles.primaryButtonText}>
-                    {isLoading ? 'Saving...' : 'Save & Continue'}
-                  </Text>
+                  <Ionicons name="remove" size={20} color="#212529" />
+                </TouchableOpacity>
+                <Text style={styles.counterValue}>{numberOfCourts}</Text>
+                <TouchableOpacity 
+                  style={styles.counterButton}
+                  onPress={incrementCourts}
+                  disabled={numberOfCourts >= 20}
+                >
+                  <Ionicons name="add" size={20} color="#212529" />
                 </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
-        </SafeAreaView>
-      </ImageBackground>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Slot Duration</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={slotDuration}
+                  onValueChange={(itemValue) => setSlotDuration(itemValue)}
+                  style={styles.picker}
+                >
+                  {SLOT_DURATIONS.map((duration) => (
+                    <Picker.Item 
+                      key={duration.value} 
+                      label={duration.label} 
+                      value={duration.value} 
+                    />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Price per Slot (₹)</Text>
+              <View style={styles.priceContainer}>
+                <Text style={styles.currencySymbol}>₹</Text>
+                <View style={styles.priceInputContainer}>
+                  <Text 
+                    style={styles.priceInput}
+                    onPress={() => {
+                      Alert.prompt(
+                        'Set Price',
+                        'Enter price per slot:',
+                        (text) => {
+                          if (text && !isNaN(parseFloat(text))) {
+                            setPricePerSlot(text);
+                          }
+                        },
+                        'plain-text',
+                        pricePerSlot
+                      );
+                    }}
+                  >
+                    {pricePerSlot}
+                  </Text>
+                </View>
+                <Text style={styles.priceUnit}>per {slotDuration} min</Text>
+              </View>
+              <Text style={styles.helperText}>
+                Suggested: ₹{Math.round((parseFloat(pricePerSlot) || 1000) / (slotDuration / 60))}/hour
+              </Text>
+            </View>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={[styles.primaryButton, isLoading && styles.primaryButtonDisabled]}
+                onPress={handleSaveAndContinue}
+                disabled={isLoading}
+              >
+                <Text style={styles.primaryButtonText}>
+                  {isLoading ? 'Saving...' : 'Save & Continue'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }
@@ -256,17 +246,12 @@ export default function OnboardingStep3Screen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: '#f5f6f7',
   },
   safeArea: {
+    flex: 1,
+  },
+  scrollContainer: {
     flex: 1,
   },
   scrollContent: {
@@ -278,55 +263,61 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 20,
-    marginBottom: 40,
+    paddingBottom: 16,
+    backgroundColor: '#f5f6f7',
   },
   backButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   progressContainer: {
     alignItems: 'center',
   },
   progressText: {
-    color: '#ffffff',
+    color: '#212529',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   titleContainer: {
-    marginBottom: 40,
+    marginBottom: 32,
     alignItems: 'center',
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#212529',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 14,
+    color: '#9ca3af',
     textAlign: 'center',
   },
   formContainer: {
     flex: 1,
     backgroundColor: '#ffffff',
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 24,
+    borderRadius: 12,
+    padding: 24,
     marginBottom: 24,
-  },
-  form: {
-    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   progressBar: {
     flexDirection: 'row',
-    marginBottom: 32,
+    marginBottom: 24,
     gap: 8,
   },
   progressSegment: {
@@ -336,7 +327,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   progressActive: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#212529',
   },
   inputGroup: {
     marginBottom: 24,
@@ -344,7 +335,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
+    color: '#212529',
     marginBottom: 12,
   },
   sportsGrid: {
@@ -358,24 +349,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
   sportCardSelected: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#eff6ff',
+    borderColor: '#212529',
+    backgroundColor: '#ffffff',
   },
   sportName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
+    color: '#212529',
     marginBottom: 4,
   },
   sportNameSelected: {
-    color: '#3b82f6',
+    color: '#212529',
   },
   sportPrice: {
     fontSize: 14,
     color: '#6b7280',
   },
   sportPriceSelected: {
-    color: '#3b82f6',
+    color: '#212529',
   },
   counterContainer: {
     flexDirection: 'row',
@@ -396,7 +387,7 @@ const styles = StyleSheet.create({
   counterValue: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#000000',
+    color: '#212529',
     minWidth: 40,
     textAlign: 'center',
   },
@@ -417,7 +408,7 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#000000',
+    color: '#212529',
   },
   priceInputContainer: {
     flex: 1,
@@ -431,7 +422,7 @@ const styles = StyleSheet.create({
   priceInput: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000000',
+    color: '#212529',
   },
   priceUnit: {
     fontSize: 14,
@@ -446,13 +437,20 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   primaryButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#212529',
     paddingVertical: 18,
-    borderRadius: 16,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#212529',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryButtonDisabled: {
     backgroundColor: '#9ca3af',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   primaryButtonText: {
     color: '#ffffff',
