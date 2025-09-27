@@ -820,6 +820,26 @@ class AuthService:
                 "message": "Failed to check user status"
             }
     
+    async def create_temp_user(self, mobile: str) -> str:
+        """Create temporary user record for onboarding process"""
+        try:
+            temp_user = {
+                "mobile": mobile,
+                "role": "venue_partner",
+                "temp_user": True,
+                "created_at": datetime.utcnow(),
+                "onboarding_completed": False,
+                "current_step": 1,
+                "completed_steps": []
+            }
+            
+            result = await self.db.temp_users.insert_one(temp_user)
+            return str(result.inserted_id)
+            
+        except Exception as e:
+            logger.error(f"Create temp user error: {str(e)}")
+            return None
+    
     async def verify_otp_only(self, mobile: str, otp: str) -> Dict[str, Any]:
         """Verify OTP without creating user or token"""
         try:
