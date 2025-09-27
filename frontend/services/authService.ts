@@ -185,24 +185,32 @@ class AuthService {
   }
 
   /**
-   * Login user with mobile + OTP
+   * Enhanced Login: Verify OTP + Get User Status + JWT Token + Routing Info
    */
-  async login(mobile: string, otp: string): Promise<AuthResponse> {
+  async login(mobile: string, otp: string): Promise<AuthResponse & {
+    user_exists?: boolean;
+    action?: string;
+    redirect_to?: string;
+    temp_user_id?: string;
+    mobile_verified?: boolean;
+  }> {
     try {
       const response = await this.makeRequest('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ mobile, otp }),
       });
 
-      console.log(response, " ==> login response");
+      console.log(response, " ==> enhanced login response");
       
       if (response.success && response.access_token) {
         // Store auth data
         this.authToken = response.access_token;
-        this.currentUser = response.user;
+        this.currentUser = response.user || null;
         
         await AsyncStorage.setItem('auth_token', response.access_token);
-        await AsyncStorage.setItem('user_data', JSON.stringify(response.user));
+        if (response.user) {
+          await AsyncStorage.setItem('user_data', JSON.stringify(response.user));
+        }
       }
 
       return {
@@ -211,6 +219,12 @@ class AuthService {
         access_token: response.access_token,
         token_type: response.token_type,
         user: response.user,
+        // New fields from enhanced login API
+        user_exists: response.user_exists,
+        action: response.action,
+        redirect_to: response.redirect_to,
+        temp_user_id: response.temp_user_id,
+        mobile_verified: response.mobile_verified,
       };
     } catch (error) {
       return {
