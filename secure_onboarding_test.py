@@ -231,7 +231,12 @@ class SecureOnboardingTester:
         # Step 3: Test onboarding step1 with JWT token (should work)
         jwt_token = login_data.get("access_token")
         success, details = self.test_onboarding_step_with_token(1, jwt_token, should_work=True, otp=otp)
-        self.log_result("New User - Onboarding Step1 with JWT", success, details)
+        
+        # Note: This may fail due to OTP being consumed during login - this is a backend design issue
+        if not success and "No OTP found" in details:
+            self.log_result("New User - Onboarding Step1 with JWT", False, f"BACKEND DESIGN ISSUE: {details} - OTP already consumed during login, but onboarding step1 still requires OTP verification")
+        else:
+            self.log_result("New User - Onboarding Step1 with JWT", success, details)
         
         return success
     
