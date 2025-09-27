@@ -819,3 +819,56 @@ class AuthService:
                 "success": False,
                 "message": "Failed to check user status"
             }
+    
+    async def verify_otp_only(self, mobile: str, otp: str) -> Dict[str, Any]:
+        """Verify OTP without creating user or token"""
+        try:
+            if mobile not in self.otp_storage:
+                return {
+                    "success": False,
+                    "message": "OTP expired or invalid. Please request a new OTP."
+                }
+            
+            stored_otp = self.otp_storage[mobile]
+            current_time = time.time()
+            
+            # Check if OTP is expired (5 minutes)
+            if current_time - stored_otp["timestamp"] > 300:
+                del self.otp_storage[mobile]
+                return {
+                    "success": False,
+                    "message": "OTP expired. Please request a new OTP."
+                }
+            
+            # Verify OTP
+            if stored_otp["otp"] != otp:
+                return {
+                    "success": False,
+                    "message": "Invalid OTP. Please try again."
+                }
+            
+            # Clean up OTP after successful verification
+            del self.otp_storage[mobile]
+            
+            return {
+                "success": True,
+                "message": "OTP verified successfully"
+            }
+            
+        except Exception as e:
+            logger.error(f"Verify OTP only error: {str(e)}")
+            return {
+                "success": False,
+                "message": "OTP verification failed"
+            }
+    
+    async def get_user_by_mobile(self, mobile: str) -> Optional[Dict[str, Any]]:
+        """Get user by mobile number"""
+        try:
+            user = await self.db.users.find_one({"mobile": mobile})
+            if user:
+                user["_id"] = str(user["_id"])
+            return user
+        except Exception as e:
+            logger.error(f"Get user by mobile error: {str(e)}")
+            return None
