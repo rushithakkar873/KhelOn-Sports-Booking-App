@@ -13,9 +13,9 @@ from datetime import datetime
 BASE_URL = "https://khelon-booking.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
-# Generate unique mobile number based on timestamp
-timestamp = str(int(time.time()))[-10:]  # Last 10 digits of timestamp
-TEST_MOBILE = f"+91{timestamp}"
+# Generate unique mobile number based on timestamp (valid Indian format)
+timestamp = str(int(time.time()))[-9:]  # Last 9 digits of timestamp
+TEST_MOBILE = f"+919{timestamp}"  # Start with 9 for valid Indian mobile
 
 # Test data as specified in review request
 TEST_DATA = {
