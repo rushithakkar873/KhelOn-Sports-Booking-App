@@ -264,12 +264,27 @@ async def check_user_exists(request: MobileOTPRequest):
         )
 
 @api_router.post("/onboarding/step1")
-async def onboarding_step1(request: OnboardingStep1Request):
-    """Onboarding Step 1: Basic user information"""
+async def onboarding_step1(request: OnboardingStep1Request, mobile_verified: str = Header(None)):
+    """Progressive Onboarding Step 1: Basic partner details (Requires verified mobile)"""
+    
+    # Ensure mobile is verified before onboarding
+    if not mobile_verified or mobile_verified != request.mobile:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Mobile number must be verified before onboarding"
+        )
+    
     result = await auth_service.onboarding_step1(request)
     
     if result["success"]:
-        return result
+        return {
+            "success": True,
+            "message": result["message"],
+            "access_token": result.get("access_token"),
+            "token_type": result.get("token_type"),
+            "user_id": result.get("user_id"),
+            "next_step": result.get("next_step")
+        }
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
