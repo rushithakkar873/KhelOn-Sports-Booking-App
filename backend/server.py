@@ -11,7 +11,11 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 
 # Import our new auth service
-from auth_service import AuthService, MobileOTPRequest, OTPVerifyRequest, UserRegistrationRequest, UserResponse
+from auth_service import (
+    AuthService, MobileOTPRequest, OTPVerifyRequest, UserRegistrationRequest, UserResponse,
+    OnboardingStep1Request, OnboardingStep2Request, OnboardingStep3Request, 
+    OnboardingStep4Request, OnboardingStep5Request, OnboardingStatusResponse
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
