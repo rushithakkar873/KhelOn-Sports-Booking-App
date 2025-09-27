@@ -138,6 +138,53 @@ class OTPVerifyRequest(BaseModel):
             raise ValueError('Invalid Indian mobile number')
         return v
 
+# Progressive onboarding models
+class OnboardingStep1Request(BaseModel):
+    mobile: str = Field(..., regex=r'^\+91[6-9]\d{9}$')
+    otp: str = Field(..., min_length=6, max_length=6)
+    first_name: str = Field(..., min_length=2, max_length=100)
+    last_name: str = Field(..., min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
+
+class OnboardingStep2Request(BaseModel):
+    venue_name: str = Field(..., min_length=2, max_length=200)
+    address: str = Field(..., min_length=10, max_length=500)
+    city: str = Field(..., min_length=2, max_length=100)
+    state: str = Field(..., min_length=2, max_length=100)
+    pincode: str = Field(..., regex=r'^\d{6}$')
+    cover_photo: Optional[str] = None  # base64 image
+    operating_days: List[str] = Field(..., min_items=1, max_items=7)
+    start_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
+    end_time: str = Field(..., pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
+    contact_phone: str = Field(..., regex=r'^\+91[6-9]\d{9}$')
+
+class OnboardingStep3Request(BaseModel):
+    sport_type: str = Field(..., min_length=2, max_length=50)
+    number_of_courts: int = Field(..., ge=1, le=20)
+    slot_duration: int = Field(..., ge=30, le=240)  # minutes
+    price_per_slot: float = Field(..., ge=0)
+
+class OnboardingStep4Request(BaseModel):
+    amenities: List[str] = []
+    rules: Optional[str] = None
+
+class OnboardingStep5Request(BaseModel):
+    bank_account_number: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_account_holder: Optional[str] = None
+    upi_id: Optional[str] = None
+
+class OnboardingStatusResponse(BaseModel):
+    user_id: str
+    mobile: str
+    onboarding_completed: bool
+    completed_steps: List[int]
+    current_step: int
+    has_venue: bool
+    has_arena: bool
+    can_go_live: bool
+
+# Legacy registration model for backward compatibility
 class UserRegistrationRequest(BaseModel):
     mobile: str = Field(..., min_length=13, max_length=13)
     otp: str = Field(..., min_length=6, max_length=6)
