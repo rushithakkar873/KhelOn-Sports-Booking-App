@@ -91,36 +91,54 @@ class ComprehensiveOnboardingTester:
             self.log_test("POST /api/auth/send-otp", "FAIL", f"Exception: {str(e)}")
             return False
     
-    def test_2_verify_otp(self):
-        """Test 2: POST /api/auth/verify-otp - Verify OTP code"""
+    def test_2_verify_otp_standalone(self):
+        """Test 2: POST /api/auth/verify-otp - Verify OTP code (standalone test)"""
         try:
-            if not self.otp_code:
-                self.log_test("POST /api/auth/verify-otp", "FAIL", "No OTP code available from previous test")
+            # Send a fresh OTP for standalone verification test
+            payload = {"mobile": "+919999888777"}  # Different number for standalone test
+            response = self.session.post(f"{BASE_URL}/auth/send-otp", json=payload)
+            
+            if response.status_code != 200:
+                self.log_test("POST /api/auth/verify-otp (Standalone)", "FAIL", "Failed to send OTP for standalone test")
                 return False
             
+            data = response.json()
+            if not data.get("success"):
+                self.log_test("POST /api/auth/verify-otp (Standalone)", "FAIL", "Failed to send OTP for standalone test")
+                return False
+            
+            # Extract OTP
+            dev_info = data.get("dev_info", "")
+            if "OTP:" in dev_info:
+                standalone_otp = dev_info.replace("OTP: ", "").strip()
+            else:
+                self.log_test("POST /api/auth/verify-otp (Standalone)", "FAIL", "No OTP received for standalone test")
+                return False
+            
+            # Now verify the OTP
             payload = {
-                "mobile": TEST_MOBILE,
-                "otp": self.otp_code
+                "mobile": "+919999888777",
+                "otp": standalone_otp
             }
             response = self.session.post(f"{BASE_URL}/auth/verify-otp", json=payload)
             
             if response.status_code == 200:
                 data = response.json()
                 if data.get("success"):
-                    self.log_test("POST /api/auth/verify-otp", "PASS", 
-                                f"OTP {self.otp_code} verified successfully, Message: {data.get('message')}")
+                    self.log_test("POST /api/auth/verify-otp (Standalone)", "PASS", 
+                                f"OTP {standalone_otp} verified successfully for +919999888777, Message: {data.get('message')}")
                     return True
                 else:
-                    self.log_test("POST /api/auth/verify-otp", "FAIL", 
+                    self.log_test("POST /api/auth/verify-otp (Standalone)", "FAIL", 
                                 f"OTP verification failed: {data.get('message')}", data)
                     return False
             else:
-                self.log_test("POST /api/auth/verify-otp", "FAIL", 
+                self.log_test("POST /api/auth/verify-otp (Standalone)", "FAIL", 
                             f"HTTP {response.status_code}", response.json() if response.text else None)
                 return False
                 
         except Exception as e:
-            self.log_test("POST /api/auth/verify-otp", "FAIL", f"Exception: {str(e)}")
+            self.log_test("POST /api/auth/verify-otp (Standalone)", "FAIL", f"Exception: {str(e)}")
             return False
     
     def test_3_onboarding_step1(self):
