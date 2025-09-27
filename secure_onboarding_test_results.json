@@ -5,81 +5,81 @@
       "test": "API Health Check",
       "success": true,
       "details": "KhelOn API vNone running with mobile OTP auth",
-      "timestamp": "2025-09-27T20:33:33.435630"
+      "timestamp": "2025-09-27T20:34:30.437834"
     },
     {
       "test": "Deprecated Check User API",
       "success": true,
       "details": "Returns proper deprecation message",
-      "timestamp": "2025-09-27T20:33:33.441972"
+      "timestamp": "2025-09-27T20:34:30.483364"
     },
     {
       "test": "New User - Send OTP",
       "success": true,
-      "details": "OTP sent successfully, dev OTP: 432129",
-      "timestamp": "2025-09-27T20:33:33.487860"
+      "details": "OTP sent successfully, dev OTP: 175019",
+      "timestamp": "2025-09-27T20:34:30.496248"
     },
     {
       "test": "New User - Login with OTP",
       "success": true,
       "details": "Existing user with incomplete onboarding: complete_onboarding \u2192 onboarding_step_1",
-      "timestamp": "2025-09-27T20:33:33.718700"
+      "timestamp": "2025-09-27T20:34:30.730130"
     },
     {
       "test": "New User - Onboarding Step1 with JWT",
       "success": false,
-      "details": "Step 1 HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"otp\"],\"msg\":\"Field required\",\"input\":{\"mobile\":\"+919123456789\",\"first_name\":\"Rajesh\",\"last_name\":\"Kumar\",\"email\":\"rajesh.kumar@example.com\",\"business_name\":\"Elite Sports Complex\",\"business_address\":\"123 Sports Street, Mumbai\",\"gst_number\":\"24ABCDE1234F1Z5\"},\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"}]}",
-      "timestamp": "2025-09-27T20:33:33.957176"
+      "details": "Step 1 HTTP 400: {\"detail\":\"No OTP found for this number. Please request a new OTP.\"}",
+      "timestamp": "2025-09-27T20:34:30.964675"
     },
     {
       "test": "Existing User - Send OTP",
       "success": true,
-      "details": "OTP sent successfully, dev OTP: 922915",
-      "timestamp": "2025-09-27T20:33:33.962206"
+      "details": "OTP sent successfully, dev OTP: 669706",
+      "timestamp": "2025-09-27T20:34:30.972453"
     },
     {
       "test": "Existing User - Login with OTP",
       "success": true,
       "details": "Correct routing: complete_onboarding \u2192 onboarding_step_1",
-      "timestamp": "2025-09-27T20:33:34.233035"
+      "timestamp": "2025-09-27T20:34:31.207984"
     },
     {
       "test": "Security - Step1 without JWT",
       "success": true,
       "details": "Step 1 properly rejected unauthorized access (HTTP 403)",
-      "timestamp": "2025-09-27T20:33:34.238223"
+      "timestamp": "2025-09-27T20:34:31.257968"
     },
     {
       "test": "Security - Step2 without JWT",
       "success": true,
       "details": "Step 2 properly rejected unauthorized access (HTTP 403)",
-      "timestamp": "2025-09-27T20:33:34.283771"
+      "timestamp": "2025-09-27T20:34:31.264489"
     },
     {
       "test": "Security - Step3 without JWT",
       "success": true,
       "details": "Step 3 properly rejected unauthorized access (HTTP 403)",
-      "timestamp": "2025-09-27T20:33:34.290014"
+      "timestamp": "2025-09-27T20:34:31.299242"
     },
     {
       "test": "Security - Step4 without JWT",
       "success": true,
       "details": "Step 4 properly rejected unauthorized access (HTTP 403)",
-      "timestamp": "2025-09-27T20:33:34.295491"
+      "timestamp": "2025-09-27T20:34:31.344922"
     },
     {
       "test": "Security - Step5 without JWT",
       "success": true,
       "details": "Step 5 properly rejected unauthorized access (HTTP 403)",
-      "timestamp": "2025-09-27T20:33:34.340910"
+      "timestamp": "2025-09-27T20:34:31.379393"
     },
     {
       "test": "Security - Invalid JWT Token",
       "success": true,
       "details": "Step 1 properly rejected unauthorized access (HTTP 401)",
-      "timestamp": "2025-09-27T20:33:34.345786"
+      "timestamp": "2025-09-27T20:34:31.391285"
     }
   ],
-  "timestamp": "2025-09-27T20:33:34.345938",
+  "timestamp": "2025-09-27T20:34:31.391434",
   "backend_url": "https://sports-book.preview.emergentagent.com/api"
 }
