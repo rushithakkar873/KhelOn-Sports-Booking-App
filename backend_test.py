@@ -101,437 +101,371 @@ class SecureOnboardingTester:
                 }
         except Exception as e:
             return {"success": False, "error": str(e)}
-        
-        response = self.make_request("GET", "/")
-        if not response:
-            return False
-            
-        if response.status_code == 200:
-            data = response.json()
-            if "KhelOn" in data.get("message", "") and data.get("status") == "running":
-                self.log("✅ Health check passed - KhelON branding confirmed", "SUCCESS")
-                return True
-            else:
-                self.log(f"❌ Health check failed - Unexpected response: {data}", "ERROR")
-                return False
-        else:
-            self.log(f"❌ Health check failed - Status: {response.status_code}", "ERROR")
-            return False
     
-    def test_2_venue_owner_auth(self):
-        """Test 2: Venue Partner Authentication with Mobile OTP"""
-        self.log("Testing venue partner authentication...")
+    async def test_new_user_complete_flow(self):
+        """Test complete flow for new user +919111222333"""
+        print("\n🔥 TESTING NEW USER COMPLETE FLOW")
+        mobile = "+919111222333"
         
         # Step 1: Send OTP
-        otp_data = {"mobile": VENUE_OWNER_MOBILE}
-        response = self.make_request("POST", "/auth/send-otp", otp_data)
+        print(f"\n1️⃣ Sending OTP to {mobile}")
+        otp_result = await self.send_otp(mobile)
         
-        if not response or response.status_code != 200:
-            self.log(f"❌ Send OTP failed - Status: {response.status_code if response else 'No response'}", "ERROR")
+        if not otp_result["success"]:
+            self.log_test("NEW USER - Send OTP", False, f"Failed to send OTP: {otp_result.get('error', 'Unknown error')}")
             return False
         
-        otp_response = response.json()
-        dev_otp = otp_response.get("dev_info", "").split("OTP: ")[-1]
+        # Extract OTP from dev_info
+        dev_otp = otp_result["data"].get("dev_info", "").replace("OTP: ", "")
+        if not dev_otp or len(dev_otp) != 6:
+            self.log_test("NEW USER - Send OTP", False, "No valid OTP received in dev_info")
+            return False
         
-        # Step 2: Login with OTP
-        login_data = {"mobile": VENUE_OWNER_MOBILE, "otp": dev_otp}
-        response = self.make_request("POST", "/auth/login", login_data)
+        self.log_test("NEW USER - Send OTP", True, f"OTP sent successfully: {dev_otp}")
         
-        if response and response.status_code == 200:
-            login_response = response.json()
-            self.venue_owner_token = login_response.get("access_token")
-            user_data = login_response.get("user", {})
-            
-            if user_data.get("role") == "venue_partner":
-                self.log("✅ Venue partner authentication successful", "SUCCESS")
-                return True
-            else:
-                self.log(f"❌ Wrong user role: {user_data.get('role')}", "ERROR")
-                return False
+        # Step 2: Login with OTP (should create temp user + return JWT + routing)
+        print(f"\n2️⃣ Login with OTP: {dev_otp}")
+        login_result = await self.login_with_otp(mobile, dev_otp)
+        
+        if not login_result["success"]:
+            self.log_test("NEW USER - Login with OTP", False, f"Login failed: {login_result.get('error', 'Unknown error')}")
+            return False
+        
+        login_data = login_result["data"]
+        
+        # Validate new user response structure
+        expected_fields = ["success", "user_exists", "action", "redirect_to", "access_token", "token_type", "temp_user_id", "mobile_verified"]
+        missing_fields = [field for field in expected_fields if field not in login_data]
+        
+        if missing_fields:
+            self.log_test("NEW USER - Login Response Structure", False, f"Missing fields: {missing_fields}")
+            return False
+        
+        # Validate new user specific values
+        if login_data.get("user_exists") != False:
+            self.log_test("NEW USER - User Exists Check", False, f"Expected user_exists=False, got {login_data.get('user_exists')}")
+            return False
+        
+        if login_data.get("action") != "start_onboarding":
+            self.log_test("NEW USER - Action Check", False, f"Expected action='start_onboarding', got {login_data.get('action')}")
+            return False
+        
+        if login_data.get("redirect_to") != "onboarding_step_1":
+            self.log_test("NEW USER - Redirect Check", False, f"Expected redirect_to='onboarding_step_1', got {login_data.get('redirect_to')}")
+            return False
+        
+        jwt_token = login_data.get("access_token")
+        if not jwt_token:
+            self.log_test("NEW USER - JWT Token", False, "No JWT token received")
+            return False
+        
+        self.log_test("NEW USER - Login with OTP", True, f"Login successful, JWT received, routing to {login_data.get('redirect_to')}")
+        
+        # Step 3: Test JWT-Protected Onboarding Step 1 (NO OTP required)
+        print(f"\n3️⃣ Testing JWT-Protected Onboarding Step 1")
+        step1_result = await self.onboarding_step1_jwt(
+            jwt_token=jwt_token,
+            first_name="Arjun",
+            last_name="Sharma",
+            email="arjun.sharma@example.com"
+        )
+        
+        if not step1_result["success"]:
+            self.log_test("NEW USER - Onboarding Step 1 JWT", False, f"Step 1 failed: {step1_result.get('error', 'Unknown error')}")
+            return False
+        
+        step1_data = step1_result["data"]
+        
+        # Validate step 1 response
+        if not step1_data.get("success"):
+            self.log_test("NEW USER - Onboarding Step 1 JWT", False, f"Step 1 not successful: {step1_data.get('message', 'Unknown error')}")
+            return False
+        
+        # Check if permanent user was created
+        if step1_data.get("user_id"):
+            self.log_test("NEW USER - Permanent User Creation", True, f"Permanent user created: {step1_data.get('user_id')}")
         else:
-            self.log(f"❌ Login failed - Status: {response.status_code if response else 'No response'}", "ERROR")
+            self.log_test("NEW USER - Permanent User Creation", False, "No permanent user ID returned")
             return False
+        
+        self.log_test("NEW USER - Onboarding Step 1 JWT", True, "Step 1 completed successfully with JWT protection")
+        
+        print(f"\n✅ NEW USER COMPLETE FLOW SUCCESSFUL")
+        return True
     
-    def test_3_venue_creation_with_arenas(self):
-        """Test 3: Venue Creation with Multiple Arenas (Cricket + Football)"""
-        self.log("Testing venue creation with multiple arenas...")
+    async def test_existing_user_flow(self):
+        """Test flow for existing user +919909385701"""
+        print("\n🔥 TESTING EXISTING USER FLOW")
+        mobile = "+919909385701"
         
-        if not self.venue_owner_token:
-            self.log("❌ No venue partner token available", "ERROR")
+        # Step 1: Send OTP
+        print(f"\n1️⃣ Sending OTP to existing user {mobile}")
+        otp_result = await self.send_otp(mobile)
+        
+        if not otp_result["success"]:
+            self.log_test("EXISTING USER - Send OTP", False, f"Failed to send OTP: {otp_result.get('error', 'Unknown error')}")
             return False
         
-        headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
+        # Extract OTP from dev_info
+        dev_otp = otp_result["data"].get("dev_info", "").replace("OTP: ", "")
+        if not dev_otp or len(dev_otp) != 6:
+            self.log_test("EXISTING USER - Send OTP", False, "No valid OTP received in dev_info")
+            return False
         
-        # Create venue with multiple arenas
-        venue_data = {
-            "name": "Elite Sports Complex Mumbai",
-            "sports_supported": ["Cricket", "Football"],
-            "address": "123 Sports Avenue, Andheri West",
-            "city": "Mumbai",
-            "state": "Maharashtra",
-            "pincode": "400058",
-            "description": "Premium sports facility with multiple arenas",
-            "amenities": ["Parking", "Changing Rooms", "Cafeteria", "First Aid"],
-            "base_price_per_hour": 1000.0,
-            "contact_phone": "+919876543210",
-            "whatsapp_number": "+919876543210",
-            "images": ["https://example.com/venue1.jpg"],
-            "rules_and_regulations": "No smoking, proper sports attire required",
-            "cancellation_policy": "24 hours advance notice required",
-            "arenas": [
-                {
-                    "name": "Cricket Ground A",
-                    "sport": "Cricket",
-                    "capacity": 2,
-                    "description": "Professional cricket ground with turf wicket",
-                    "amenities": ["Turf Wicket", "Floodlights", "Scoreboard"],
-                    "base_price_per_hour": 1200.0,
-                    "images": ["https://example.com/cricket1.jpg"],
-                    "slots": [
-                        {
-                            "day_of_week": 0,  # Monday
-                            "start_time": "06:00",
-                            "end_time": "08:00",
-                            "capacity": 1,
-                            "price_per_hour": 1200.0,
-                            "is_peak_hour": False
-                        },
-                        {
-                            "day_of_week": 0,  # Monday
-                            "start_time": "18:00",
-                            "end_time": "20:00",
-                            "capacity": 1,
-                            "price_per_hour": 1500.0,
-                            "is_peak_hour": True
-                        },
-                        {
-                            "day_of_week": 5,  # Saturday
-                            "start_time": "08:00",
-                            "end_time": "10:00",
-                            "capacity": 1,
-                            "price_per_hour": 1500.0,
-                            "is_peak_hour": True
-                        }
-                    ],
-                    "is_active": True
+        self.log_test("EXISTING USER - Send OTP", True, f"OTP sent successfully: {dev_otp}")
+        
+        # Step 2: Login with OTP (should return existing user + JWT + proper routing)
+        print(f"\n2️⃣ Login with OTP: {dev_otp}")
+        login_result = await self.login_with_otp(mobile, dev_otp)
+        
+        if not login_result["success"]:
+            self.log_test("EXISTING USER - Login with OTP", False, f"Login failed: {login_result.get('error', 'Unknown error')}")
+            return False
+        
+        login_data = login_result["data"]
+        
+        # Validate existing user response structure
+        expected_fields = ["success", "user_exists", "action", "redirect_to", "access_token", "token_type", "user"]
+        missing_fields = [field for field in expected_fields if field not in login_data]
+        
+        if missing_fields:
+            self.log_test("EXISTING USER - Login Response Structure", False, f"Missing fields: {missing_fields}")
+            return False
+        
+        # Validate existing user specific values
+        if login_data.get("user_exists") != True:
+            self.log_test("EXISTING USER - User Exists Check", False, f"Expected user_exists=True, got {login_data.get('user_exists')}")
+            return False
+        
+        # Check routing based on onboarding completion
+        user_data = login_data.get("user", {})
+        onboarding_completed = user_data.get("onboarding_completed", False)
+        
+        if onboarding_completed:
+            expected_action = "dashboard_access"
+            expected_redirect = "dashboard"
+        else:
+            expected_action = "complete_onboarding"
+            current_step = user_data.get("current_step", 1)
+            expected_redirect = f"onboarding_step_{current_step}"
+        
+        if login_data.get("action") != expected_action:
+            self.log_test("EXISTING USER - Action Check", False, f"Expected action='{expected_action}', got {login_data.get('action')}")
+            return False
+        
+        if login_data.get("redirect_to") != expected_redirect:
+            self.log_test("EXISTING USER - Redirect Check", False, f"Expected redirect_to='{expected_redirect}', got {login_data.get('redirect_to')}")
+            return False
+        
+        jwt_token = login_data.get("access_token")
+        if not jwt_token:
+            self.log_test("EXISTING USER - JWT Token", False, "No JWT token received")
+            return False
+        
+        self.log_test("EXISTING USER - Login with OTP", True, f"Login successful, JWT received, routing to {login_data.get('redirect_to')}")
+        
+        print(f"\n✅ EXISTING USER FLOW SUCCESSFUL")
+        return True
+    
+    async def test_security_validation(self):
+        """Test JWT security validation"""
+        print("\n🔥 TESTING SECURITY VALIDATION")
+        
+        # Test 1: Onboarding step1 without JWT → 401/403
+        print(f"\n1️⃣ Testing onboarding step1 without JWT")
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/onboarding/step1",
+                json={
+                    "first_name": "Test",
+                    "last_name": "User"
                 },
-                {
-                    "name": "Football Field",
-                    "sport": "Football",
-                    "capacity": 1,
-                    "description": "Full-size football field with artificial turf",
-                    "amenities": ["Artificial Turf", "Goals", "Floodlights"],
-                    "base_price_per_hour": 800.0,
-                    "images": ["https://example.com/football1.jpg"],
-                    "slots": [
-                        {
-                            "day_of_week": 0,  # Monday
-                            "start_time": "18:00",
-                            "end_time": "20:00",
-                            "capacity": 1,
-                            "price_per_hour": 800.0,
-                            "is_peak_hour": False
-                        },
-                        {
-                            "day_of_week": 1,  # Tuesday
-                            "start_time": "19:00",
-                            "end_time": "21:00",
-                            "capacity": 1,
-                            "price_per_hour": 900.0,
-                            "is_peak_hour": True
-                        }
-                    ],
-                    "is_active": True
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status in [401, 403]:
+                    self.log_test("SECURITY - No JWT Protection", True, f"Correctly rejected with status {response.status}")
+                else:
+                    self.log_test("SECURITY - No JWT Protection", False, f"Expected 401/403, got {response.status}")
+                    return False
+        except Exception as e:
+            self.log_test("SECURITY - No JWT Protection", False, f"Error: {str(e)}")
+            return False
+        
+        # Test 2: Onboarding step1 with invalid JWT → 401/403
+        print(f"\n2️⃣ Testing onboarding step1 with invalid JWT")
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/onboarding/step1",
+                json={
+                    "first_name": "Test",
+                    "last_name": "User"
+                },
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer invalid_jwt_token_12345"
                 }
-            ]
-        }
-        
-        response = self.make_request("POST", "/venue-owner/venues", venue_data, headers)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            self.venue_id = result.get("venue_id")
-            self.log(f"✅ Venue created successfully with ID: {self.venue_id}", "SUCCESS")
-            return True
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log(f"❌ Venue creation failed - {error_msg}", "ERROR")
-            return False
-    
-    def test_4_arena_listing(self):
-        """Test 4: Arena Listing - GET /api/venue-owner/venues/{venue_id}/arenas"""
-        self.log("Testing arena listing endpoint...")
-        
-        if not self.venue_owner_token or not self.venue_id:
-            self.log("❌ Missing venue partner token or venue ID", "ERROR")
-            return False
-        
-        headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
-        endpoint = f"/venue-owner/venues/{self.venue_id}/arenas"
-        
-        response = self.make_request("GET", endpoint, headers=headers)
-        
-        if response and response.status_code == 200:
-            data = response.json()
-            arenas = data.get("arenas", [])
-            
-            if len(arenas) >= 2:
-                # Store arena IDs for later tests
-                self.arena_ids = [arena["id"] for arena in arenas]
-                
-                # Verify arena details
-                cricket_arena = next((a for a in arenas if a["sport"] == "Cricket"), None)
-                football_arena = next((a for a in arenas if a["sport"] == "Football"), None)
-                
-                if cricket_arena and football_arena:
-                    self.log(f"✅ Arena listing successful - Found {len(arenas)} arenas", "SUCCESS")
-                    self.log(f"   Cricket Arena: {cricket_arena['name']} (₹{cricket_arena['base_price_per_hour']}/hr)")
-                    self.log(f"   Football Arena: {football_arena['name']} (₹{football_arena['base_price_per_hour']}/hr)")
-                    return True
+            ) as response:
+                if response.status in [401, 403]:
+                    self.log_test("SECURITY - Invalid JWT Protection", True, f"Correctly rejected with status {response.status}")
                 else:
-                    self.log("❌ Missing expected arenas (Cricket/Football)", "ERROR")
+                    self.log_test("SECURITY - Invalid JWT Protection", False, f"Expected 401/403, got {response.status}")
                     return False
-            else:
-                self.log(f"❌ Expected at least 2 arenas, got {len(arenas)}", "ERROR")
-                return False
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log(f"❌ Arena listing failed - {error_msg}", "ERROR")
+        except Exception as e:
+            self.log_test("SECURITY - Invalid JWT Protection", False, f"Error: {str(e)}")
             return False
+        
+        # Test 3: Get valid JWT and test successful access
+        print(f"\n3️⃣ Testing onboarding step1 with valid JWT")
+        
+        # First get a valid JWT token
+        mobile = "+919111222444"  # Different number for this test
+        
+        # Send OTP
+        otp_result = await self.send_otp(mobile)
+        if not otp_result["success"]:
+            self.log_test("SECURITY - Valid JWT Test Setup", False, "Failed to send OTP for JWT test")
+            return False
+        
+        dev_otp = otp_result["data"].get("dev_info", "").replace("OTP: ", "")
+        
+        # Login to get JWT
+        login_result = await self.login_with_otp(mobile, dev_otp)
+        if not login_result["success"]:
+            self.log_test("SECURITY - Valid JWT Test Setup", False, "Failed to login for JWT test")
+            return False
+        
+        jwt_token = login_result["data"].get("access_token")
+        if not jwt_token:
+            self.log_test("SECURITY - Valid JWT Test Setup", False, "No JWT token received for test")
+            return False
+        
+        # Now test with valid JWT
+        step1_result = await self.onboarding_step1_jwt(
+            jwt_token=jwt_token,
+            first_name="Security",
+            last_name="Test"
+        )
+        
+        if step1_result["success"]:
+            self.log_test("SECURITY - Valid JWT Access", True, "Successfully accessed with valid JWT")
+        else:
+            self.log_test("SECURITY - Valid JWT Access", False, f"Failed with valid JWT: {step1_result.get('error', 'Unknown error')}")
+            return False
+        
+        print(f"\n✅ SECURITY VALIDATION SUCCESSFUL")
+        return True
     
-    def test_5_booking_creation_with_arena(self):
-        """Test 5: Booking Creation with Arena ID"""
-        self.log("Testing booking creation with arena ID...")
+    async def test_flow_validation(self):
+        """Test overall flow validation"""
+        print("\n🔥 TESTING FLOW VALIDATION")
         
-        if not self.venue_owner_token or not self.venue_id or not self.arena_ids:
-            self.log("❌ Missing required data for booking test", "ERROR")
+        # Test 1: Login API returns proper routing instructions
+        mobile = "+919111222555"
+        
+        # Send OTP and login
+        otp_result = await self.send_otp(mobile)
+        if not otp_result["success"]:
+            self.log_test("FLOW - Routing Test Setup", False, "Failed to send OTP")
             return False
         
-        headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
+        dev_otp = otp_result["data"].get("dev_info", "").replace("OTP: ", "")
+        login_result = await self.login_with_otp(mobile, dev_otp)
         
-        # Create booking for Cricket arena
-        tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        if not login_result["success"]:
+            self.log_test("FLOW - Routing Test Setup", False, "Failed to login")
+            return False
         
-        booking_data = {
-            "venue_id": self.venue_id,
-            "arena_id": self.arena_ids[0],  # First arena (Cricket)
-            "player_mobile": PLAYER_MOBILE_1,
-            "player_name": "Arjun Patel",
-            "booking_date": tomorrow,
-            "start_time": "18:00",
-            "end_time": "20:00",
-            "sport": "Cricket",
-            "notes": "Evening practice session"
-        }
+        login_data = login_result["data"]
         
-        response = self.make_request("POST", "/venue-owner/bookings", booking_data, headers)
+        # Check routing instructions
+        required_routing_fields = ["action", "redirect_to", "message"]
+        missing_routing = [field for field in required_routing_fields if field not in login_data]
         
-        if response and response.status_code == 200:
-            result = response.json()
-            booking_id = result.get("booking_id")
-            total_amount = result.get("total_amount")
-            
-            if booking_id:
-                self.booking_ids.append(booking_id)
-                self.log(f"✅ Booking created successfully - ID: {booking_id}, Amount: ₹{total_amount}", "SUCCESS")
-                return True
-            else:
-                self.log("❌ Booking creation failed - No booking ID returned", "ERROR")
-                return False
+        if missing_routing:
+            self.log_test("FLOW - Login Routing Instructions", False, f"Missing routing fields: {missing_routing}")
+            return False
+        
+        self.log_test("FLOW - Login Routing Instructions", True, f"Proper routing: {login_data.get('action')} → {login_data.get('redirect_to')}")
+        
+        # Test 2: JWT tokens work for protected endpoints
+        jwt_token = login_data.get("access_token")
+        if not jwt_token:
+            self.log_test("FLOW - JWT Token Generation", False, "No JWT token in login response")
+            return False
+        
+        # Test JWT with onboarding endpoint
+        step1_result = await self.onboarding_step1_jwt(
+            jwt_token=jwt_token,
+            first_name="Flow",
+            last_name="Test"
+        )
+        
+        if step1_result["success"]:
+            self.log_test("FLOW - JWT Token Functionality", True, "JWT token works for protected endpoints")
         else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log(f"❌ Booking creation failed - {error_msg}", "ERROR")
+            self.log_test("FLOW - JWT Token Functionality", False, "JWT token doesn't work for protected endpoints")
             return False
+        
+        # Test 3: No double OTP verification in onboarding steps
+        # This is validated by the fact that step1 works with just JWT, no OTP required
+        self.log_test("FLOW - No Double OTP Verification", True, "Onboarding step1 works with JWT only (no OTP required)")
+        
+        print(f"\n✅ FLOW VALIDATION SUCCESSFUL")
+        return True
     
-    def test_6_arena_specific_conflict_detection(self):
-        """Test 6: Arena-Specific Conflict Detection"""
-        self.log("Testing arena-specific conflict detection...")
+    async def run_all_tests(self):
+        """Run all secure onboarding flow tests"""
+        print("🚀 STARTING SECURE ONBOARDING FLOW TESTING")
+        print("=" * 60)
         
-        if not self.venue_owner_token or not self.venue_id or len(self.arena_ids) < 2:
-            self.log("❌ Missing required data for conflict test", "ERROR")
-            return False
-        
-        headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
-        tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-        
-        # Test 1: Try to book same arena at same time (should fail)
-        self.log("  Testing same arena conflict...")
-        conflict_booking = {
-            "venue_id": self.venue_id,
-            "arena_id": self.arena_ids[0],  # Same arena as previous booking
-            "player_mobile": PLAYER_MOBILE_2,
-            "player_name": "Rahul Verma",
-            "booking_date": tomorrow,
-            "start_time": "18:00",  # Same time as previous booking
-            "end_time": "20:00",
-            "sport": "Cricket"
-        }
-        
-        response = self.make_request("POST", "/venue-owner/bookings", conflict_booking, headers)
-        
-        if response and response.status_code == 409:  # Conflict expected
-            self.log("✅ Same arena conflict detection working", "SUCCESS")
-        else:
-            self.log(f"❌ Same arena conflict detection failed - Status: {response.status_code if response else 'No response'}", "ERROR")
-            return False
-        
-        # Test 2: Book different arena at same time (should succeed)
-        self.log("  Testing different arena booking...")
-        different_arena_booking = {
-            "venue_id": self.venue_id,
-            "arena_id": self.arena_ids[1],  # Different arena (Football)
-            "player_mobile": PLAYER_MOBILE_2,
-            "player_name": "Rahul Verma",
-            "booking_date": tomorrow,
-            "start_time": "18:00",  # Same time but different arena
-            "end_time": "20:00",
-            "sport": "Football"
-        }
-        
-        response = self.make_request("POST", "/venue-owner/bookings", different_arena_booking, headers)
-        
-        if response and response.status_code == 200:
-            result = response.json()
-            booking_id = result.get("booking_id")
-            self.booking_ids.append(booking_id)
-            self.log("✅ Different arena booking successful - Arena-specific conflict detection working", "SUCCESS")
-            return True
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log(f"❌ Different arena booking failed - {error_msg}", "ERROR")
-            return False
-    
-    def test_7_analytics_dashboard(self):
-        """Test 7: Analytics Dashboard with Arena-Based Calculations"""
-        self.log("Testing analytics dashboard with arena-based calculations...")
-        
-        if not self.venue_owner_token:
-            self.log("❌ No venue partner token available", "ERROR")
-            return False
-        
-        headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
-        
-        response = self.make_request("GET", "/venue-owner/analytics/dashboard", headers=headers)
-        
-        if response and response.status_code == 200:
-            data = response.json()
-            
-            # Verify required fields
-            required_fields = [
-                "total_venues", "total_bookings", "total_revenue", "occupancy_rate",
-                "recent_bookings", "revenue_trend", "top_sports", "peak_hours"
-            ]
-            
-            missing_fields = [field for field in required_fields if field not in data]
-            if missing_fields:
-                self.log(f"❌ Analytics missing fields: {missing_fields}", "ERROR")
-                return False
-            
-            # Verify arena-based calculations
-            total_venues = data.get("total_venues", 0)
-            total_bookings = data.get("total_bookings", 0)
-            occupancy_rate = data.get("occupancy_rate", 0)
-            
-            if total_venues > 0 and total_bookings >= len(self.booking_ids):
-                self.log(f"✅ Analytics dashboard working - Venues: {total_venues}, Bookings: {total_bookings}, Occupancy: {occupancy_rate}%", "SUCCESS")
-                
-                # Check sport distribution
-                sport_distribution = data.get("sportDistribution", [])
-                if sport_distribution:
-                    sports = [item["sport"] for item in sport_distribution]
-                    self.log(f"   Sports tracked: {sports}")
-                
-                return True
-            else:
-                self.log(f"❌ Analytics data inconsistent - Venues: {total_venues}, Bookings: {total_bookings}", "ERROR")
-                return False
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log(f"❌ Analytics dashboard failed - {error_msg}", "ERROR")
-            return False
-    
-    def test_8_backward_compatibility(self):
-        """Test 8: Backward Compatibility with Existing Venues"""
-        self.log("Testing backward compatibility...")
-        
-        if not self.venue_owner_token:
-            self.log("❌ No venue partner token available", "ERROR")
-            return False
-        
-        headers = {"Authorization": f"Bearer {self.venue_owner_token}"}
-        
-        # Get all venues to check if old format is handled
-        response = self.make_request("GET", "/venue-owner/venues", headers=headers)
-        
-        if response and response.status_code == 200:
-            venues = response.json()
-            
-            if venues:
-                # Check if venues have arenas field
-                venue = venues[0]
-                if "arenas" in venue and isinstance(venue["arenas"], list):
-                    self.log("✅ Backward compatibility working - Venues have arenas field", "SUCCESS")
-                    return True
-                else:
-                    self.log("❌ Backward compatibility issue - Missing arenas field", "ERROR")
-                    return False
-            else:
-                self.log("⚠️ No venues found for backward compatibility test", "WARNING")
-                return True
-        else:
-            error_msg = response.json().get("detail", "Unknown error") if response else "No response"
-            self.log(f"❌ Backward compatibility test failed - {error_msg}", "ERROR")
-            return False
-    
-    def run_all_tests(self):
-        """Run all tests in sequence"""
-        self.log("=" * 60)
-        self.log("KHELON BACKEND TESTING SUITE - ARENA-BASED SYSTEM")
-        self.log("=" * 60)
-        
-        tests = [
-            ("Health Check", self.test_1_health_check),
-            ("Venue Partner Authentication", self.test_2_venue_owner_auth),
-            ("Venue Creation with Arenas", self.test_3_venue_creation_with_arenas),
-            ("Arena Listing", self.test_4_arena_listing),
-            ("Booking Creation with Arena", self.test_5_booking_creation_with_arena),
-            ("Arena-Specific Conflict Detection", self.test_6_arena_specific_conflict_detection),
-            ("Analytics Dashboard", self.test_7_analytics_dashboard),
-            ("Backward Compatibility", self.test_8_backward_compatibility)
+        test_functions = [
+            self.test_new_user_complete_flow,
+            self.test_existing_user_flow,
+            self.test_security_validation,
+            self.test_flow_validation
         ]
         
-        passed = 0
-        failed = 0
+        passed_tests = 0
+        total_tests = len(test_functions)
         
-        for test_name, test_func in tests:
-            self.log(f"\n--- Running: {test_name} ---")
+        for test_func in test_functions:
             try:
-                if test_func():
-                    passed += 1
-                else:
-                    failed += 1
+                result = await test_func()
+                if result:
+                    passed_tests += 1
             except Exception as e:
-                self.log(f"❌ {test_name} crashed: {str(e)}", "ERROR")
-                failed += 1
-            
-            time.sleep(1)  # Brief pause between tests
+                print(f"❌ Test {test_func.__name__} failed with exception: {str(e)}")
         
-        # Summary
-        self.log("\n" + "=" * 60)
-        self.log("TEST SUMMARY")
-        self.log("=" * 60)
-        self.log(f"✅ PASSED: {passed}")
-        self.log(f"❌ FAILED: {failed}")
-        self.log(f"📊 SUCCESS RATE: {(passed/(passed+failed)*100):.1f}%")
+        # Print summary
+        print("\n" + "=" * 60)
+        print("📊 SECURE ONBOARDING FLOW TEST SUMMARY")
+        print("=" * 60)
         
-        if failed == 0:
-            self.log("🎉 ALL TESTS PASSED! Arena-based system is working correctly.", "SUCCESS")
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"✅ Passed: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
+        
+        if passed_tests == total_tests:
+            print("🎉 ALL SECURE ONBOARDING FLOW TESTS PASSED!")
+            print("\n🔐 SECURE FLOW VALIDATION:")
+            print("✅ Clean separation: OTP verification in login API only")
+            print("✅ JWT protection for all onboarding endpoints")
+            print("✅ Proper user routing (new → onboarding, existing → dashboard/incomplete step)")
+            print("✅ No OTP double verification in onboarding steps")
+            print("✅ Temp user → permanent user conversion in step1")
         else:
-            self.log(f"⚠️ {failed} test(s) failed. Please review the issues above.", "WARNING")
+            print(f"❌ {total_tests - passed_tests} tests failed")
+            print("\n🔍 FAILED TESTS:")
+            for result in self.test_results:
+                if not result["success"]:
+                    print(f"   ❌ {result['test']}: {result['details']}")
         
-        return failed == 0
+        return passed_tests == total_tests
+
+async def main():
+    """Main test execution"""
+    async with SecureOnboardingTester() as tester:
+        success = await tester.run_all_tests()
+        sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
-    tester = KhelOnTester()
-    success = tester.run_all_tests()
-    exit(0 if success else 1)
+    asyncio.run(main())
