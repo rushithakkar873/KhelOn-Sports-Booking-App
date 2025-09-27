@@ -944,10 +944,10 @@ import requests
 from pydantic import validator
 
 # Initialize Razorpay client
-razorpay_client = razorpay.Client(auth=(
-    os.environ.get('RAZORPAY_KEY_ID'),
-    os.environ.get('RAZORPAY_KEY_SECRET')
-))
+# razorpay_client = razorpay.Client(auth=(
+#     os.environ.get('RAZORPAY_KEY_ID'),
+#     os.environ.get('RAZORPAY_KEY_SECRET')
+# ))
 
 class VenuePartnerBookingCreate(BaseModel):
     venue_id: str
