@@ -1,53 +1,106 @@
 #!/usr/bin/env python3
 """
-KhelON Backend Testing Suite - Arena-Based System
-Testing major backend modifications for multiple sports arenas per venue
+SECURE ONBOARDING FLOW TESTING
+Testing the fully fixed secure onboarding flow with JWT protection
 """
 
-import requests
+import asyncio
+import aiohttp
 import json
-import time
-from datetime import datetime, timedelta
+import sys
+from datetime import datetime
+from typing import Dict, Any
 
-# Configuration
-BASE_URL = "http://localhost:8001/api"
-VENUE_OWNER_MOBILE = "+919876543210"
-PLAYER_MOBILE_1 = "+919888777666"
-PLAYER_MOBILE_2 = "+919999888777"
+# Backend URL from environment
+BACKEND_URL = "https://sports-book.preview.emergentagent.com/api"
 
-class KhelOnTester:
+class SecureOnboardingTester:
     def __init__(self):
-        self.venue_owner_token = None
-        self.venue_id = None
-        self.arena_ids = []
-        self.booking_ids = []
+        self.session = None
+        self.test_results = []
         
-    def log(self, message, status="INFO"):
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {status}: {message}")
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
     
-    def make_request(self, method, endpoint, data=None, headers=None, params=None):
-        """Make HTTP request with error handling"""
-        url = f"{BASE_URL}{endpoint}"
+    def log_test(self, test_name: str, success: bool, details: str = ""):
+        """Log test result"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}")
+        if details:
+            print(f"   {details}")
         
+        self.test_results.append({
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    async def send_otp(self, mobile: str) -> Dict[str, Any]:
+        """Send OTP to mobile number"""
         try:
-            if method.upper() == "GET":
-                response = requests.get(url, headers=headers, params=params)
-            elif method.upper() == "POST":
-                response = requests.post(url, json=data, headers=headers, params=params)
-            elif method.upper() == "PUT":
-                response = requests.put(url, json=data, headers=headers, params=params)
-            else:
-                raise ValueError(f"Unsupported method: {method}")
-            
-            return response
-        except requests.exceptions.RequestException as e:
-            self.log(f"Request failed: {str(e)}", "ERROR")
-            return None
+            async with self.session.post(
+                f"{BACKEND_URL}/auth/send-otp",
+                json={"mobile": mobile},
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                data = await response.json()
+                return {
+                    "success": response.status == 200,
+                    "status_code": response.status,
+                    "data": data
+                }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
     
-    def test_1_health_check(self):
-        """Test 1: Basic Health Check - should return KhelON API status"""
-        self.log("Testing basic health check...")
+    async def login_with_otp(self, mobile: str, otp: str) -> Dict[str, Any]:
+        """Login with OTP - Enhanced endpoint that handles routing"""
+        try:
+            async with self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json={"mobile": mobile, "otp": otp},
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                data = await response.json()
+                return {
+                    "success": response.status == 200,
+                    "status_code": response.status,
+                    "data": data
+                }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def onboarding_step1_jwt(self, jwt_token: str, first_name: str, last_name: str, email: str = None) -> Dict[str, Any]:
+        """Onboarding Step 1 with JWT protection (no OTP required)"""
+        try:
+            payload = {
+                "first_name": first_name,
+                "last_name": last_name
+            }
+            if email:
+                payload["email"] = email
+                
+            async with self.session.post(
+                f"{BACKEND_URL}/onboarding/step1",
+                json=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {jwt_token}"
+                }
+            ) as response:
+                data = await response.json()
+                return {
+                    "success": response.status == 200,
+                    "status_code": response.status,
+                    "data": data
+                }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
         
         response = self.make_request("GET", "/")
         if not response:
