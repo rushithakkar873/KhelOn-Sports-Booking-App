@@ -105,7 +105,9 @@ class SecureOnboardingTester:
     async def test_new_user_complete_flow(self):
         """Test complete flow for new user +919111222333"""
         print("\n🔥 TESTING NEW USER COMPLETE FLOW")
-        mobile = "+919111222333"
+        import random
+        # Generate a unique mobile number for testing
+        mobile = f"+9191112{random.randint(10000, 99999)}"
         
         # Step 1: Send OTP
         print(f"\n1️⃣ Sending OTP to {mobile}")
