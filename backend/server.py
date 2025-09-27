@@ -322,7 +322,7 @@ async def check_user_exists(request: MobileOTPRequest):
     }
 
 @api_router.post("/onboarding/step1")
-async def onboarding_step1(request: OnboardingStep1Request, current_user: dict = Depends(get_current_user)):
+async def onboarding_step1(request: OnboardingStep1JWTRequest, current_user: dict = Depends(get_current_user)):
     """Progressive Onboarding Step 1: Basic partner details (JWT Protected)"""
     
     # Ensure this is a temp user or new onboarding user
