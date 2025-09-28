@@ -492,6 +492,15 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginTop: 4,
   },
+  errorText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 4,
+  },
+  inputContainerError: {
+    borderColor: '#ef4444',
+    borderWidth: 2,
+  },
   footer: {
     paddingTop: 16,
   },
