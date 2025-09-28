@@ -364,13 +364,16 @@ export default function OnboardingStep2Screen() {
                 <Ionicons name="call-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="Venue contact number"
+                  placeholder="9876543210 or +919876543210"
                   placeholderTextColor="#9ca3af"
                   value={contactPhone}
                   onChangeText={setContactPhone}
                   keyboardType="phone-pad"
                 />
               </View>
+              <Text style={styles.helperText}>
+                Enter Indian mobile number (10 digits starting with 6-9)
+              </Text>
             </View>
 
             {/* Footer */}
