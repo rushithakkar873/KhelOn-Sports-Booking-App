@@ -166,7 +166,7 @@ export default function OnboardingStep2Screen() {
           operating_days: selectedDays,
           start_time: startTime,
           end_time: endTime,
-          contact_phone: contactPhone.trim(),
+          contact_phone: formatPhoneNumber(contactPhone.trim()),
         }),
       });
 
