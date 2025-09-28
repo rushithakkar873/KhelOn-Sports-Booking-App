@@ -307,18 +307,57 @@ export class OnboardingValidation {
     return { isValid: errors.length === 0, errors };
   }
 
-  // Step 4 Validation (OnboardingStep4Request) - Minimal validation as fields are optional
+  // Individual field validation for Step 4
+  static validateAmenities(amenities: string[]): ValidationResult {
+    const errors: string[] = [];
+    
+    // Amenities are optional, but if provided, should be valid
+    if (amenities && amenities.length > 20) {
+      errors.push('Cannot select more than 20 amenities');
+    }
+    
+    // Check for valid amenity names
+    const invalidAmenities = amenities.filter(amenity => 
+      !amenity.trim() || amenity.trim().length < 2 || amenity.trim().length > 50
+    );
+    
+    if (invalidAmenities.length > 0) {
+      errors.push('Each amenity must be between 2 and 50 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateRules(rules: string): ValidationResult {
+    const errors: string[] = [];
+    
+    // Rules are optional, but if provided, should be reasonable length
+    if (rules && rules.trim()) {
+      const trimmedRules = rules.trim();
+      if (trimmedRules.length > 2000) {
+        errors.push('Rules cannot exceed 2000 characters');
+      } else if (trimmedRules.length < 10) {
+        errors.push('Rules should be at least 10 characters long to be meaningful');
+      }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Step 4 Validation (OnboardingStep4Request)
   static validateStep4(data: {
     amenities: string[];
     rules: string;
   }): ValidationResult {
     const errors: string[] = [];
     
-    // Amenities validation (optional array)
-    // No specific validation needed as it's optional
+    // Validate amenities
+    const amenitiesValidation = this.validateAmenities(data.amenities);
+    errors.push(...amenitiesValidation.errors);
     
-    // Rules validation (optional string)
-    // No specific validation needed as it's optional
+    // Validate rules
+    const rulesValidation = this.validateRules(data.rules);
+    errors.push(...rulesValidation.errors);
     
     return { isValid: errors.length === 0, errors };
   }
