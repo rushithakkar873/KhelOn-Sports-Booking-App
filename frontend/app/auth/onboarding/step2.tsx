@@ -105,35 +105,11 @@ export default function OnboardingStep2Screen() {
   };
 
   const toggleDay = (day: string) => {
-    setSelectedDays(prev => 
-      prev.includes(day) 
-        ? prev.filter(d => d !== day)
-        : [...prev, day]
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
   };
 
-  const formatPhoneNumber = (phone: string): string => {
-    // Remove all non-digits
-    const digitsOnly = phone.replace(/\D/g, '');
-    
-    // If it starts with 91, add +91, otherwise if it's 10 digits, add +91
-    if (digitsOnly.startsWith('91') && digitsOnly.length === 12) {
-      return `+${digitsOnly}`;
-    } else if (digitsOnly.length === 10 && digitsOnly[0] >= '6' && digitsOnly[0] <= '9') {
-      return `+91${digitsOnly}`;
-    } else if (digitsOnly.length === 11 && digitsOnly.startsWith('0')) {
-      // Remove leading 0 and add +91
-      return `+91${digitsOnly.substring(1)}`;
-    }
-    
-    return digitsOnly.startsWith('91') ? `+${digitsOnly}` : `+91${digitsOnly}`;
-  };
-
-  const validatePhoneNumber = (phone: string): boolean => {
-    const formatted = formatPhoneNumber(phone);
-    const phoneRegex = /^\+91[6-9]\d{9}$/;
-    return phoneRegex.test(formatted);
-  };
 
   const handleSaveAndContinue = async () => {
     if (
@@ -152,13 +128,18 @@ export default function OnboardingStep2Screen() {
     }
 
     if (!coverPhoto) {
-      Alert.alert('Error', 'Please add a cover photo for your venue');
+      Alert.alert("Error", "Please add a cover photo for your venue");
       return;
     }
 
+    const formattedMobile = AuthService.formatIndianMobile(contactPhone);
+
     // Validate phone number format
-    if (!validatePhoneNumber(contactPhone.trim())) {
-      Alert.alert('Error', 'Please enter a valid Indian mobile number (10 digits starting with 6-9)');
+    if (!AuthService.validateIndianMobile(formattedMobile)) {
+      Alert.alert(
+        "Error",
+        "Please enter a valid Indian mobile number\nFormat: +91XXXXXXXXXX"
+      );
       return;
     }
 
@@ -166,18 +147,6 @@ export default function OnboardingStep2Screen() {
 
     try {
       const token = authService.getToken();
-      console.log(" Step - 2 => ", {
-        venue_name: venueName.trim(),
-        address: address.trim(),
-        city: city.trim(),
-        state: state.trim(),
-        pincode: pincode.trim(),
-        cover_photo: "coverPhoto",
-        operating_days: selectedDays,
-        start_time: startTime,
-        end_time: endTime,
-        contact_phone: contactPhone.trim(),
-      });
 
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/onboarding/step2`,
@@ -193,11 +162,11 @@ export default function OnboardingStep2Screen() {
             city: city.trim(),
             state: state.trim(),
             pincode: pincode.trim(),
-            cover_photo: "coverPhoto",
+            cover_photo: coverPhoto,
             operating_days: selectedDays,
             start_time: startTime,
             end_time: endTime,
-            contact_phone: contactPhone.trim(),
+            contact_phone: formattedMobile.trim(),
           }),
         }
       );
@@ -444,7 +413,7 @@ export default function OnboardingStep2Screen() {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="9876543210 or +919876543210"
+                  placeholder="Enter Venue Phone (+91XXXXXXXXXX)"
                   placeholderTextColor="#9ca3af"
                   value={contactPhone}
                   onChangeText={setContactPhone}
