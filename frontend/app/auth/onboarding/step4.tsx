@@ -463,4 +463,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  errorText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 4,
+  },
+  inputContainerError: {
+    borderColor: '#ef4444',
+    borderWidth: 2,
+  },
 });
