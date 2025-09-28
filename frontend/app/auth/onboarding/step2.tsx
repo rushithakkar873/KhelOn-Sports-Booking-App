@@ -113,36 +113,28 @@ export default function OnboardingStep2Screen() {
 
 
   const handleSaveAndContinue = async () => {
-    if (
-      !venueName.trim() ||
-      !address.trim() ||
-      !pincode.trim() ||
-      !contactPhone.trim()
-    ) {
-      Alert.alert("Error", "Please fill in all required fields");
-      return;
-    }
+    // Comprehensive frontend validation using validation utility
+    const validationData = {
+      venueName,
+      address,
+      city,
+      state,
+      pincode,
+      coverPhoto,
+      operatingDays: selectedDays,
+      startTime,
+      endTime,
+      contactPhone,
+    };
 
-    if (selectedDays.length === 0) {
-      Alert.alert("Error", "Please select at least one operating day");
-      return;
-    }
-
-    if (!coverPhoto) {
-      Alert.alert("Error", "Please add a cover photo for your venue");
+    const validation = OnboardingValidation.validateStep2(validationData);
+    
+    if (!validation.isValid) {
+      Alert.alert('Validation Error', OnboardingValidation.showValidationErrors(validation.errors));
       return;
     }
 
     const formattedMobile = AuthService.formatIndianMobile(contactPhone);
-
-    // Validate phone number format
-    if (!AuthService.validateIndianMobile(formattedMobile)) {
-      Alert.alert(
-        "Error",
-        "Please enter a valid Indian mobile number\nFormat: +91XXXXXXXXXX"
-      );
-      return;
-    }
 
     setIsLoading(true);
 
