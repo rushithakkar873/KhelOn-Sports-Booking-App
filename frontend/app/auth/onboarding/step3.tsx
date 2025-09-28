@@ -41,6 +41,10 @@ export default function OnboardingStep3Screen() {
   const [pricePerSlot, setPricePerSlot] = useState('1000');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Field validation states
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
+  const [showErrors, setShowErrors] = useState(false);
+
   const incrementCourts = () => {
     if (numberOfCourts < 20) {
       setNumberOfCourts(numberOfCourts + 1);
