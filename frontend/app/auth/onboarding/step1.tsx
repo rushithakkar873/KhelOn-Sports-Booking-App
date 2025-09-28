@@ -28,8 +28,11 @@ export default function OnboardingStep1Screen() {
   const authService = AuthService.getInstance();
 
   const handleSaveAndContinue = async () => {
-    if (!firstName.trim() || !lastName.trim()) {
-      Alert.alert('Error', 'Please enter your first and last name');
+    // Comprehensive frontend validation
+    const validation = OnboardingValidation.validateStep1(firstName, lastName, email);
+    
+    if (!validation.isValid) {
+      Alert.alert('Validation Error', OnboardingValidation.showValidationErrors(validation.errors));
       return;
     }
 
