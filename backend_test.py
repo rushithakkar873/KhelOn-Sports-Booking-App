@@ -17,13 +17,8 @@ logger = logging.getLogger(__name__)
 
 class OnboardingStep2Tester:
     def __init__(self):
-        # Get backend URL from environment
-        with open('/app/frontend/.env', 'r') as f:
-            env_content = f.read()
-            for line in env_content.split('\n'):
-                if 'EXPO_PUBLIC_BACKEND_URL=' in line and not line.startswith('#'):
-                    self.base_url = line.split('=')[1].strip() + '/api'
-                    break
+        # Use internal backend URL for testing
+        self.base_url = "http://localhost:8001/api"
         
         logger.info(f"🌐 Testing backend at: {self.base_url}")
         
