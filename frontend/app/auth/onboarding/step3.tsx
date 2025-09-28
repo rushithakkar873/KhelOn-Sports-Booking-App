@@ -57,9 +57,64 @@ export default function OnboardingStep3Screen() {
     }
   };
 
+  // Validation helper functions
+  const validateField = (fieldName: string, value: any) => {
+    let validation;
+    
+    switch (fieldName) {
+      case 'sportType':
+        validation = OnboardingValidation.validateSportType(value);
+        break;
+      case 'numberOfCourts':
+        validation = OnboardingValidation.validateNumberOfCourts(value);
+        break;
+      case 'slotDuration':
+        validation = OnboardingValidation.validateSlotDuration(value);
+        break;
+      case 'pricePerSlot':
+        validation = OnboardingValidation.validatePricePerSlot(value);
+        break;
+      default:
+        validation = { isValid: true, errors: [] };
+    }
+
+    setFieldErrors(prev => ({
+      ...prev,
+      [fieldName]: validation.errors[0] || ''
+    }));
+
+    return validation.isValid;
+  };
+
+  const handlePriceChange = (newPrice: string) => {
+    setPricePerSlot(newPrice);
+    if (showErrors) {
+      validateField('pricePerSlot', newPrice);
+    }
+  };
+
   const handleSaveAndContinue = async () => {
-    if (!pricePerSlot.trim() || parseFloat(pricePerSlot) <= 0) {
-      Alert.alert('Error', 'Please enter a valid price per slot');
+    setShowErrors(true);
+
+    // Comprehensive frontend validation
+    const validationData = {
+      sportType: selectedSport,
+      numberOfCourts,
+      slotDuration,
+      pricePerSlot: parseFloat(pricePerSlot),
+    };
+
+    const validation = OnboardingValidation.validateStep3(validationData);
+    
+    if (!validation.isValid) {
+      Alert.alert('Validation Error', OnboardingValidation.showValidationErrors(validation.errors));
+      
+      // Set individual field errors for visual feedback
+      validateField('sportType', selectedSport);
+      validateField('numberOfCourts', numberOfCourts);
+      validateField('slotDuration', slotDuration);
+      validateField('pricePerSlot', pricePerSlot);
+      
       return;
     }
 
