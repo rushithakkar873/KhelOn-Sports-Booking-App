@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AuthService from '../../../services/authService';
+import { OnboardingValidation } from '../../../utils/validation';
 
 export default function OnboardingStep1Screen() {
   const router = useRouter();
