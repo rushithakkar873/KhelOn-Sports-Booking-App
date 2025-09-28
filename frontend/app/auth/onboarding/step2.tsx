@@ -101,6 +101,29 @@ export default function OnboardingStep2Screen() {
     );
   };
 
+  const formatPhoneNumber = (phone: string): string => {
+    // Remove all non-digits
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    // If it starts with 91, add +91, otherwise if it's 10 digits, add +91
+    if (digitsOnly.startsWith('91') && digitsOnly.length === 12) {
+      return `+${digitsOnly}`;
+    } else if (digitsOnly.length === 10 && digitsOnly[0] >= '6' && digitsOnly[0] <= '9') {
+      return `+91${digitsOnly}`;
+    } else if (digitsOnly.length === 11 && digitsOnly.startsWith('0')) {
+      // Remove leading 0 and add +91
+      return `+91${digitsOnly.substring(1)}`;
+    }
+    
+    return digitsOnly.startsWith('91') ? `+${digitsOnly}` : `+91${digitsOnly}`;
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    const formatted = formatPhoneNumber(phone);
+    const phoneRegex = /^\+91[6-9]\d{9}$/;
+    return phoneRegex.test(formatted);
+  };
+
   const handleSaveAndContinue = async () => {
     if (!venueName.trim() || !address.trim() || !pincode.trim() || !contactPhone.trim()) {
       Alert.alert('Error', 'Please fill in all required fields');
@@ -114,6 +137,12 @@ export default function OnboardingStep2Screen() {
 
     if (!coverPhoto) {
       Alert.alert('Error', 'Please add a cover photo for your venue');
+      return;
+    }
+
+    // Validate phone number format
+    if (!validatePhoneNumber(contactPhone.trim())) {
+      Alert.alert('Error', 'Please enter a valid Indian mobile number (10 digits starting with 6-9)');
       return;
     }
 
