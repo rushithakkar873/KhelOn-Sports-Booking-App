@@ -147,12 +147,14 @@ class OnboardingStep2Tester:
         """Test login with mobile OTP and get JWT token"""
         logger.info(f"🔑 Testing login with {self.test_mobile}...")
         
-        # Use mock OTP (in real scenario, user would enter received OTP)
-        mock_otp = "123456"  # Mock OTP for testing
+        # Use the OTP received from the send_otp test
+        if not self.received_otp:
+            logger.error("❌ No OTP received from previous test")
+            return False
         
         result = await self.make_request("POST", "/auth/login", {
             "mobile": self.test_mobile,
-            "otp": mock_otp
+            "otp": self.received_otp
         })
         
         if result["success"]:
