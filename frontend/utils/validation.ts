@@ -225,6 +225,63 @@ export class OnboardingValidation {
     return { isValid: errors.length === 0, errors };
   }
 
+  // Individual field validation for real-time feedback
+  static validateSportType(sportType: string): ValidationResult {
+    const errors: string[] = [];
+    const trimmedSportType = sportType.trim();
+    
+    if (!trimmedSportType) {
+      errors.push('Sport type is required');
+    } else if (trimmedSportType.length < 2) {
+      errors.push('Sport type must be at least 2 characters long');
+    } else if (trimmedSportType.length > 50) {
+      errors.push('Sport type cannot exceed 50 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateNumberOfCourts(numberOfCourts: number): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!Number.isInteger(numberOfCourts) || numberOfCourts < 1) {
+      errors.push('Number of courts must be at least 1');
+    } else if (numberOfCourts > 20) {
+      errors.push('Number of courts cannot exceed 20');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateSlotDuration(slotDuration: number): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!Number.isInteger(slotDuration) || slotDuration < 30) {
+      errors.push('Slot duration must be at least 30 minutes');
+    } else if (slotDuration > 240) {
+      errors.push('Slot duration cannot exceed 240 minutes (4 hours)');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validatePricePerSlot(pricePerSlot: number | string): ValidationResult {
+    const errors: string[] = [];
+    const price = typeof pricePerSlot === 'string' ? parseFloat(pricePerSlot) : pricePerSlot;
+    
+    if (isNaN(price)) {
+      errors.push('Please enter a valid price');
+    } else if (price < 0) {
+      errors.push('Price cannot be negative');
+    } else if (price === 0) {
+      errors.push('Price must be greater than 0');
+    } else if (price > 100000) {
+      errors.push('Price cannot exceed ₹1,00,000');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
   // Step 3 Validation (OnboardingStep3Request)
   static validateStep3(data: {
     sportType: string;
@@ -234,36 +291,18 @@ export class OnboardingValidation {
   }): ValidationResult {
     const errors: string[] = [];
     
-    // Sport type validation (min_length=2, max_length=50)
-    const trimmedSportType = data.sportType.trim();
-    if (!trimmedSportType) {
-      errors.push('Sport type is required');
-    } else if (trimmedSportType.length < 2) {
-      errors.push('Sport type must be at least 2 characters long');
-    } else if (trimmedSportType.length > 50) {
-      errors.push('Sport type cannot exceed 50 characters');
-    }
+    // Validate each field and collect errors
+    const sportTypeValidation = this.validateSportType(data.sportType);
+    errors.push(...sportTypeValidation.errors);
     
-    // Number of courts validation (ge=1, le=20)
-    if (!Number.isInteger(data.numberOfCourts) || data.numberOfCourts < 1) {
-      errors.push('Number of courts must be at least 1');
-    } else if (data.numberOfCourts > 20) {
-      errors.push('Number of courts cannot exceed 20');
-    }
+    const courtsValidation = this.validateNumberOfCourts(data.numberOfCourts);
+    errors.push(...courtsValidation.errors);
     
-    // Slot duration validation (ge=30, le=240 minutes)
-    if (!Number.isInteger(data.slotDuration) || data.slotDuration < 30) {
-      errors.push('Slot duration must be at least 30 minutes');
-    } else if (data.slotDuration > 240) {
-      errors.push('Slot duration cannot exceed 240 minutes (4 hours)');
-    }
+    const durationValidation = this.validateSlotDuration(data.slotDuration);
+    errors.push(...durationValidation.errors);
     
-    // Price per slot validation (ge=0)
-    if (isNaN(data.pricePerSlot) || data.pricePerSlot < 0) {
-      errors.push('Price per slot must be a valid positive number');
-    } else if (data.pricePerSlot === 0) {
-      errors.push('Price per slot must be greater than 0');
-    }
+    const priceValidation = this.validatePricePerSlot(data.pricePerSlot);
+    errors.push(...priceValidation.errors);
     
     return { isValid: errors.length === 0, errors };
   }
