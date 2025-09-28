@@ -191,6 +191,8 @@ class OnboardingStep2Tester:
             if "access_token" in data:
                 self.jwt_token = data["access_token"]
                 logger.info("🎫 JWT Token updated for permanent user")
+            else:
+                logger.info("🎫 No new JWT token provided, using existing token")
             
             return True
         else:
