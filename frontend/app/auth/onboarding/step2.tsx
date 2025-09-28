@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import AuthService from "../../../services/authService";
+import { OnboardingValidation } from "../../../utils/validation";
 
 const DAYS_OF_WEEK = [
   "Monday",
