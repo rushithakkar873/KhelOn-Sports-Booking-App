@@ -209,18 +209,29 @@ export default function OnboardingStep4Screen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Rules & Guidelines (Optional)</Text>
               <Text style={styles.helperText}>Any specific rules or guidelines for your venue</Text>
-              <View style={styles.textAreaContainer}>
+              <View style={[
+                styles.textAreaContainer,
+                fieldErrors.rules && showErrors && styles.inputContainerError
+              ]}>
                 <TextInput
                   style={styles.textArea}
                   placeholder="e.g., No outside food allowed, Sports shoes mandatory, etc."
                   placeholderTextColor="#9ca3af"
                   value={rules}
-                  onChangeText={setRules}
+                  onChangeText={handleRulesChange}
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
                 />
               </View>
+              {fieldErrors.rules && showErrors && (
+                <Text style={styles.errorText}>{fieldErrors.rules}</Text>
+              )}
+              {rules.trim() && !fieldErrors.rules && (
+                <Text style={styles.helperText}>
+                  {rules.trim().length}/2000 characters
+                </Text>
+              )}
             </View>
 
             {/* Footer */}
