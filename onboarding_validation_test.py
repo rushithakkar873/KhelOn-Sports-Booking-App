@@ -585,8 +585,25 @@ class OnboardingValidationTester:
                 print("❌ Authentication failed, cannot proceed with tests")
                 return
             
-            if not await self.complete_onboarding_steps_1_and_2():
-                print("❌ Failed to complete initial onboarding steps")
+            # Check if user already has completed steps 1 and 2
+            print("📋 Checking onboarding status...")
+            headers = {"Authorization": f"Bearer {self.jwt_token}"}
+            status_response = await self.session.get(
+                f"{BACKEND_URL}/onboarding/status",
+                headers=headers
+            )
+            
+            if status_response.status == 200:
+                status_data = await status_response.json()
+                completed_steps = status_data.get("completed_steps", [])
+                if 1 in completed_steps and 2 in completed_steps:
+                    print("✅ User already has completed steps 1 and 2, proceeding with validation tests")
+                else:
+                    if not await self.complete_onboarding_steps_1_and_2():
+                        print("❌ Failed to complete initial onboarding steps")
+                        return
+            else:
+                print("❌ Failed to check onboarding status")
                 return
             
             # Run validation tests
