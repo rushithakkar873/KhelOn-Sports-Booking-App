@@ -38,6 +38,10 @@ export default function OnboardingStep4Screen() {
   const [rules, setRules] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Field validation states
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
+  const [showErrors, setShowErrors] = useState(false);
+
   const toggleAmenity = (amenity: string) => {
     setSelectedAmenities(prev =>
       prev.includes(amenity)
