@@ -24,6 +24,112 @@ export class OnboardingValidation {
     return { isValid: errors.length === 0, errors };
   }
 
+  // Individual field validation for Step 1
+  static validateFirstName(firstName: string): ValidationResult {
+    const errors: string[] = [];
+    const trimmed = firstName.trim();
+    
+    if (!trimmed) {
+      errors.push('First name is required');
+    } else if (trimmed.length < 2) {
+      errors.push('First name must be at least 2 characters long');
+    } else if (trimmed.length > 100) {
+      errors.push('First name cannot exceed 100 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateLastName(lastName: string): ValidationResult {
+    const errors: string[] = [];
+    const trimmed = lastName.trim();
+    
+    if (!trimmed) {
+      errors.push('Last name is required');
+    } else if (trimmed.length < 2) {
+      errors.push('Last name must be at least 2 characters long');
+    } else if (trimmed.length > 100) {
+      errors.push('Last name cannot exceed 100 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Individual field validation for Step 2
+  static validateVenueName(venueName: string): ValidationResult {
+    const errors: string[] = [];
+    const trimmed = venueName.trim();
+    
+    if (!trimmed) {
+      errors.push('Venue name is required');
+    } else if (trimmed.length < 2) {
+      errors.push('Venue name must be at least 2 characters long');
+    } else if (trimmed.length > 200) {
+      errors.push('Venue name cannot exceed 200 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateVenueAddress(address: string): ValidationResult {
+    const errors: string[] = [];
+    const trimmed = address.trim();
+    
+    if (!trimmed) {
+      errors.push('Venue address is required');
+    } else if (trimmed.length < 10) {
+      errors.push('Please provide a complete address (at least 10 characters)');
+    } else if (trimmed.length > 500) {
+      errors.push('Address cannot exceed 500 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateCity(city: string): ValidationResult {
+    const errors: string[] = [];
+    const trimmed = city.trim();
+    
+    if (trimmed && (trimmed.length < 2 || trimmed.length > 100)) {
+      errors.push('City name must be between 2 and 100 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateState(state: string): ValidationResult {
+    const errors: string[] = [];
+    const trimmed = state.trim();
+    
+    if (trimmed && (trimmed.length < 2 || trimmed.length > 100)) {
+      errors.push('State name must be between 2 and 100 characters');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateOperatingDays(operatingDays: string[]): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!operatingDays || operatingDays.length === 0) {
+      errors.push('Please select at least one operating day');
+    } else if (operatingDays.length > 7) {
+      errors.push('Cannot select more than 7 days');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateCoverPhoto(coverPhoto: string | null): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!coverPhoto) {
+      errors.push('Please add a cover photo for your venue');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
   // Step 1 Validation (OnboardingStep1JWTRequest)
   static validateStep1(firstName: string, lastName: string, email: string): ValidationResult {
     const errors: string[] = [];
