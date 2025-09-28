@@ -362,6 +362,75 @@ export class OnboardingValidation {
     return { isValid: errors.length === 0, errors };
   }
 
+  // Individual field validation for Step 5
+  static validateBankAccountNumber(accountNumber: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (accountNumber && accountNumber.trim()) {
+      const trimmed = accountNumber.trim();
+      // Indian bank account numbers are typically 9-18 digits
+      const accountRegex = /^[0-9]{9,18}$/;
+      
+      if (!accountRegex.test(trimmed)) {
+        errors.push('Bank account number must be 9-18 digits');
+      }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateBankIfsc(ifsc: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (ifsc && ifsc.trim()) {
+      const trimmed = ifsc.trim().toUpperCase();
+      // IFSC format: 4 letters + 0 + 6 alphanumeric characters
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      
+      if (!ifscRegex.test(trimmed)) {
+        errors.push('Please enter a valid IFSC code (e.g., SBIN0001234)');
+      }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateBankAccountHolder(holderName: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (holderName && holderName.trim()) {
+      const trimmed = holderName.trim();
+      
+      if (trimmed.length < 2) {
+        errors.push('Account holder name must be at least 2 characters');
+      } else if (trimmed.length > 100) {
+        errors.push('Account holder name cannot exceed 100 characters');
+      } else if (!/^[a-zA-Z\s.]+$/.test(trimmed)) {
+        errors.push('Account holder name can only contain letters, spaces, and dots');
+      }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateUpiId(upiId: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (upiId && upiId.trim()) {
+      const trimmed = upiId.trim().toLowerCase();
+      // UPI ID format: username@bank (more flexible regex)
+      const upiRegex = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z0-9.\-_]{2,}$/;
+      
+      if (!upiRegex.test(trimmed)) {
+        errors.push('Please enter a valid UPI ID (e.g., yourname@paytm)');
+      } else if (trimmed.length > 50) {
+        errors.push('UPI ID cannot exceed 50 characters');
+      }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
   // Step 5 Validation (OnboardingStep5Request) - All fields are optional
   static validateStep5(data: {
     bankAccountNumber: string;
@@ -371,35 +440,43 @@ export class OnboardingValidation {
   }): ValidationResult {
     const errors: string[] = [];
     
-    // If any bank detail is provided, all should be provided
+    // Check if user is providing bank details
     const hasBankDetails = data.bankAccountNumber.trim() || data.bankIfsc.trim() || data.bankAccountHolder.trim();
     
+    // If any bank detail is provided, all should be provided and valid
     if (hasBankDetails) {
       if (!data.bankAccountNumber.trim()) {
         errors.push('Bank account number is required when providing bank details');
+      } else {
+        const accountValidation = this.validateBankAccountNumber(data.bankAccountNumber);
+        errors.push(...accountValidation.errors);
       }
+      
       if (!data.bankIfsc.trim()) {
         errors.push('IFSC code is required when providing bank details');
+      } else {
+        const ifscValidation = this.validateBankIfsc(data.bankIfsc);
+        errors.push(...ifscValidation.errors);
       }
+      
       if (!data.bankAccountHolder.trim()) {
         errors.push('Account holder name is required when providing bank details');
+      } else {
+        const holderValidation = this.validateBankAccountHolder(data.bankAccountHolder);
+        errors.push(...holderValidation.errors);
       }
     }
     
-    // Basic IFSC format validation (optional but if provided)
-    if (data.bankIfsc.trim()) {
-      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-      if (!ifscRegex.test(data.bankIfsc.trim().toUpperCase())) {
-        errors.push('Please enter a valid IFSC code (e.g., SBIN0001234)');
-      }
-    }
-    
-    // Basic UPI ID format validation (optional but if provided)
+    // Validate UPI ID if provided (independent of bank details)
     if (data.upiId.trim()) {
-      const upiRegex = /^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+$/;
-      if (!upiRegex.test(data.upiId.trim())) {
-        errors.push('Please enter a valid UPI ID (e.g., yourname@paytm)');
-      }
+      const upiValidation = this.validateUpiId(data.upiId);
+      errors.push(...upiValidation.errors);
+    }
+    
+    // Must provide either bank details or UPI ID
+    if (!hasBankDetails && !data.upiId.trim()) {
+      // This is actually optional for step 5, so no error needed
+      // User can skip payment setup
     }
     
     return { isValid: errors.length === 0, errors };
