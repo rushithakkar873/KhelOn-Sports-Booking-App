@@ -43,11 +43,45 @@ export default function OnboardingStep4Screen() {
   const [showErrors, setShowErrors] = useState(false);
 
   const toggleAmenity = (amenity: string) => {
-    setSelectedAmenities(prev =>
-      prev.includes(amenity)
-        ? prev.filter(a => a !== amenity)
-        : [...prev, amenity]
-    );
+    const newAmenities = selectedAmenities.includes(amenity)
+      ? selectedAmenities.filter(a => a !== amenity)
+      : [...selectedAmenities, amenity];
+    
+    setSelectedAmenities(newAmenities);
+    
+    // Validate amenities if errors are being shown
+    if (showErrors) {
+      validateField('amenities', newAmenities);
+    }
+  };
+
+  const validateField = (fieldName: string, value: any) => {
+    let validation;
+    
+    switch (fieldName) {
+      case 'amenities':
+        validation = OnboardingValidation.validateAmenities(value);
+        break;
+      case 'rules':
+        validation = OnboardingValidation.validateRules(value);
+        break;
+      default:
+        validation = { isValid: true, errors: [] };
+    }
+
+    setFieldErrors(prev => ({
+      ...prev,
+      [fieldName]: validation.errors[0] || ''
+    }));
+
+    return validation.isValid;
+  };
+
+  const handleRulesChange = (newRules: string) => {
+    setRules(newRules);
+    if (showErrors) {
+      validateField('rules', newRules);
+    }
   };
 
   const handleSkip = () => {
@@ -55,6 +89,26 @@ export default function OnboardingStep4Screen() {
   };
 
   const handleSaveAndContinue = async () => {
+    setShowErrors(true);
+
+    // Comprehensive frontend validation
+    const validationData = {
+      amenities: selectedAmenities,
+      rules: rules,
+    };
+
+    const validation = OnboardingValidation.validateStep4(validationData);
+    
+    if (!validation.isValid) {
+      Alert.alert('Validation Error', OnboardingValidation.showValidationErrors(validation.errors));
+      
+      // Set individual field errors for visual feedback
+      validateField('amenities', selectedAmenities);
+      validateField('rules', rules);
+      
+      return;
+    }
+
     setIsLoading(true);
 
     try {
