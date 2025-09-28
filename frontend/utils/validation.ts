@@ -1,0 +1,340 @@
+/**
+ * Validation utilities that match backend Pydantic model schemas
+ * Provides comprehensive validation with user-friendly error messages
+ */
+
+export interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+export class OnboardingValidation {
+  
+  // Email validation
+  static validateEmail(email: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        errors.push('Please enter a valid email address');
+      }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Step 1 Validation (OnboardingStep1JWTRequest)
+  static validateStep1(firstName: string, lastName: string, email: string): ValidationResult {
+    const errors: string[] = [];
+    
+    // First name validation (min_length=2, max_length=100)
+    const trimmedFirstName = firstName.trim();
+    if (!trimmedFirstName) {
+      errors.push('First name is required');
+    } else if (trimmedFirstName.length < 2) {
+      errors.push('First name must be at least 2 characters long');
+    } else if (trimmedFirstName.length > 100) {
+      errors.push('First name cannot exceed 100 characters');
+    }
+    
+    // Last name validation (min_length=2, max_length=100)
+    const trimmedLastName = lastName.trim();
+    if (!trimmedLastName) {
+      errors.push('Last name is required');
+    } else if (trimmedLastName.length < 2) {
+      errors.push('Last name must be at least 2 characters long');
+    } else if (trimmedLastName.length > 100) {
+      errors.push('Last name cannot exceed 100 characters');
+    }
+    
+    // Email validation (Optional EmailStr)
+    if (email.trim()) {
+      const emailValidation = this.validateEmail(email);
+      errors.push(...emailValidation.errors);
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Indian mobile number formatting
+  static formatPhoneNumber(phone: string): string {
+    // Remove all non-digits
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    // If it starts with 91, add +91, otherwise if it's 10 digits, add +91
+    if (digitsOnly.startsWith('91') && digitsOnly.length === 12) {
+      return `+${digitsOnly}`;
+    } else if (digitsOnly.length === 10 && digitsOnly[0] >= '6' && digitsOnly[0] <= '9') {
+      return `+91${digitsOnly}`;
+    } else if (digitsOnly.length === 11 && digitsOnly.startsWith('0')) {
+      // Remove leading 0 and add +91
+      return `+91${digitsOnly.substring(1)}`;
+    }
+    
+    return digitsOnly.startsWith('91') ? `+${digitsOnly}` : `+91${digitsOnly}`;
+  }
+
+  // Phone number validation (pattern=r'^\+91[6-9]\d{9}$')
+  static validatePhoneNumber(phone: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!phone.trim()) {
+      errors.push('Phone number is required');
+      return { isValid: false, errors };
+    }
+    
+    const formatted = this.formatPhoneNumber(phone);
+    const phoneRegex = /^\+91[6-9]\d{9}$/;
+    
+    if (!phoneRegex.test(formatted)) {
+      errors.push('Please enter a valid Indian mobile number (10 digits starting with 6-9)');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Time validation (pattern=r"^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$")
+  static validateTime(time: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!time.trim()) {
+      errors.push('Time is required');
+      return { isValid: false, errors };
+    }
+    
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!timeRegex.test(time.trim())) {
+      errors.push('Please enter time in HH:MM format (e.g., 09:30)');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Pincode validation (pattern=r'^\d{6}$')
+  static validatePincode(pincode: string): ValidationResult {
+    const errors: string[] = [];
+    
+    if (!pincode.trim()) {
+      errors.push('Pincode is required');
+      return { isValid: false, errors };
+    }
+    
+    const pincodeRegex = /^\d{6}$/;
+    if (!pincodeRegex.test(pincode.trim())) {
+      errors.push('Please enter a valid 6-digit pincode');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Step 2 Validation (OnboardingStep2Request)
+  static validateStep2(data: {
+    venueName: string;
+    address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    coverPhoto: string | null;
+    operatingDays: string[];
+    startTime: string;
+    endTime: string;
+    contactPhone: string;
+  }): ValidationResult {
+    const errors: string[] = [];
+    
+    // Venue name validation (min_length=2, max_length=200)
+    const trimmedVenueName = data.venueName.trim();
+    if (!trimmedVenueName) {
+      errors.push('Venue name is required');
+    } else if (trimmedVenueName.length < 2) {
+      errors.push('Venue name must be at least 2 characters long');
+    } else if (trimmedVenueName.length > 200) {
+      errors.push('Venue name cannot exceed 200 characters');
+    }
+    
+    // Address validation (min_length=10, max_length=500)
+    const trimmedAddress = data.address.trim();
+    if (!trimmedAddress) {
+      errors.push('Venue address is required');
+    } else if (trimmedAddress.length < 10) {
+      errors.push('Please provide a complete address (at least 10 characters)');
+    } else if (trimmedAddress.length > 500) {
+      errors.push('Address cannot exceed 500 characters');
+    }
+    
+    // City validation (min_length=2, max_length=100)
+    const trimmedCity = data.city.trim();
+    if (trimmedCity && (trimmedCity.length < 2 || trimmedCity.length > 100)) {
+      errors.push('City name must be between 2 and 100 characters');
+    }
+    
+    // State validation (min_length=2, max_length=100)
+    const trimmedState = data.state.trim();
+    if (trimmedState && (trimmedState.length < 2 || trimmedState.length > 100)) {
+      errors.push('State name must be between 2 and 100 characters');
+    }
+    
+    // Pincode validation
+    const pincodeValidation = this.validatePincode(data.pincode);
+    errors.push(...pincodeValidation.errors);
+    
+    // Cover photo validation (Optional but check if provided)
+    if (!data.coverPhoto) {
+      errors.push('Please add a cover photo for your venue');
+    }
+    
+    // Operating days validation (min_items=1, max_items=7)
+    if (!data.operatingDays || data.operatingDays.length === 0) {
+      errors.push('Please select at least one operating day');
+    } else if (data.operatingDays.length > 7) {
+      errors.push('Cannot select more than 7 days');
+    }
+    
+    // Start time validation
+    const startTimeValidation = this.validateTime(data.startTime);
+    if (!startTimeValidation.isValid) {
+      errors.push('Start time: ' + startTimeValidation.errors[0]);
+    }
+    
+    // End time validation
+    const endTimeValidation = this.validateTime(data.endTime);
+    if (!endTimeValidation.isValid) {
+      errors.push('End time: ' + endTimeValidation.errors[0]);
+    }
+    
+    // Time logic validation
+    if (startTimeValidation.isValid && endTimeValidation.isValid) {
+      const startHour = parseInt(data.startTime.split(':')[0]);
+      const startMin = parseInt(data.startTime.split(':')[1]);
+      const endHour = parseInt(data.endTime.split(':')[0]);
+      const endMin = parseInt(data.endTime.split(':')[1]);
+      
+      const startTotal = startHour * 60 + startMin;
+      const endTotal = endHour * 60 + endMin;
+      
+      if (endTotal <= startTotal) {
+        errors.push('End time must be after start time');
+      }
+    }
+    
+    // Contact phone validation
+    const phoneValidation = this.validatePhoneNumber(data.contactPhone);
+    errors.push(...phoneValidation.errors);
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Step 3 Validation (OnboardingStep3Request)
+  static validateStep3(data: {
+    sportType: string;
+    numberOfCourts: number;
+    slotDuration: number;
+    pricePerSlot: number;
+  }): ValidationResult {
+    const errors: string[] = [];
+    
+    // Sport type validation (min_length=2, max_length=50)
+    const trimmedSportType = data.sportType.trim();
+    if (!trimmedSportType) {
+      errors.push('Sport type is required');
+    } else if (trimmedSportType.length < 2) {
+      errors.push('Sport type must be at least 2 characters long');
+    } else if (trimmedSportType.length > 50) {
+      errors.push('Sport type cannot exceed 50 characters');
+    }
+    
+    // Number of courts validation (ge=1, le=20)
+    if (!Number.isInteger(data.numberOfCourts) || data.numberOfCourts < 1) {
+      errors.push('Number of courts must be at least 1');
+    } else if (data.numberOfCourts > 20) {
+      errors.push('Number of courts cannot exceed 20');
+    }
+    
+    // Slot duration validation (ge=30, le=240 minutes)
+    if (!Number.isInteger(data.slotDuration) || data.slotDuration < 30) {
+      errors.push('Slot duration must be at least 30 minutes');
+    } else if (data.slotDuration > 240) {
+      errors.push('Slot duration cannot exceed 240 minutes (4 hours)');
+    }
+    
+    // Price per slot validation (ge=0)
+    if (isNaN(data.pricePerSlot) || data.pricePerSlot < 0) {
+      errors.push('Price per slot must be a valid positive number');
+    } else if (data.pricePerSlot === 0) {
+      errors.push('Price per slot must be greater than 0');
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Step 4 Validation (OnboardingStep4Request) - Minimal validation as fields are optional
+  static validateStep4(data: {
+    amenities: string[];
+    rules: string;
+  }): ValidationResult {
+    const errors: string[] = [];
+    
+    // Amenities validation (optional array)
+    // No specific validation needed as it's optional
+    
+    // Rules validation (optional string)
+    // No specific validation needed as it's optional
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Step 5 Validation (OnboardingStep5Request) - All fields are optional
+  static validateStep5(data: {
+    bankAccountNumber: string;
+    bankIfsc: string;
+    bankAccountHolder: string;
+    upiId: string;
+  }): ValidationResult {
+    const errors: string[] = [];
+    
+    // If any bank detail is provided, all should be provided
+    const hasBankDetails = data.bankAccountNumber.trim() || data.bankIfsc.trim() || data.bankAccountHolder.trim();
+    
+    if (hasBankDetails) {
+      if (!data.bankAccountNumber.trim()) {
+        errors.push('Bank account number is required when providing bank details');
+      }
+      if (!data.bankIfsc.trim()) {
+        errors.push('IFSC code is required when providing bank details');
+      }
+      if (!data.bankAccountHolder.trim()) {
+        errors.push('Account holder name is required when providing bank details');
+      }
+    }
+    
+    // Basic IFSC format validation (optional but if provided)
+    if (data.bankIfsc.trim()) {
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      if (!ifscRegex.test(data.bankIfsc.trim().toUpperCase())) {
+        errors.push('Please enter a valid IFSC code (e.g., SBIN0001234)');
+      }
+    }
+    
+    // Basic UPI ID format validation (optional but if provided)
+    if (data.upiId.trim()) {
+      const upiRegex = /^[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+$/;
+      if (!upiRegex.test(data.upiId.trim())) {
+        errors.push('Please enter a valid UPI ID (e.g., yourname@paytm)');
+      }
+    }
+    
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // Utility function to show validation errors
+  static showValidationErrors(errors: string[]): string {
+    if (errors.length === 0) return '';
+    
+    if (errors.length === 1) {
+      return errors[0];
+    }
+    
+    return `Please fix the following issues:\n\n${errors.map((error, index) => `${index + 1}. ${error}`).join('\n')}`;
+  }
+}
