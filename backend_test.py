@@ -188,8 +188,8 @@ class OnboardingStep2Tester:
             logger.info(f"📍 Next step: {data.get('next_step')}")
             logger.info(f"🔍 Step 1 response data: {data}")
             
-            # Update JWT token if provided
-            if "access_token" in data:
+            # Update JWT token if provided (for new users), otherwise keep existing token
+            if "access_token" in data and data["access_token"]:
                 self.jwt_token = data["access_token"]
                 logger.info("🎫 JWT Token updated for permanent user")
             else:
