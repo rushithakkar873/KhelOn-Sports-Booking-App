@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Backend URL configuration
-BACKEND_URL = "https://venuemate-13.preview.emergentagent.com/api"
+BACKEND_URL = "http://localhost:8001/api"
 
 class OnboardingValidationTester:
     def __init__(self):
