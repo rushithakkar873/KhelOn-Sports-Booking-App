@@ -26,8 +26,8 @@ export default function RegisterScreen() {
     // Venue details for venue owners
     venueName: '',
     venueAddress: '',
-    venueCity: 'Mumbai',
-    venueState: 'Maharashtra',
+    venueCity: '',
+    venueState: '',
     venuePincode: '',
     venueDescription: '',
     venueAmenities: [] as string[],
