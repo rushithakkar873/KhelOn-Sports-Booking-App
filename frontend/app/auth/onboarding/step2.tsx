@@ -159,7 +159,7 @@ export default function OnboardingStep2Screen() {
             operating_days: selectedDays,
             start_time: startTime,
             end_time: endTime,
-            contact_phone: formattedMobile.trim(),
+            contact_phone: OnboardingValidation.formatPhoneNumber(contactPhone.trim()),
           }),
         }
       );
