@@ -130,7 +130,13 @@ class OnboardingStep2Tester:
         if result["success"]:
             logger.info(f"✅ OTP sent successfully: {result['data'].get('message')}")
             if "dev_info" in result["data"]:
-                logger.info(f"🔐 Dev OTP: {result['data']['dev_info']}")
+                # Extract OTP from dev_info (format: "OTP: 123456")
+                dev_info = result["data"]["dev_info"]
+                if "OTP:" in dev_info:
+                    self.received_otp = dev_info.split("OTP:")[1].strip()
+                    logger.info(f"🔐 Dev OTP: {dev_info}")
+                else:
+                    self.received_otp = None
             return True
         else:
             logger.error(f"❌ OTP send failed: {result['data']}")
