@@ -59,6 +59,7 @@ class OnboardingStep2Tester:
         
         self.session = None
         self.jwt_token = None
+        self.received_otp = None
         
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
