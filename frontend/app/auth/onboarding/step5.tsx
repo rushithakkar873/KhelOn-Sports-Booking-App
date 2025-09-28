@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AuthService from '../../../services/authService';
+import { OnboardingValidation } from '../../../utils/validation';
 
 export default function OnboardingStep5Screen() {
   const router = useRouter();
@@ -24,12 +25,99 @@ export default function OnboardingStep5Screen() {
   const [upiId, setUpiId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Field validation states
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
+  const [showErrors, setShowErrors] = useState(false);
+
+  // Validation helper functions
+  const validateField = (fieldName: string, value: string) => {
+    let validation;
+    
+    switch (fieldName) {
+      case 'bankAccountNumber':
+        validation = OnboardingValidation.validateBankAccountNumber(value);
+        break;
+      case 'bankIfsc':
+        validation = OnboardingValidation.validateBankIfsc(value);
+        break;
+      case 'bankAccountHolder':
+        validation = OnboardingValidation.validateBankAccountHolder(value);
+        break;
+      case 'upiId':
+        validation = OnboardingValidation.validateUpiId(value);
+        break;
+      default:
+        validation = { isValid: true, errors: [] };
+    }
+
+    setFieldErrors(prev => ({
+      ...prev,
+      [fieldName]: validation.errors[0] || ''
+    }));
+
+    return validation.isValid;
+  };
+
+  const handleBankAccountChange = (value: string) => {
+    setBankAccountNumber(value);
+    if (showErrors) {
+      validateField('bankAccountNumber', value);
+    }
+  };
+
+  const handleIfscChange = (value: string) => {
+    setBankIfsc(value.toUpperCase());
+    if (showErrors) {
+      validateField('bankIfsc', value);
+    }
+  };
+
+  const handleAccountHolderChange = (value: string) => {
+    setBankAccountHolder(value);
+    if (showErrors) {
+      validateField('bankAccountHolder', value);
+    }
+  };
+
+  const handleUpiIdChange = (value: string) => {
+    setUpiId(value.toLowerCase());
+    if (showErrors) {
+      validateField('upiId', value);
+    }
+  };
+
   const handleDefer = () => {
     // Skip payment setup for now and complete onboarding
     completeOnboarding();
   };
 
   const completeOnboarding = async (withPaymentDetails = false) => {
+    if (withPaymentDetails) {
+      setShowErrors(true);
+
+      // Comprehensive frontend validation
+      const validationData = {
+        bankAccountNumber,
+        bankIfsc,
+        bankAccountHolder,
+        upiId,
+      };
+
+      const validation = OnboardingValidation.validateStep5(validationData);
+      
+      if (!validation.isValid) {
+        Alert.alert('Validation Error', OnboardingValidation.showValidationErrors(validation.errors));
+        
+        // Set individual field errors for visual feedback
+        validateField('bankAccountNumber', bankAccountNumber);
+        validateField('bankIfsc', bankIfsc);
+        validateField('bankAccountHolder', bankAccountHolder);
+        validateField('upiId', upiId);
+        
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
@@ -76,14 +164,6 @@ export default function OnboardingStep5Screen() {
   };
 
   const handleSaveAndComplete = async () => {
-    // Validate required fields if any payment method is provided
-    if (bankAccountNumber.trim() || bankIfsc.trim() || bankAccountHolder.trim()) {
-      if (!bankAccountNumber.trim() || !bankIfsc.trim() || !bankAccountHolder.trim()) {
-        Alert.alert('Error', 'Please fill in all bank details or use UPI only');
-        return;
-      }
-    }
-
     completeOnboarding(true);
   };
 
@@ -128,46 +208,72 @@ export default function OnboardingStep5Screen() {
               
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Account Holder Name</Text>
-                <View style={styles.inputContainer}>
+                <View style={[
+                  styles.inputContainer,
+                  fieldErrors.bankAccountHolder && showErrors && styles.inputContainerError
+                ]}>
                   <Ionicons name="person-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     placeholder="Full name as per bank records"
                     placeholderTextColor="#9ca3af"
                     value={bankAccountHolder}
-                    onChangeText={setBankAccountHolder}
+                    onChangeText={handleAccountHolderChange}
+                    autoCapitalize="words"
                   />
                 </View>
+                {fieldErrors.bankAccountHolder && showErrors && (
+                  <Text style={styles.errorText}>{fieldErrors.bankAccountHolder}</Text>
+                )}
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Account Number</Text>
-                <View style={styles.inputContainer}>
+                <View style={[
+                  styles.inputContainer,
+                  fieldErrors.bankAccountNumber && showErrors && styles.inputContainerError
+                ]}>
                   <Ionicons name="card-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     placeholder="Bank account number"
                     placeholderTextColor="#9ca3af"
                     value={bankAccountNumber}
-                    onChangeText={setBankAccountNumber}
+                    onChangeText={handleBankAccountChange}
                     keyboardType="numeric"
+                    maxLength={18}
                   />
                 </View>
+                {fieldErrors.bankAccountNumber && showErrors && (
+                  <Text style={styles.errorText}>{fieldErrors.bankAccountNumber}</Text>
+                )}
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>IFSC Code</Text>
-                <View style={styles.inputContainer}>
+                <View style={[
+                  styles.inputContainer,
+                  fieldErrors.bankIfsc && showErrors && styles.inputContainerError
+                ]}>
                   <Ionicons name="business-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
-                    placeholder="Bank IFSC code"
+                    placeholder="Bank IFSC code (e.g., SBIN0001234)"
                     placeholderTextColor="#9ca3af"
                     value={bankIfsc}
-                    onChangeText={setBankIfsc}
+                    onChangeText={handleIfscChange}
                     autoCapitalize="characters"
+                    maxLength={11}
                   />
                 </View>
+                {fieldErrors.bankIfsc && showErrors && (
+                  <Text style={styles.errorText}>{fieldErrors.bankIfsc}</Text>
+                )}
+                {!fieldErrors.bankIfsc && bankIfsc.length > 0 && (
+                  <Text style={styles.helperText}>
+                    Format: 4 letters + 0 + 6 digits (e.g., SBIN0001234)
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -182,18 +288,30 @@ export default function OnboardingStep5Screen() {
               
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>UPI ID</Text>
-                <View style={styles.inputContainer}>
+                <View style={[
+                  styles.inputContainer,
+                  fieldErrors.upiId && showErrors && styles.inputContainerError
+                ]}>
                   <Ionicons name="at-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
                     placeholder="your@paytm, your@phonepe, etc."
                     placeholderTextColor="#9ca3af"
                     value={upiId}
-                    onChangeText={setUpiId}
+                    onChangeText={handleUpiIdChange}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    maxLength={50}
                   />
                 </View>
+                {fieldErrors.upiId && showErrors && (
+                  <Text style={styles.errorText}>{fieldErrors.upiId}</Text>
+                )}
+                {!fieldErrors.upiId && upiId.length > 0 && (
+                  <Text style={styles.helperText}>
+                    Format: username@paymentapp (e.g., yourname@paytm)
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -353,6 +471,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
+  inputContainerError: {
+    borderColor: '#ef4444',
+    borderWidth: 2,
+  },
   inputIcon: {
     marginRight: 12,
   },
@@ -360,6 +482,16 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#212529',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 4,
   },
   divider: {
     flexDirection: 'row',
