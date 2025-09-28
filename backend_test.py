@@ -207,6 +207,8 @@ class OnboardingStep2Tester:
             logger.error("❌ No JWT token available for step 2")
             return False
         
+        logger.info(f"🎫 Using JWT token: {self.jwt_token[:50]}...")
+        
         result = await self.make_request("POST", "/onboarding/step2", self.test_venue_data)
         
         if result["success"]:
