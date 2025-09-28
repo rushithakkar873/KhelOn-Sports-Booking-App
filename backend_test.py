@@ -361,13 +361,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-            ) as response:
-                data = await response.json()
-                return {
-                    "success": response.status == 200,
-                    "status_code": response.status,
-                    "data": data
-                }
         except Exception as e:
             return {"success": False, "error": str(e)}
     
