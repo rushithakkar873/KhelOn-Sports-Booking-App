@@ -255,34 +255,32 @@ export default function OnboardingStep3Screen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Price per Slot (₹)</Text>
+              <Text style={styles.label}>Price per Slot (₹) *</Text>
               <View style={styles.priceContainer}>
                 <Text style={styles.currencySymbol}>₹</Text>
-                <View style={styles.priceInputContainer}>
-                  <Text 
+                <View style={[
+                  styles.priceInputContainer,
+                  fieldErrors.pricePerSlot && showErrors && styles.inputContainerError
+                ]}>
+                  <TextInput
                     style={styles.priceInput}
-                    onPress={() => {
-                      Alert.prompt(
-                        'Set Price',
-                        'Enter price per slot:',
-                        (text) => {
-                          if (text && !isNaN(parseFloat(text))) {
-                            setPricePerSlot(text);
-                          }
-                        },
-                        'plain-text',
-                        pricePerSlot
-                      );
-                    }}
-                  >
-                    {pricePerSlot}
-                  </Text>
+                    value={pricePerSlot}
+                    onChangeText={handlePriceChange}
+                    keyboardType="numeric"
+                    placeholder="1000"
+                    placeholderTextColor="#9ca3af"
+                  />
                 </View>
                 <Text style={styles.priceUnit}>per {slotDuration} min</Text>
               </View>
-              <Text style={styles.helperText}>
-                Suggested: ₹{Math.round((parseFloat(pricePerSlot) || 1000) / (slotDuration / 60))}/hour
-              </Text>
+              {fieldErrors.pricePerSlot && showErrors && (
+                <Text style={styles.errorText}>{fieldErrors.pricePerSlot}</Text>
+              )}
+              {!fieldErrors.pricePerSlot && (
+                <Text style={styles.helperText}>
+                  Suggested: ₹{Math.round((parseFloat(pricePerSlot) || 1000) / (slotDuration / 60))}/hour
+                </Text>
+              )}
             </View>
 
             {/* Footer */}
