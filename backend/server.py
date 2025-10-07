@@ -302,21 +302,36 @@ async def verify_otp_and_route(request: OTPVerifyRequest):
 @api_router.get("/auth/profile", response_model=UserResponse)
 async def get_user_profile(current_user: dict = Depends(get_current_user)):
     """Get current user profile"""
+    
+    # Get venue count (from venues collection for new unified schema)
+    venue_count = await db.venues.count_documents({"owner_id": current_user["_id"]})
+    
+    # Get total arenas across all venues for this user  
+    venues = await db.venues.find({"owner_id": current_user["_id"]}).to_list(None)
+    total_arenas = sum(len(venue.get("arenas", [])) for venue in venues)
+    
     return UserResponse(
         id=current_user["_id"],
         mobile=current_user["mobile"],
-        name=current_user["name"],
+        first_name="",  # Not used in unified model
+        last_name="",   # Not used in unified model
+        name=current_user.get("name", ""),
         email=current_user.get("email"),
         role=current_user["role"],
         is_verified=current_user.get("is_verified", False),
-        created_at=current_user["created_at"],
-        sports_interests=current_user.get("sports_interests"),
-        location=current_user.get("location"),
-        business_name=current_user.get("business_name"),
-        business_address=current_user.get("business_address"),
+        onboarding_completed=current_user.get("onboarding_completed", False),
+        completed_steps=current_user.get("completed_steps", []),
+        current_step=current_user.get("current_step", 1),
         gst_number=current_user.get("gst_number"),
-        total_venues=current_user.get("total_venues", 0),
-        total_revenue=current_user.get("total_revenue", 0.0)
+        venue_name=venues[0].get("name") if venues else None,
+        venue_city=venues[0].get("city") if venues else None, 
+        has_venue=venue_count > 0,
+        has_arenas=total_arenas > 0,
+        can_go_live=current_user.get("can_go_live", False),
+        total_arenas=total_arenas,
+        total_bookings=current_user.get("total_bookings", 0),
+        total_revenue=current_user.get("total_revenue", 0.0),
+        created_at=current_user["created_at"]
     )
 
 # ================================
