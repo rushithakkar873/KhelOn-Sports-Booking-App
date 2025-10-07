@@ -179,9 +179,9 @@ class UnifiedAuthService:
                 "user": UserResponse(
                     id=user["_id"],
                     mobile=user["mobile"],
-                    first_name=user.get("first_name", ""),
-                    last_name=user.get("last_name", ""),
-                    name=f"{user.get('first_name', '')} {user.get('last_name', '')}".strip() or user.get("name", ""),
+                    first_name="",  # Not used in new unified model
+                    last_name="",   # Not used in new unified model  
+                    name=user.get("name", ""),
                     email=user.get("email"),
                     role=user["role"],
                     is_verified=user.get("is_verified", False),
