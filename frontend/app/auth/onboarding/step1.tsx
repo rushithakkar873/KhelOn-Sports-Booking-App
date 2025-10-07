@@ -53,8 +53,7 @@ export default function OnboardingStep1Screen() {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
+          name: fullName.trim(),
           email: email.trim() || undefined,
         }),
       });
