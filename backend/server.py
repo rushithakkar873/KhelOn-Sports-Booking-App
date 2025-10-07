@@ -67,7 +67,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     """Get current authenticated user"""
     try:
         token = credentials.credentials
+        # Try unified auth service first, then fallback to legacy
         user = await auth_service.verify_token(token)
+        if user is None:
+            user = await legacy_auth_service.verify_token(token)
+        
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
