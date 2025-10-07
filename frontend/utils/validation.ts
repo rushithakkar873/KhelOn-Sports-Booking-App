@@ -116,27 +116,17 @@ export class OnboardingValidation {
   }
 
   // Step 1 Validation (OnboardingStep1JWTRequest)
-  static validateStep1(firstName: string, lastName: string, email: string): ValidationResult {
+  static validateStep1(fullName: string, email: string): ValidationResult {
     const errors: string[] = [];
     
-    // First name validation (min_length=2, max_length=100)
-    const trimmedFirstName = firstName.trim();
-    if (!trimmedFirstName) {
-      errors.push('First name is required');
-    } else if (trimmedFirstName.length < 2) {
-      errors.push('First name must be at least 2 characters long');
-    } else if (trimmedFirstName.length > 100) {
-      errors.push('First name cannot exceed 100 characters');
-    }
-    
-    // Last name validation (min_length=2, max_length=100)
-    const trimmedLastName = lastName.trim();
-    if (!trimmedLastName) {
-      errors.push('Last name is required');
-    } else if (trimmedLastName.length < 2) {
-      errors.push('Last name must be at least 2 characters long');
-    } else if (trimmedLastName.length > 100) {
-      errors.push('Last name cannot exceed 100 characters');
+    // Full name validation (min_length=2, max_length=100)
+    const trimmedFullName = fullName.trim();
+    if (!trimmedFullName) {
+      errors.push('Full name is required');
+    } else if (trimmedFullName.length < 2) {
+      errors.push('Full name must be at least 2 characters long');
+    } else if (trimmedFullName.length > 100) {
+      errors.push('Full name cannot exceed 100 characters');
     }
     
     // Email validation (Optional EmailStr)
