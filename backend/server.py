@@ -38,7 +38,8 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'playon_db')]
 
 # Initialize services
-auth_service = AuthService(db)
+auth_service = UnifiedAuthService(db)
+legacy_auth_service = AuthService(db)  # Keep for backward compatibility
 security = HTTPBearer()
 
 # Create the main app
