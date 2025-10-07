@@ -1077,13 +1077,7 @@ class VenuePartnerBookingCreate(BaseModel):
             raise ValueError('Invalid Indian mobile number. Format: +91XXXXXXXXXX')
         return v
 
-class VenuePartnerBookingResponse(BaseModel):
-    booking_id: str
-    payment_link: str
-    message: str
-    player_mobile: str
-    total_amount: float
-    sms_status: str
+# VenuePartnerBookingResponse is imported from unified_models
 
 class SMSService:
     """Enhanced SMS service for booking notifications"""
