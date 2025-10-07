@@ -1,0 +1,502 @@
+"""
+Unified Authentication Service for KhelON
+Clean, scalable auth service with progressive onboarding
+"""
+
+import os
+import jwt
+import uuid
+import random
+import string
+import logging
+from datetime import datetime, timedelta
+from typing import Dict, Optional, Any, List
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
+from unified_models import (
+    MobileOTPRequest, OTPVerifyRequest, UserLoginRequest,
+    OnboardingStep1Request, OnboardingStep2Request, OnboardingStep3Request,
+    OnboardingStep4Request, OnboardingStep5Request,
+    UserResponse, OnboardingStatusResponse, CreateArenaRequest
+)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Security configuration
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-change-this')
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+class MockSMSService:
+    """Mock SMS service for OTP verification"""
+    
+    def __init__(self):
+        self.sent_otps = {}
+        
+    async def send_otp(self, mobile_number: str) -> Dict[str, Any]:
+        """Send OTP via mock SMS service"""
+        try:
+            otp_code = ''.join(random.choices(string.digits, k=6))
+            expiry_time = datetime.utcnow() + timedelta(minutes=5)
+            
+            self.sent_otps[mobile_number] = {
+                "otp": otp_code,
+                "expiry": expiry_time,
+                "attempts": 0
+            }
+            
+            logger.info(f"🔐 MOCK SMS: OTP {otp_code} sent to {mobile_number}")
+            
+            return {
+                "success": True,
+                "message": "OTP sent successfully",
+                "request_id": f"mock_{uuid.uuid4().hex[:8]}",
+                "mock_otp": otp_code
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to send OTP: {str(e)}")
+            return {"success": False, "message": "Failed to send OTP"}
+    
+    async def verify_otp(self, mobile_number: str, otp_code: str) -> Dict[str, Any]:
+        """Verify OTP code"""
+        try:
+            stored_data = self.sent_otps.get(mobile_number)
+            
+            if not stored_data:
+                return {
+                    "success": False,
+                    "message": "No OTP found for this number. Please request a new OTP."
+                }
+            
+            if datetime.utcnow() > stored_data["expiry"]:
+                del self.sent_otps[mobile_number]
+                return {
+                    "success": False,
+                    "message": "OTP has expired. Please request a new OTP."
+                }
+            
+            if stored_data["attempts"] >= 3:
+                del self.sent_otps[mobile_number]
+                return {
+                    "success": False,
+                    "message": "Maximum verification attempts exceeded. Please request a new OTP."
+                }
+            
+            self.sent_otps[mobile_number]["attempts"] += 1
+            
+            if stored_data["otp"] == otp_code:
+                del self.sent_otps[mobile_number]
+                return {"success": True, "message": "OTP verified successfully"}
+            else:
+                return {"success": False, "message": "Invalid OTP. Please try again."}
+                
+        except Exception as e:
+            logger.error(f"OTP verification error: {str(e)}")
+            return {"success": False, "message": "Verification failed. Please try again."}
+
+class UnifiedAuthService:
+    """Unified Authentication Service with progressive onboarding"""
+    
+    def __init__(self, db: AsyncIOMotorDatabase):
+        self.db = db
+        self.sms_service = MockSMSService()
+        
+    def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
+        """Create JWT access token"""
+        to_encode = data.copy()
+        if expires_delta:
+            expire = datetime.utcnow() + expires_delta
+        else:
+            expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        
+        to_encode.update({"exp": expire})
+        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
+    
+    async def send_otp(self, mobile: str) -> Dict[str, Any]:
+        """Send OTP to mobile number"""
+        try:
+            result = await self.sms_service.send_otp(mobile)
+            
+            if result["success"]:
+                logger.info(f"OTP sent to {mobile}")
+                return {
+                    "success": True,
+                    "message": result["message"],
+                    "request_id": result["request_id"],
+                    "dev_otp": result.get("mock_otp")  # Development only
+                }
+            else:
+                return result
+                
+        except Exception as e:
+            logger.error(f"Send OTP error: {str(e)}")
+            return {"success": False, "message": "Failed to send OTP"}
+    
+    async def verify_otp_only(self, mobile: str, otp: str) -> Dict[str, Any]:
+        """Verify OTP without login"""
+        return await self.sms_service.verify_otp(mobile, otp)
+    
+    async def login_user(self, login_data: UserLoginRequest) -> Dict[str, Any]:
+        """Login user with mobile + OTP"""
+        try:
+            # Verify OTP first
+            otp_result = await self.sms_service.verify_otp(login_data.mobile, login_data.otp)
+            if not otp_result["success"]:
+                return otp_result
+            
+            # Find user
+            user = await self.db.users.find_one({"mobile": login_data.mobile})
+            if not user:
+                return {
+                    "success": False,
+                    "message": "User not registered. Please register first.",
+                    "user_exists": False
+                }
+            
+            if not user.get("is_active", True):
+                return {"success": False, "message": "Account is deactivated"}
+            
+            # Create access token
+            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token = self.create_access_token(
+                data={"sub": user["_id"], "role": user["role"]},
+                expires_delta=access_token_expires
+            )
+            
+            # Get arena count
+            arena_count = await self.db.arenas.count_documents({"owner_id": user["_id"]})
+            
+            return {
+                "success": True,
+                "message": "Login successful",
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user_exists": True,
+                "user": UserResponse(
+                    id=user["_id"],
+                    mobile=user["mobile"],
+                    first_name=user.get("first_name", ""),
+                    last_name=user.get("last_name", ""),
+                    name=f"{user.get('first_name', '')} {user.get('last_name', '')}".strip() or user.get("name", ""),
+                    email=user.get("email"),
+                    role=user["role"],
+                    is_verified=user.get("is_verified", False),
+                    onboarding_completed=user.get("onboarding_completed", False),
+                    completed_steps=user.get("completed_steps", []),
+                    current_step=user.get("current_step", 1),
+                    business_name=user.get("business_name"),
+                    business_address=user.get("business_address"),
+                    gst_number=user.get("gst_number"),
+                    venue_name=user.get("venue_name"),
+                    venue_city=user.get("venue_city"),
+                    has_venue=bool(user.get("venue_name")),
+                    has_arenas=arena_count > 0,
+                    can_go_live=user.get("can_go_live", False),
+                    total_arenas=arena_count,
+                    total_bookings=user.get("total_bookings", 0),
+                    total_revenue=user.get("total_revenue", 0.0),
+                    created_at=user["created_at"]
+                )
+            }
+            
+        except Exception as e:
+            logger.error(f"Login error: {str(e)}")
+            return {"success": False, "message": "Login failed"}
+    
+    # ================================
+    # PROGRESSIVE ONBOARDING METHODS
+    # ================================
+    
+    async def onboarding_step1(self, step1_data: OnboardingStep1Request) -> Dict[str, Any]:
+        """Step 1: Create user with basic info"""
+        try:
+            # Verify OTP first
+            otp_result = await self.sms_service.verify_otp(step1_data.mobile, step1_data.otp)
+            if not otp_result["success"]:
+                return otp_result
+            
+            # Check if user already exists
+            existing_user = await self.db.users.find_one({"mobile": step1_data.mobile})
+            if existing_user:
+                return {"success": False, "message": "User with this mobile number already exists"}
+            
+            # Create new user
+            user_id = str(uuid.uuid4())
+            computed_name = f"{step1_data.first_name} {step1_data.last_name}"
+            
+            user_doc = {
+                "_id": user_id,
+                "mobile": step1_data.mobile,
+                "first_name": step1_data.first_name,
+                "last_name": step1_data.last_name,
+                "name": computed_name,
+                "email": step1_data.email,
+                "role": step1_data.role,
+                "is_verified": True,
+                
+                # Onboarding progress
+                "onboarding_completed": False,
+                "completed_steps": [1],
+                "current_step": 2,
+                
+                # Business info (optional in step 1)
+                "business_name": step1_data.business_name,
+                "business_address": step1_data.business_address,
+                "gst_number": step1_data.gst_number,
+                
+                # Flags
+                "has_venue": False,
+                "has_arenas": False,
+                "can_go_live": False,
+                "is_active": True,
+                
+                # Stats
+                "total_bookings": 0,
+                "total_revenue": 0.0,
+                
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+            
+            await self.db.users.insert_one(user_doc)
+            
+            # Create access token
+            access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+            access_token = self.create_access_token(
+                data={"sub": user_id, "role": step1_data.role},
+                expires_delta=access_token_expires
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 1 completed successfully",
+                "access_token": access_token,
+                "token_type": "bearer",
+                "next_step": 2,
+                "user_id": user_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 1 error: {str(e)}")
+            return {"success": False, "message": "Step 1 failed"}
+    
+    async def onboarding_step2(self, user_id: str, step2_data: OnboardingStep2Request) -> Dict[str, Any]:
+        """Step 2: Venue basic information"""
+        try:
+            user_update = {
+                "venue_name": step2_data.venue_name,
+                "venue_address": step2_data.address,
+                "venue_city": step2_data.city,
+                "venue_state": step2_data.state,
+                "venue_pincode": step2_data.pincode,
+                "cover_photo": step2_data.cover_photo,
+                "operating_days": step2_data.operating_days,
+                "start_time": step2_data.start_time,
+                "end_time": step2_data.end_time,
+                "contact_phone": step2_data.contact_phone,
+                "completed_steps": [1, 2],
+                "current_step": 3,
+                "has_venue": True,
+                "updated_at": datetime.utcnow()
+            }
+            
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": user_update}
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 2 completed successfully",
+                "next_step": 3
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 2 error: {str(e)}")
+            return {"success": False, "message": "Step 2 failed"}
+    
+    async def onboarding_step3(self, user_id: str, step3_data: OnboardingStep3Request) -> Dict[str, Any]:
+        """Step 3: Create first arena"""
+        try:
+            # Get user info for arena creation
+            user = await self.db.users.find_one({"_id": user_id})
+            if not user:
+                return {"success": False, "message": "User not found"}
+            
+            # Create arena document
+            arena_id = str(uuid.uuid4())
+            arena_name = step3_data.arena_name or f"{step3_data.sport_type} Arena"
+            
+            arena_doc = {
+                "_id": arena_id,
+                "name": arena_name,
+                "sport": step3_data.sport_type,
+                "owner_id": user_id,
+                "venue_name": user.get("venue_name", ""),
+                "capacity": step3_data.capacity,
+                "description": step3_data.description,
+                "amenities": [],  # Will be set in step 4
+                "base_price_per_hour": step3_data.price_per_hour,
+                "images": [],
+                "slots": [],  # Will be populated via UI
+                "is_active": True,
+                "created_at": datetime.utcnow()
+            }
+            
+            await self.db.arenas.insert_one(arena_doc)
+            
+            # Update user progress
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    "completed_steps": [1, 2, 3],
+                    "current_step": 4,
+                    "has_arenas": True,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 3 completed successfully",
+                "arena_id": arena_id,
+                "next_step": 4
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 3 error: {str(e)}")
+            return {"success": False, "message": "Step 3 failed"}
+    
+    async def onboarding_step4(self, user_id: str, step4_data: OnboardingStep4Request) -> Dict[str, Any]:
+        """Step 4: Amenities and rules"""
+        try:
+            # Update user with general amenities and rules
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    "amenities": step4_data.amenities,
+                    "rules": step4_data.rules,
+                    "completed_steps": [1, 2, 3, 4],
+                    "current_step": 5,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            # Update arena with amenities (if arena-specific amenities provided)
+            if step4_data.arena_amenities:
+                # Get the most recent arena for this user
+                arena = await self.db.arenas.find_one(
+                    {"owner_id": user_id},
+                    sort=[("created_at", -1)]
+                )
+                if arena:
+                    await self.db.arenas.update_one(
+                        {"_id": arena["_id"]},
+                        {"$set": {"amenities": step4_data.arena_amenities}}
+                    )
+            else:
+                # Use general amenities for arena
+                arena = await self.db.arenas.find_one(
+                    {"owner_id": user_id},
+                    sort=[("created_at", -1)]
+                )
+                if arena:
+                    await self.db.arenas.update_one(
+                        {"_id": arena["_id"]},
+                        {"$set": {"amenities": step4_data.amenities}}
+                    )
+            
+            return {
+                "success": True,
+                "message": "Step 4 completed successfully",
+                "next_step": 5
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 4 error: {str(e)}")
+            return {"success": False, "message": "Step 4 failed"}
+    
+    async def onboarding_step5(self, user_id: str, step5_data: OnboardingStep5Request) -> Dict[str, Any]:
+        """Step 5: Payment details (optional)"""
+        try:
+            payment_info = {}
+            if step5_data.bank_account_number:
+                payment_info["bank_account_number"] = step5_data.bank_account_number
+            if step5_data.bank_ifsc:
+                payment_info["bank_ifsc"] = step5_data.bank_ifsc
+            if step5_data.bank_account_holder:
+                payment_info["bank_account_holder"] = step5_data.bank_account_holder
+            if step5_data.upi_id:
+                payment_info["upi_id"] = step5_data.upi_id
+            
+            await self.db.users.update_one(
+                {"_id": user_id},
+                {"$set": {
+                    **payment_info,
+                    "completed_steps": [1, 2, 3, 4, 5],
+                    "current_step": 6,
+                    "onboarding_completed": True,
+                    "can_go_live": True,
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            
+            return {
+                "success": True,
+                "message": "Onboarding completed successfully!",
+                "onboarding_completed": True
+            }
+            
+        except Exception as e:
+            logger.error(f"Onboarding Step 5 error: {str(e)}")
+            return {"success": False, "message": "Step 5 failed"}
+    
+    async def get_onboarding_status(self, user_id: str) -> Dict[str, Any]:
+        """Get current onboarding status"""
+        try:
+            user = await self.db.users.find_one({"_id": user_id})
+            if not user:
+                return {"success": False, "message": "User not found"}
+            
+            # Check if user has arenas
+            arena_count = await self.db.arenas.count_documents({"owner_id": user_id})
+            
+            return {
+                "success": True,
+                "status": OnboardingStatusResponse(
+                    user_id=user["_id"],
+                    mobile=user["mobile"],
+                    onboarding_completed=user.get("onboarding_completed", False),
+                    completed_steps=user.get("completed_steps", []),
+                    current_step=user.get("current_step", 1),
+                    has_venue=bool(user.get("venue_name")),
+                    has_arenas=arena_count > 0,
+                    can_go_live=user.get("can_go_live", False)
+                )
+            }
+            
+        except Exception as e:
+            logger.error(f"Get onboarding status error: {str(e)}")
+            return {"success": False, "message": "Failed to get onboarding status"}
+    
+    async def get_user_by_id(self, user_id: str) -> Optional[dict]:
+        """Get user by ID"""
+        return await self.db.users.find_one({"_id": user_id})
+    
+    async def verify_token(self, token: str) -> Optional[dict]:
+        """Verify JWT token and return user"""
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id: str = payload.get("sub")
+            if user_id is None:
+                return None
+            
+            user = await self.get_user_by_id(user_id)
+            return user
+            
+        except jwt.PyJWTError:
+            return None
