@@ -467,67 +467,7 @@ class VenueCreate(BaseModel):
     cancellation_policy: Optional[str] = Field(None, max_length=1000)
     arenas: List[ArenaCreate] = Field(..., min_items=1)  # At least one arena required
 
-class ArenaResponse(BaseModel):
-    id: str
-    name: str
-    sport: str
-    capacity: int
-    description: Optional[str]
-    amenities: List[str]
-    base_price_per_hour: float
-    images: List[str]
-    slots: List[Dict] = []
-    is_active: bool = True
-    created_at: datetime
-
-class VenueResponse(BaseModel):
-    id: str
-    name: str
-    owner_id: str
-    owner_name: str
-    sports_supported: List[str]
-    address: str
-    city: str
-    state: str
-    pincode: str
-    description: Optional[str]
-    amenities: List[str]
-    base_price_per_hour: float
-    contact_phone: str
-    whatsapp_number: Optional[str]
-    images: List[str]
-    rules_and_regulations: Optional[str]
-    cancellation_policy: Optional[str]
-    rating: float = 0.0
-    total_bookings: int = 0
-    total_reviews: int = 0
-    is_active: bool = True
-    arenas: List[ArenaResponse] = []  # Changed from slots to arenas
-    created_at: datetime
-
-class BookingResponse(BaseModel):
-    id: str
-    venue_id: str
-    venue_name: str
-    arena_id: str  # New field for arena identification
-    arena_name: str  # New field for arena name
-    slot_id: str
-    user_id: str
-    user_name: Optional[str] = None
-    booking_date: str
-    start_time: str
-    end_time: str
-    duration_hours: int
-    total_amount: float
-    status: str = "confirmed"  # confirmed, cancelled, completed
-    payment_status: str = "pending"  # pending, paid, failed, refunded
-    payment_id: Optional[str] = None
-    player_name: str
-    player_phone: str
-    sport: str  # Sport being played
-    notes: Optional[str]
-    created_at: datetime
-    updated_at: datetime
+# Response models are now imported from unified_models
 
 @api_router.post("/venue-partner/venues")
 async def create_venue_by_partner(venue_data: VenueCreate, current_partner: dict = Depends(get_current_venue_partner)):
