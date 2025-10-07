@@ -313,11 +313,7 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
 # PROGRESSIVE ONBOARDING ROUTES
 # ================================
 
-# Import onboarding models
-from auth_service import (
-    OnboardingStep1Request, OnboardingStep2Request, OnboardingStep3Request,
-    OnboardingStep4Request, OnboardingStep5Request, OnboardingStatusResponse
-)
+# Onboarding models are now imported from unified_models above
 
 # DEPRECATED: Use /auth/login instead (handles OTP verification + user status)
 @api_router.post("/auth/check-user")
