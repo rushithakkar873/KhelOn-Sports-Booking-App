@@ -20,8 +20,7 @@ export default function OnboardingStep1Screen() {
   const params = useLocalSearchParams();
   const { mobile, otp } = params;
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
