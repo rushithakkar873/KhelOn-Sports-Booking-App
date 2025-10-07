@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Onboarding Step 2 Contact Phone Fix
-Testing the specific fix for contact_phone field formatting in onboarding step 2
+Comprehensive Backend Testing for KhelON Unified Schema Changes
+Testing the unified authentication system and progressive onboarding flow
 """
 
 import asyncio
 import aiohttp
 import json
 import logging
-from datetime import datetime
-from typing import Dict, Any
+import time
+from datetime import datetime, timedelta
+from typing import Dict, Any, Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-class OnboardingStep2Tester:
+# Configuration
+BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+
+class KhelONUnifiedTester:
     def __init__(self):
         # Use internal backend URL for testing
         self.base_url = "http://localhost:8001/api"
