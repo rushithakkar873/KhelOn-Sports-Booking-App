@@ -9,7 +9,13 @@ from pathlib import Path
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
-import razorpay
+
+# Payment gateway (will be properly configured with API keys in production)
+try:
+    import razorpay
+    razorpay_available = True
+except ImportError:
+    razorpay_available = False
 
 # Import our unified models and service
 from unified_models import (
