@@ -9,12 +9,24 @@ from pathlib import Path
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
+import razorpay
+from pydantic import BaseModel
 
-# Import our new auth service
+# Import our unified models and service
+from unified_models import (
+    MobileOTPRequest, OTPVerifyRequest, UserLoginRequest,
+    OnboardingStep1Request, OnboardingStep2Request, OnboardingStep3Request,
+    OnboardingStep4Request, OnboardingStep5Request,
+    UserResponse, ArenaResponse, BookingResponse, OnboardingStatusResponse,
+    CreateArenaRequest, UpdateArenaRequest, CreateBookingRequest,
+    VenuePartnerBookingResponse, AnalyticsDashboardResponse,
+    ArenaSlot
+)
+from unified_auth_service import UnifiedAuthService
+
+# Import legacy support
 from auth_service import (
-    AuthService, MobileOTPRequest, OTPVerifyRequest, UserRegistrationRequest, UserResponse,
-    OnboardingStep1Request, OnboardingStep1JWTRequest, OnboardingStep2Request, OnboardingStep3Request, 
-    OnboardingStep4Request, OnboardingStep5Request, OnboardingStatusResponse
+    AuthService, UserRegistrationRequest
 )
 
 ROOT_DIR = Path(__file__).parent
