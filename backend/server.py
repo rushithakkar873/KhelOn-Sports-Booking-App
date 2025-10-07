@@ -467,7 +467,31 @@ class VenueCreate(BaseModel):
     cancellation_policy: Optional[str] = Field(None, max_length=1000)
     arenas: List[ArenaCreate] = Field(..., min_items=1)  # At least one arena required
 
-# Response models are now imported from unified_models
+# Additional response models not in unified_models
+class VenueResponse(BaseModel):
+    id: str
+    name: str
+    owner_id: str
+    owner_name: str
+    sports_supported: List[str]
+    address: str
+    city: str
+    state: str
+    pincode: str
+    description: Optional[str]
+    amenities: List[str]
+    base_price_per_hour: float
+    contact_phone: str
+    whatsapp_number: Optional[str]
+    images: List[str]
+    rules_and_regulations: Optional[str]
+    cancellation_policy: Optional[str]
+    rating: float = 0.0
+    total_bookings: int = 0
+    total_reviews: int = 0
+    is_active: bool = True
+    arenas: List[ArenaResponse] = []  # Changed from slots to arenas
+    created_at: datetime
 
 @api_router.post("/venue-partner/venues")
 async def create_venue_by_partner(venue_data: VenueCreate, current_partner: dict = Depends(get_current_venue_partner)):
