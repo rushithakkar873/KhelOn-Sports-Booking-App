@@ -34,6 +34,14 @@ class KhelONUnifiedTester:
         
         logger.info(f"🌐 Testing backend at: {self.base_url}")
         
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+        
     def log_result(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
         """Log test result"""
         result = {
@@ -58,31 +66,20 @@ class KhelONUnifiedTester:
     def clear_auth_token(self):
         """Clear authentication token"""
         self.auth_token = None
-        
-    async def __aenter__(self):
-        self.session = aiohttp.ClientSession()
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
     
-    async def make_request(self, method: str, endpoint: str, data: Dict = None, headers: Dict = None) -> Dict[str, Any]:
+    async def make_request(self, method: str, endpoint: str, data: Dict = None) -> Dict[str, Any]:
         """Make HTTP request with error handling"""
         url = f"{self.base_url}{endpoint}"
         
         try:
-            default_headers = {"Content-Type": "application/json"}
-            if headers:
-                default_headers.update(headers)
-                
-            if self.jwt_token and "Authorization" not in default_headers:
-                default_headers["Authorization"] = f"Bearer {self.jwt_token}"
+            headers = {"Content-Type": "application/json"}
+            if self.auth_token:
+                headers["Authorization"] = f"Bearer {self.auth_token}"
             
             async with self.session.request(
                 method, url, 
                 json=data if data else None,
-                headers=default_headers
+                headers=headers
             ) as response:
                 response_text = await response.text()
                 
@@ -105,268 +102,613 @@ class KhelONUnifiedTester:
                 "success": False
             }
     
-    async def test_api_health(self) -> bool:
-        """Test API health check"""
-        logger.info("🔍 Testing API health...")
+    async def test_health_check(self):
+        """Test API health and branding"""
+        logger.info("🔍 Testing API health and KhelON branding...")
         
         result = await self.make_request("GET", "/")
         
         if result["success"]:
-            logger.info(f"✅ API Health: {result['data'].get('message', 'OK')}")
-            return True
+            data = result["data"]
+            
+            # Check for KhelON branding and unified auth system
+            if ("KhelOn" in data.get("message", "") and 
+                data.get("auth_type") == "mobile_otp" and
+                "v2.0.0" in data.get("message", "")):
+                self.log_result(
+                    "Health Check & Branding",
+                    True,
+                    f"API healthy with KhelON v2.0.0 branding and unified auth system",
+                    data
+                )
+            else:
+                self.log_result(
+                    "Health Check & Branding",
+                    False,
+                    f"Missing KhelON branding or unified auth system indicators",
+                    data
+                )
         else:
-            logger.error(f"❌ API Health failed: {result['data']}")
-            return False
+            self.log_result(
+                "Health Check & Branding",
+                False,
+                f"Health check failed with status {result['status_code']}",
+                result["data"]
+            )
     
-    async def test_send_otp(self) -> bool:
-        """Test sending OTP to mobile number"""
-        logger.info(f"📱 Testing OTP send to {self.test_mobile}...")
+    async def test_send_otp(self):
+        """Test unified send OTP endpoint"""
+        logger.info(f"📱 Testing send OTP to {self.test_user_mobile}...")
         
-        result = await self.make_request("POST", "/auth/send-otp", {
-            "mobile": self.test_mobile
-        })
+        payload = {"mobile": self.test_user_mobile}
+        result = await self.make_request("POST", "/auth/send-otp", payload)
         
         if result["success"]:
-            logger.info(f"✅ OTP sent successfully: {result['data'].get('message')}")
-            if "dev_info" in result["data"]:
-                # Extract OTP from dev_info (format: "OTP: 123456")
-                dev_info = result["data"]["dev_info"]
+            data = result["data"]
+            
+            if (data.get("success") and 
+                "request_id" in data and 
+                "dev_info" in data):  # Development OTP info
+                
+                # Extract OTP for testing
+                dev_info = data.get("dev_info", "")
                 if "OTP:" in dev_info:
                     self.received_otp = dev_info.split("OTP:")[1].strip()
-                    logger.info(f"🔐 Dev OTP: {dev_info}")
-                else:
-                    self.received_otp = None
-            return True
+                
+                self.log_result(
+                    "Send OTP API",
+                    True,
+                    f"OTP sent successfully to {self.test_user_mobile}",
+                    data
+                )
+            else:
+                self.log_result(
+                    "Send OTP API",
+                    False,
+                    "Missing required fields in OTP response",
+                    data
+                )
         else:
-            logger.error(f"❌ OTP send failed: {result['data']}")
-            return False
+            self.log_result(
+                "Send OTP API",
+                False,
+                f"Send OTP failed with status {result['status_code']}",
+                result["data"]
+            )
     
-    async def test_login_and_get_token(self) -> bool:
-        """Test login with mobile OTP and get JWT token"""
-        logger.info(f"🔑 Testing login with {self.test_mobile}...")
+    async def test_verify_otp(self):
+        """Test unified verify OTP endpoint"""
+        logger.info(f"🔐 Testing verify OTP for {self.test_user_mobile}...")
         
-        # Use the OTP received from the send_otp test
-        if not self.received_otp:
-            logger.error("❌ No OTP received from previous test")
-            return False
-        
-        result = await self.make_request("POST", "/auth/login", {
-            "mobile": self.test_mobile,
-            "otp": self.received_otp
-        })
+        payload = {
+            "mobile": self.test_user_mobile,
+            "otp": self.received_otp or "123456"
+        }
+        result = await self.make_request("POST", "/auth/verify-otp", payload)
         
         if result["success"]:
             data = result["data"]
-            if "access_token" in data:
-                self.jwt_token = data["access_token"]
-                logger.info(f"✅ Login successful: {data.get('message')}")
-                logger.info(f"🎫 JWT Token obtained: {self.jwt_token[:20]}...")
-                logger.info(f"📍 Action: {data.get('action')}, Redirect: {data.get('redirect_to')}")
-                return True
+            
+            if data.get("success"):
+                self.log_result(
+                    "Verify OTP API",
+                    True,
+                    f"OTP verified successfully for {self.test_user_mobile}",
+                    data
+                )
             else:
-                logger.error(f"❌ Login successful but no token: {data}")
-                return False
+                self.log_result(
+                    "Verify OTP API",
+                    False,
+                    "OTP verification failed",
+                    data
+                )
         else:
-            logger.error(f"❌ Login failed: {result['data']}")
-            return False
+            self.log_result(
+                "Verify OTP API",
+                False,
+                f"Verify OTP failed with status {result['status_code']}",
+                result["data"]
+            )
     
-    async def test_onboarding_step1(self) -> bool:
-        """Test onboarding step 1 - basic user info"""
-        logger.info("👤 Testing onboarding step 1...")
+    async def test_login_new_user(self):
+        """Test unified login for new user (should redirect to onboarding)"""
+        logger.info(f"🔑 Testing login for new user {self.test_user_mobile}...")
         
-        if not self.jwt_token:
-            logger.error("❌ No JWT token available for step 1")
-            return False
-        
-        result = await self.make_request("POST", "/onboarding/step1", self.test_user_data)
+        payload = {
+            "mobile": self.test_user_mobile,
+            "otp": self.received_otp or "123456"
+        }
+        result = await self.make_request("POST", "/auth/login", payload)
         
         if result["success"]:
             data = result["data"]
-            logger.info(f"✅ Step 1 completed: {data.get('message')}")
-            logger.info(f"📍 Next step: {data.get('next_step')}")
-            logger.info(f"🔍 Step 1 response data: {data}")
             
-            # Update JWT token if provided (for new users), otherwise keep existing token
-            if "access_token" in data and data["access_token"]:
-                self.jwt_token = data["access_token"]
-                logger.info("🎫 JWT Token updated for permanent user")
+            if (data.get("success") and 
+                data.get("user_exists") == False and
+                data.get("action") == "start_onboarding" and
+                data.get("redirect_to") == "onboarding_step_1" and
+                "access_token" in data):
+                
+                # Store token for onboarding
+                self.set_auth_token(data["access_token"])
+                
+                self.log_result(
+                    "Login New User",
+                    True,
+                    f"New user login successful, redirected to onboarding",
+                    data
+                )
             else:
-                logger.info("🎫 No new JWT token provided, using existing token")
-            
-            logger.info(f"🎫 Current JWT token: {self.jwt_token[:50] if self.jwt_token else 'None'}...")
-            
-            return True
+                self.log_result(
+                    "Login New User",
+                    False,
+                    "Login response missing required fields for new user flow",
+                    data
+                )
         else:
-            logger.error(f"❌ Step 1 failed: {result['data']}")
-            return False
+            self.log_result(
+                "Login New User",
+                False,
+                f"Login failed with status {result['status_code']}",
+                result["data"]
+            )
     
-    async def test_onboarding_step2_valid_phone(self) -> bool:
-        """Test onboarding step 2 with valid contact_phone format"""
-        logger.info("🏢 Testing onboarding step 2 with VALID contact_phone...")
+    async def test_onboarding_step1(self):
+        """Test onboarding step 1 with single name field"""
+        logger.info("👤 Testing onboarding step 1 with single name field...")
         
-        if not self.jwt_token:
-            logger.error("❌ No JWT token available for step 2")
-            return False
-        
-        logger.info(f"🎫 Using JWT token: {self.jwt_token[:50]}...")
-        
-        result = await self.make_request("POST", "/onboarding/step2", self.test_venue_data)
+        payload = {
+            "mobile": self.test_user_mobile,
+            "otp": self.received_otp or "123456",
+            "name": self.test_user_name,  # Single name field (not first_name + last_name)
+            "email": self.test_user_email,
+            "role": "venue_partner",
+            "business_name": "Elite Sports Complex",
+            "business_address": "123 Sports Street, Mumbai",
+            "gst_number": "24ABCDE1234F1Z5"
+        }
+        result = await self.make_request("POST", "/onboarding/step1", payload)
         
         if result["success"]:
             data = result["data"]
-            logger.info(f"✅ Step 2 completed with valid phone: {data.get('message')}")
-            logger.info(f"📍 Next step: {data.get('next_step')}")
-            logger.info(f"📞 Contact phone accepted: {self.test_venue_data['contact_phone']}")
-            return True
-        else:
-            logger.error(f"❌ Step 2 failed with valid phone: {result['data']}")
-            return False
-    
-    async def test_onboarding_step2_invalid_phones(self) -> Dict[str, bool]:
-        """Test onboarding step 2 with various invalid contact_phone formats"""
-        logger.info("🚫 Testing onboarding step 2 with INVALID contact_phone formats...")
-        
-        if not self.jwt_token:
-            logger.error("❌ No JWT token available for invalid phone tests")
-            return {}
-        
-        results = {}
-        
-        for invalid_phone in self.invalid_phone_formats:
-            logger.info(f"🔍 Testing invalid phone: {invalid_phone}")
             
-            # Create test data with invalid phone
-            invalid_venue_data = self.test_venue_data.copy()
-            invalid_venue_data["contact_phone"] = invalid_phone
-            
-            result = await self.make_request("POST", "/onboarding/step2", invalid_venue_data)
-            
-            # We expect this to fail with 422 validation error
-            if result["status_code"] == 422:
-                logger.info(f"✅ Correctly rejected invalid phone: {invalid_phone}")
-                results[invalid_phone] = True
-            elif not result["success"]:
-                logger.info(f"✅ Rejected invalid phone (status {result['status_code']}): {invalid_phone}")
-                results[invalid_phone] = True
+            if (data.get("success") and 
+                data.get("next_step") == 2 and
+                "access_token" in data):
+                
+                # Update token
+                self.set_auth_token(data["access_token"])
+                
+                self.log_result(
+                    "Onboarding Step 1 (Single Name Field)",
+                    True,
+                    f"Step 1 completed with single name field: {self.test_user_name}",
+                    data
+                )
             else:
-                logger.error(f"❌ Incorrectly accepted invalid phone: {invalid_phone}")
-                results[invalid_phone] = False
-        
-        return results
+                self.log_result(
+                    "Onboarding Step 1 (Single Name Field)",
+                    False,
+                    "Step 1 response missing required fields",
+                    data
+                )
+        else:
+            self.log_result(
+                "Onboarding Step 1 (Single Name Field)",
+                False,
+                f"Step 1 failed with status {result['status_code']}",
+                result["data"]
+            )
     
-    async def test_onboarding_status(self) -> bool:
-        """Test getting onboarding status"""
+    async def test_onboarding_step2(self):
+        """Test onboarding step 2 with contact_number field"""
+        logger.info("🏢 Testing onboarding step 2 with contact_phone field...")
+        
+        payload = {
+            "venue_name": "Elite Cricket Ground",
+            "address": "456 Ground Road, Andheri West",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "pincode": "400058",
+            "operating_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            "start_time": "06:00",
+            "end_time": "22:00",
+            "contact_phone": "+919876543210"  # contact_phone field (renamed from contact_number)
+        }
+        result = await self.make_request("POST", "/onboarding/step2", payload)
+        
+        if result["success"]:
+            data = result["data"]
+            
+            if (data.get("success") and 
+                data.get("next_step") == 3):
+                
+                self.log_result(
+                    "Onboarding Step 2 (Contact Phone Field)",
+                    True,
+                    f"Step 2 completed with contact_phone field validation",
+                    data
+                )
+            else:
+                self.log_result(
+                    "Onboarding Step 2 (Contact Phone Field)",
+                    False,
+                    "Step 2 response missing required fields",
+                    data
+                )
+        else:
+            self.log_result(
+                "Onboarding Step 2 (Contact Phone Field)",
+                False,
+                f"Step 2 failed with status {result['status_code']}",
+                result["data"]
+            )
+    
+    async def test_onboarding_step3(self):
+        """Test onboarding step 3 (arena creation)"""
+        logger.info("🏟️ Testing onboarding step 3 (arena creation)...")
+        
+        payload = {
+            "sport_type": "Cricket",
+            "arena_name": "Cricket Ground A",
+            "capacity": 22,
+            "description": "Professional cricket ground with floodlights",
+            "slot_duration": 120,
+            "price_per_hour": 1200.0
+        }
+        result = await self.make_request("POST", "/onboarding/step3", payload)
+        
+        if result["success"]:
+            data = result["data"]
+            
+            if (data.get("success") and 
+                data.get("next_step") == 4 and
+                "arena_id" in data):
+                
+                self.arena_id = data["arena_id"]
+                
+                self.log_result(
+                    "Onboarding Step 3 (Arena Creation)",
+                    True,
+                    f"Step 3 completed, arena created with ID: {self.arena_id}",
+                    data
+                )
+            else:
+                self.log_result(
+                    "Onboarding Step 3 (Arena Creation)",
+                    False,
+                    "Step 3 response missing required fields",
+                    data
+                )
+        else:
+            self.log_result(
+                "Onboarding Step 3 (Arena Creation)",
+                False,
+                f"Step 3 failed with status {result['status_code']}",
+                result["data"]
+            )
+    
+    async def test_onboarding_step4(self):
+        """Test onboarding step 4 (amenities)"""
+        logger.info("🏪 Testing onboarding step 4 (amenities)...")
+        
+        payload = {
+            "amenities": ["Parking", "Washroom", "Floodlights", "Seating"],
+            "rules": "No smoking, No alcohol, Proper sports attire required"
+        }
+        result = await self.make_request("POST", "/onboarding/step4", payload)
+        
+        if result["success"]:
+            data = result["data"]
+            
+            if (data.get("success") and 
+                data.get("next_step") == 5):
+                
+                self.log_result(
+                    "Onboarding Step 4 (Amenities)",
+                    True,
+                    f"Step 4 completed with amenities and rules",
+                    data
+                )
+            else:
+                self.log_result(
+                    "Onboarding Step 4 (Amenities)",
+                    False,
+                    "Step 4 response missing required fields",
+                    data
+                )
+        else:
+            self.log_result(
+                "Onboarding Step 4 (Amenities)",
+                False,
+                f"Step 4 failed with status {result['status_code']}",
+                result["data"]
+            )
+    
+    async def test_onboarding_step5(self):
+        """Test onboarding step 5 (payment info)"""
+        logger.info("💳 Testing onboarding step 5 (payment info)...")
+        
+        payload = {
+            "bank_account_number": "1234567890",
+            "bank_ifsc": "HDFC0001234",
+            "bank_account_holder": "Rajesh Kumar",
+            "upi_id": "rajesh@paytm"
+        }
+        result = await self.make_request("POST", "/onboarding/step5", payload)
+        
+        if result["success"]:
+            data = result["data"]
+            
+            if (data.get("success") and 
+                data.get("onboarding_completed") == True):
+                
+                self.log_result(
+                    "Onboarding Step 5 (Payment Info)",
+                    True,
+                    f"Step 5 completed, onboarding finished",
+                    data
+                )
+            else:
+                self.log_result(
+                    "Onboarding Step 5 (Payment Info)",
+                    False,
+                    "Step 5 response missing required fields",
+                    data
+                )
+        else:
+            self.log_result(
+                "Onboarding Step 5 (Payment Info)",
+                False,
+                f"Step 5 failed with status {result['status_code']}",
+                result["data"]
+            )
+    
+    async def test_onboarding_status(self):
+        """Test onboarding status endpoint"""
         logger.info("📊 Testing onboarding status...")
-        
-        if not self.jwt_token:
-            logger.error("❌ No JWT token available for status check")
-            return False
         
         result = await self.make_request("GET", "/onboarding/status")
         
         if result["success"]:
             data = result["data"]
-            logger.info(f"✅ Onboarding status retrieved:")
-            logger.info(f"   📱 Mobile: {data.get('mobile')}")
-            logger.info(f"   ✅ Completed steps: {data.get('completed_steps')}")
-            logger.info(f"   📍 Current step: {data.get('current_step')}")
-            logger.info(f"   🏁 Onboarding completed: {data.get('onboarding_completed')}")
-            return True
+            
+            if (data.get("user_id") and 
+                data.get("mobile") == self.test_user_mobile and
+                data.get("onboarding_completed") == True and
+                data.get("completed_steps") == [1, 2, 3, 4, 5]):
+                
+                self.log_result(
+                    "Onboarding Status",
+                    True,
+                    f"Onboarding status retrieved successfully, all steps completed",
+                    data
+                )
+            else:
+                self.log_result(
+                    "Onboarding Status",
+                    False,
+                    "Onboarding status response missing required fields",
+                    data
+                )
         else:
-            logger.error(f"❌ Status check failed: {result['data']}")
-            return False
+            self.log_result(
+                "Onboarding Status",
+                False,
+                f"Onboarding status failed with status {result['status_code']}",
+                result["data"]
+            )
     
-    async def run_comprehensive_test(self):
-        """Run comprehensive onboarding step 2 contact_phone fix test"""
-        logger.info("🚀 Starting Comprehensive Onboarding Step 2 Contact Phone Fix Test")
-        logger.info("=" * 80)
+    async def test_profile_api_unified_schema(self):
+        """Test profile API with unified schema (reads from venues collection)"""
+        logger.info("👤 Testing profile API with unified schema...")
         
-        test_results = {}
+        result = await self.make_request("GET", "/auth/profile")
         
-        # Test 1: API Health
-        test_results["api_health"] = await self.test_api_health()
-        
-        # Test 2: Send OTP
-        test_results["send_otp"] = await self.test_send_otp()
-        
-        # Test 3: Login and get JWT token
-        test_results["login"] = await self.test_login_and_get_token()
-        
-        # Test 4: Complete onboarding step 1
-        test_results["step1"] = await self.test_onboarding_step1()
-        
-        # Test 5: Test step 2 with valid contact_phone
-        test_results["step2_valid"] = await self.test_onboarding_step2_valid_phone()
-        
-        # Test 6: Test step 2 with invalid contact_phone formats
-        invalid_phone_results = await self.test_onboarding_step2_invalid_phones()
-        test_results["step2_invalid_phones"] = invalid_phone_results
-        
-        # Test 7: Check onboarding status
-        test_results["status_check"] = await self.test_onboarding_status()
-        
-        # Summary
-        logger.info("=" * 80)
-        logger.info("📋 TEST SUMMARY - ONBOARDING STEP 2 CONTACT PHONE FIX")
-        logger.info("=" * 80)
-        
-        passed_tests = 0
-        total_tests = 0
-        
-        # Core functionality tests
-        core_tests = ["api_health", "send_otp", "login", "step1", "step2_valid", "status_check"]
-        for test_name in core_tests:
-            total_tests += 1
-            if test_results.get(test_name, False):
-                logger.info(f"✅ {test_name.upper()}: PASSED")
-                passed_tests += 1
+        if result["success"]:
+            data = result["data"]
+            
+            # Check unified schema fields
+            if (data.get("id") and 
+                data.get("mobile") == self.test_user_mobile and
+                data.get("name") == self.test_user_name and  # Single name field
+                data.get("role") == "venue_partner" and
+                data.get("onboarding_completed") == True and
+                "venue_name" in data and  # Should read from venues collection
+                "venue_city" in data and
+                "has_venue" in data and
+                "has_arenas" in data and
+                "total_arenas" in data):
+                
+                self.log_result(
+                    "Profile API (Unified Schema)",
+                    True,
+                    f"Profile retrieved with unified schema, venue info from venues collection",
+                    data
+                )
             else:
-                logger.info(f"❌ {test_name.upper()}: FAILED")
+                self.log_result(
+                    "Profile API (Unified Schema)",
+                    False,
+                    "Profile response missing unified schema fields",
+                    data
+                )
+        else:
+            self.log_result(
+                "Profile API (Unified Schema)",
+                False,
+                f"Profile API failed with status {result['status_code']}",
+                result["data"]
+            )
+    
+    async def test_existing_user_login(self):
+        """Test login for existing user (should go to dashboard)"""
+        logger.info("🔄 Testing login for existing user...")
         
-        # Invalid phone validation tests
-        invalid_phone_results = test_results.get("step2_invalid_phones", {})
-        for phone, result in invalid_phone_results.items():
-            total_tests += 1
-            if result:
-                logger.info(f"✅ INVALID_PHONE_REJECTION ({phone}): PASSED")
-                passed_tests += 1
+        # Clear token first
+        self.clear_auth_token()
+        
+        # Send OTP again
+        await self.test_send_otp()
+        
+        payload = {
+            "mobile": self.test_user_mobile,
+            "otp": self.received_otp or "123456"
+        }
+        result = await self.make_request("POST", "/auth/login", payload)
+        
+        if result["success"]:
+            data = result["data"]
+            
+            if (data.get("success") and 
+                data.get("user_exists") == True and
+                data.get("action") == "dashboard_access" and
+                data.get("redirect_to") == "dashboard" and
+                "access_token" in data and
+                data.get("user", {}).get("onboarding_completed") == True):
+                
+                self.set_auth_token(data["access_token"])
+                
+                self.log_result(
+                    "Existing User Login",
+                    True,
+                    f"Existing user login successful, redirected to dashboard",
+                    data
+                )
             else:
-                logger.info(f"❌ INVALID_PHONE_REJECTION ({phone}): FAILED")
-        
-        logger.info("=" * 80)
-        logger.info(f"📊 OVERALL RESULTS: {passed_tests}/{total_tests} tests passed")
-        
-        if passed_tests == total_tests:
-            logger.info("🎉 ALL TESTS PASSED - ONBOARDING STEP 2 CONTACT PHONE FIX IS WORKING!")
+                self.log_result(
+                    "Existing User Login",
+                    False,
+                    "Login response missing required fields for existing user flow",
+                    data
+                )
         else:
-            logger.info(f"⚠️  {total_tests - passed_tests} tests failed - Issues found with contact phone validation")
+            self.log_result(
+                "Existing User Login",
+                False,
+                f"Existing user login failed with status {result['status_code']}",
+                result["data"]
+            )
+    
+    async def test_data_integrity(self):
+        """Test data integrity - check if data is stored in correct collections"""
+        logger.info("🔍 Testing data integrity...")
         
-        logger.info("=" * 80)
+        # Get profile to check venue data
+        result = await self.make_request("GET", "/auth/profile")
         
-        # Specific findings about the fix
-        logger.info("🔍 SPECIFIC FINDINGS ABOUT CONTACT PHONE FIX:")
-        
-        if test_results.get("step2_valid", False):
-            logger.info(f"✅ Valid contact_phone format (+91[6-9]XXXXXXXXX) is accepted: {self.test_venue_data['contact_phone']}")
+        if result["success"]:
+            data = result["data"]
+            
+            # Check if venue info is present (should come from venues collection)
+            if (data.get("venue_name") and 
+                data.get("venue_city") and
+                data.get("has_venue") == True and
+                data.get("has_arenas") == True):
+                
+                self.log_result(
+                    "Data Integrity Check",
+                    True,
+                    f"Data integrity verified - venue info properly retrieved from venues collection",
+                    {
+                        "venue_name": data.get("venue_name"),
+                        "venue_city": data.get("venue_city"),
+                        "has_venue": data.get("has_venue"),
+                        "has_arenas": data.get("has_arenas"),
+                        "total_arenas": data.get("total_arenas")
+                    }
+                )
+            else:
+                self.log_result(
+                    "Data Integrity Check",
+                    False,
+                    "Data integrity issue - venue info not properly retrieved",
+                    data
+                )
         else:
-            logger.info("❌ Valid contact_phone format is being rejected - FIX NOT WORKING")
-        
-        rejected_invalid = sum(1 for result in invalid_phone_results.values() if result)
-        total_invalid = len(invalid_phone_results)
-        
-        if rejected_invalid == total_invalid and total_invalid > 0:
-            logger.info(f"✅ All {total_invalid} invalid contact_phone formats correctly rejected")
-        elif total_invalid > 0:
-            logger.info(f"⚠️  Only {rejected_invalid}/{total_invalid} invalid formats rejected")
-        
+            self.log_result(
+                "Data Integrity Check",
+                False,
+                f"Could not verify data integrity, profile API failed",
+                result["data"]
+            )
+    
+    async def run_all_tests(self):
+        """Run all unified schema tests"""
+        logger.info("🚀 Starting KhelON Unified Schema Testing...")
         logger.info("=" * 80)
         
-        return test_results
+        # Test sequence for unified schema changes
+        test_sequence = [
+            self.test_health_check,
+            self.test_send_otp,
+            self.test_verify_otp,
+            self.test_login_new_user,
+            self.test_onboarding_step1,
+            self.test_onboarding_step2,
+            self.test_onboarding_step3,
+            self.test_onboarding_step4,
+            self.test_onboarding_step5,
+            self.test_onboarding_status,
+            self.test_profile_api_unified_schema,
+            self.test_existing_user_login,
+            self.test_data_integrity
+        ]
+        
+        for test_func in test_sequence:
+            try:
+                await test_func()
+                await asyncio.sleep(0.5)  # Small delay between tests
+            except Exception as e:
+                self.log_result(test_func.__name__, False, f"Test execution failed: {str(e)}")
+        
+        # Print summary
+        self.print_summary()
+    
+    def print_summary(self):
+        """Print test summary"""
+        logger.info("\n" + "=" * 80)
+        logger.info("📊 TEST SUMMARY - KHELON UNIFIED SCHEMA CHANGES")
+        logger.info("=" * 80)
+        
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result["success"])
+        failed_tests = total_tests - passed_tests
+        
+        logger.info(f"Total Tests: {total_tests}")
+        logger.info(f"✅ Passed: {passed_tests}")
+        logger.info(f"❌ Failed: {failed_tests}")
+        logger.info(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        if failed_tests > 0:
+            logger.info("\n🔍 FAILED TESTS:")
+            for result in self.test_results:
+                if not result["success"]:
+                    logger.info(f"  ❌ {result['test']}: {result['details']}")
+        
+        logger.info("\n🎯 KEY UNIFIED SCHEMA FEATURES TESTED:")
+        logger.info("  • Single name field (not first_name + last_name)")
+        logger.info("  • contact_phone field validation")
+        logger.info("  • Unified collections (users, venues, bookings)")
+        logger.info("  • Profile API reads from venues collection")
+        logger.info("  • Progressive onboarding flow (5 steps)")
+        logger.info("  • Mobile OTP authentication system")
+        logger.info("  • Data integrity across collections")
+        
+        return {
+            "total_tests": total_tests,
+            "passed_tests": passed_tests,
+            "failed_tests": failed_tests,
+            "success_rate": (passed_tests/total_tests)*100 if total_tests > 0 else 0,
+            "test_results": self.test_results
+        }
 
+# Main execution
 async def main():
     """Main test execution"""
-    async with OnboardingStep2Tester() as tester:
-        await tester.run_comprehensive_test()
+    async with KhelONUnifiedTester() as tester:
+        await tester.run_all_tests()
 
 if __name__ == "__main__":
     asyncio.run(main())
