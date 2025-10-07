@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Configuration - Use the correct backend URL from frontend/.env
-BASE_URL = "https://khelon-booking.preview.emergentagent.com/api"
+BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Generate unique mobile number based on timestamp (valid Indian format)

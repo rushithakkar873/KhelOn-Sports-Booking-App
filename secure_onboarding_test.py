@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Backend URL from frontend/.env
-BACKEND_URL = "https://sports-book.preview.emergentagent.com/api"
+BACKEND_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
 
 class SecureOnboardingTester:
     def __init__(self):
