@@ -20,50 +20,44 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
 
 class KhelONUnifiedTester:
+    """Comprehensive tester for KhelON unified schema changes"""
+    
     def __init__(self):
-        # Use internal backend URL for testing
-        self.base_url = "http://localhost:8001/api"
+        self.base_url = BASE_URL
+        self.session = None
+        self.test_results = []
+        self.auth_token = None
+        self.test_user_mobile = "+919876543210"
+        self.test_user_name = "Rajesh Kumar"
+        self.test_user_email = "rajesh.kumar@example.com"
+        self.received_otp = None
         
         logger.info(f"🌐 Testing backend at: {self.base_url}")
         
-        # Test data
-        self.test_mobile = "+919876543210"
-        self.test_user_data = {
-            "first_name": "Rajesh",
-            "last_name": "Kumar",
-            "email": "rajesh.kumar@example.com"
+    def log_result(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
+        """Log test result"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat(),
+            "response_data": response_data
         }
+        self.test_results.append(result)
         
-        # Test venue data with properly formatted contact_phone
-        self.test_venue_data = {
-            "venue_name": "Elite Sports Complex",
-            "address": "456 Ground Road, Andheri West",
-            "city": "Mumbai",
-            "state": "Maharashtra", 
-            "pincode": "400058",
-            "cover_photo": None,
-            "operating_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-            "start_time": "06:00",
-            "end_time": "22:00",
-            "contact_phone": "+919876543210"  # Properly formatted phone number
-        }
+        status = "✅ PASS" if success else "❌ FAIL"
+        logger.info(f"{status} {test_name}: {details}")
         
-        # Invalid contact_phone formats to test validation
-        self.invalid_phone_formats = [
-            "9876543210",           # Missing +91
-            "+919876543",           # Too short
-            "+9198765432100",       # Too long
-            "+915876543210",        # Invalid first digit (5)
-            "+91abcd543210",        # Contains letters
-            "+92876543210",         # Wrong country code
-            "919876543210",         # Missing +
-            "+91 9876543210",       # Contains space
-            "+91-9876543210",       # Contains dash
-        ]
-        
-        self.session = None
-        self.jwt_token = None
-        self.received_otp = None
+        if not success and response_data:
+            logger.info(f"   Response: {json.dumps(response_data, indent=2)}")
+    
+    def set_auth_token(self, token: str):
+        """Set authentication token for subsequent requests"""
+        self.auth_token = token
+    
+    def clear_auth_token(self):
+        """Clear authentication token"""
+        self.auth_token = None
         
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
