@@ -97,9 +97,9 @@ class OnboardingStep5Request(BaseModel):
 class UserResponse(BaseModel):
     id: str
     mobile: str
-    first_name: str
-    last_name: str
-    name: str  # Computed: first_name + last_name
+    first_name: str  # Kept for backward compatibility, but unused in new model
+    last_name: str   # Kept for backward compatibility, but unused in new model
+    name: str        # Single name field (the source of truth)
     email: Optional[str]
     role: str
     is_verified: bool
@@ -109,9 +109,7 @@ class UserResponse(BaseModel):
     completed_steps: List[int]
     current_step: int
     
-    # Business info (for venue partners)
-    business_name: Optional[str] = None
-    business_address: Optional[str] = None
+    # Business info (for venue partners) - Simplified
     gst_number: Optional[str] = None
     
     # Venue info (for venue partners)
