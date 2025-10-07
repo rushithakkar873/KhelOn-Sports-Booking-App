@@ -26,7 +26,7 @@ from unified_auth_service import UnifiedAuthService
 
 # Import legacy support
 from auth_service import (
-    AuthService, UserRegistrationRequest
+    AuthService, UserRegistrationRequest, OnboardingStep1JWTRequest
 )
 
 ROOT_DIR = Path(__file__).parent
