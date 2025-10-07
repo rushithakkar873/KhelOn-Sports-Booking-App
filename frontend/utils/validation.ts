@@ -25,31 +25,16 @@ export class OnboardingValidation {
   }
 
   // Individual field validation for Step 1
-  static validateFirstName(firstName: string): ValidationResult {
+  static validateFullName(fullName: string): ValidationResult {
     const errors: string[] = [];
-    const trimmed = firstName.trim();
+    const trimmed = fullName.trim();
     
     if (!trimmed) {
-      errors.push('First name is required');
+      errors.push('Full name is required');
     } else if (trimmed.length < 2) {
-      errors.push('First name must be at least 2 characters long');
+      errors.push('Full name must be at least 2 characters long');
     } else if (trimmed.length > 100) {
-      errors.push('First name cannot exceed 100 characters');
-    }
-    
-    return { isValid: errors.length === 0, errors };
-  }
-
-  static validateLastName(lastName: string): ValidationResult {
-    const errors: string[] = [];
-    const trimmed = lastName.trim();
-    
-    if (!trimmed) {
-      errors.push('Last name is required');
-    } else if (trimmed.length < 2) {
-      errors.push('Last name must be at least 2 characters long');
-    } else if (trimmed.length > 100) {
-      errors.push('Last name cannot exceed 100 characters');
+      errors.push('Full name cannot exceed 100 characters');
     }
     
     return { isValid: errors.length === 0, errors };
