@@ -226,14 +226,10 @@ class UnifiedAuthService:
             
             # Create new user
             user_id = str(uuid.uuid4())
-            computed_name = f"{step1_data.first_name} {step1_data.last_name}"
-            
             user_doc = {
                 "_id": user_id,
                 "mobile": step1_data.mobile,
-                "first_name": step1_data.first_name,
-                "last_name": step1_data.last_name,
-                "name": computed_name,
+                "name": step1_data.name,
                 "email": step1_data.email,
                 "role": step1_data.role,
                 "is_verified": True,
