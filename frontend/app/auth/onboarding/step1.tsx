@@ -114,31 +114,16 @@ export default function OnboardingStep1Screen() {
             </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>First Name *</Text>
+                  <Text style={styles.label}>Full Name *</Text>
                   <View style={styles.inputContainer}>
                     <Ionicons name="person-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
                     <TextInput
                       style={styles.input}
-                      placeholder="Enter your first name"
+                      placeholder="Enter your full name"
                       placeholderTextColor="#9ca3af"
-                      value={firstName}
-                      onChangeText={setFirstName}
-                      autoComplete="given-name"
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Last Name *</Text>
-                  <View style={styles.inputContainer}>
-                    <Ionicons name="person-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter your last name"
-                      placeholderTextColor="#9ca3af"
-                      value={lastName}
-                      onChangeText={setLastName}
-                      autoComplete="family-name"
+                      value={fullName}
+                      onChangeText={setFullName}
+                      autoComplete="name"
                     />
                   </View>
                 </View>
