@@ -28,7 +28,7 @@ export default function OnboardingStep1Screen() {
 
   const handleSaveAndContinue = async () => {
     // Comprehensive frontend validation
-    const validation = OnboardingValidation.validateStep1(firstName, lastName, email);
+    const validation = OnboardingValidation.validateStep1(fullName, email);
     
     if (!validation.isValid) {
       Alert.alert('Validation Error', OnboardingValidation.showValidationErrors(validation.errors));
