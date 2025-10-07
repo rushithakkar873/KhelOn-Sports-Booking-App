@@ -483,6 +483,23 @@ class UnifiedAuthService:
         """Get user by ID"""
         return await self.db.users.find_one({"_id": user_id})
     
+    async def get_user_by_mobile(self, mobile: str) -> Optional[dict]:
+        """Get user by mobile number"""
+        return await self.db.users.find_one({"mobile": mobile})
+    
+    async def create_temp_user(self, mobile: str) -> str:
+        """Create temporary user for onboarding process"""
+        temp_user_id = str(uuid.uuid4())
+        temp_user = {
+            "_id": temp_user_id,
+            "mobile": mobile,
+            "role": "venue_partner",
+            "is_temp": True,
+            "created_at": datetime.utcnow()
+        }
+        await self.db.temp_users.insert_one(temp_user)
+        return temp_user_id
+    
     async def verify_token(self, token: str) -> Optional[dict]:
         """Verify JWT token and return user"""
         try:
