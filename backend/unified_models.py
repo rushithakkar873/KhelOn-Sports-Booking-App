@@ -44,8 +44,7 @@ class OnboardingStep1Request(BaseModel):
     """Step 1: Basic user information"""
     mobile: str = Field(..., pattern=r'^\+91[6-9]\d{9}$')
     otp: str = Field(..., min_length=6, max_length=6)
-    first_name: str = Field(..., min_length=2, max_length=100)
-    last_name: str = Field(..., min_length=2, max_length=100)
+    name: str = Field(..., min_length=2, max_length=100)
     email: Optional[EmailStr] = None
     role: str = Field(..., pattern="^(venue_partner)$")  # Only venue partners use onboarding
     
