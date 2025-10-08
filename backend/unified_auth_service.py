@@ -529,8 +529,9 @@ class UnifiedAuthService:
             return {"success": False, "message": "Step 4 failed"}
     
     async def onboarding_step5(self, user_id: str, step5_data: OnboardingStep5Request) -> Dict[str, Any]:
-        """Step 5: Payment details (optional)"""
+        """Step 5: Add payment information to user (Unified Schema)"""
         try:
+            # Prepare payment info according to unified schema
             payment_info = {}
             if step5_data.bank_account_number:
                 payment_info["bank_account_number"] = step5_data.bank_account_number
@@ -541,6 +542,7 @@ class UnifiedAuthService:
             if step5_data.upi_id:
                 payment_info["upi_id"] = step5_data.upi_id
             
+            # Complete onboarding - update user with final data
             await self.db.users.update_one(
                 {"_id": user_id},
                 {"$set": {
@@ -555,7 +557,7 @@ class UnifiedAuthService:
             
             return {
                 "success": True,
-                "message": "Onboarding completed successfully!",
+                "message": "Onboarding completed successfully! Your venue is now ready to go live.",
                 "onboarding_completed": True
             }
             
