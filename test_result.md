@@ -391,6 +391,18 @@ frontend:
         agent: "testing"
         comment: "ONBOARDING VALIDATION TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of Pydantic validation for onboarding steps 3, 4, and 5 completed with all validation rules working perfectly as requested in review. ✅ STEP 3 VALIDATION (Arena/Sport Configuration) - All 11 test cases passed: sport_type validation (min_length=2, max_length=50), number_of_courts validation (ge=1, le=20), slot_duration validation (ge=30, le=240 minutes), price_per_slot validation (ge=0), proper 422 validation errors for invalid data, ✅ STEP 4 VALIDATION (Amenities and Rules) - All 6 test cases passed: amenities array validation (accepts empty list, rejects non-list types), rules text validation (optional field, no max_length constraint), proper type checking for amenities field, ✅ STEP 5 VALIDATION (Payment Details) - All 7 test cases passed: bank details validation (all optional fields), UPI ID validation (optional field, no format constraints), empty payment details accepted (payment is optional), no business logic validation required for payment fields, ✅ AUTHENTICATION & FLOW - JWT token authentication working correctly, existing user with completed steps 1 and 2 detected, onboarding status API working properly, ✅ VALIDATION ACCURACY - All Pydantic Field constraints working correctly: string length validation, integer range validation, float range validation, list type validation, optional field handling. Created comprehensive onboarding_validation_test.py with 24 test scenarios covering all validation rules. All 24/24 test cases passed with 100% success rate. Backend validation is production-ready and properly rejects invalid data while accepting valid data according to Pydantic model specifications."
 
+  - task: "Onboarding Step1 422 Error Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "ONBOARDING STEP1 FIX TESTING COMPLETED SUCCESSFULLY: The critical 422 Unprocessable Entity error for POST /api/onboarding/step1 has been completely resolved. ✅ UNIFIED SYSTEM APPROACH IMPLEMENTED - Created OnboardingStep1JWTRequest model in unified_models.py with correct field structure (single name field, optional email, optional business fields), ✅ JWT-PROTECTED ENDPOINT WORKING - POST /api/onboarding/step1 now uses JWT authentication and OnboardingStep1JWTRequest model, no OTP verification needed at this step, ✅ FIELD ALIGNMENT VERIFIED - Frontend payload {name: 'Rajesh Kumar', email: 'rajesh@example.com'} matches backend model expectations perfectly, ✅ COMPLETE FLOW TESTED - Full authentication flow working: send OTP (+919876543211) → login with OTP → get JWT token → onboarding step1 with JWT → success (200 OK), ✅ PROGRESSIVE ONBOARDING FUNCTIONAL - Step 1 completion properly tracked (completed_steps: [1], current_step: 2), step 2 continuation working, user profile showing unified schema data, ✅ NO MORE 422 ERRORS - Comprehensive testing with 7 test scenarios, all passed with 100% success rate, backend logs show 'POST /api/onboarding/step1 HTTP/1.1 200 OK'. The main fix requested in review (resolving 422 error for step1 with unified field structure) is working correctly and production-ready."
+
   - task: "Onboarding API Validation Testing"
     implemented: true
     working: true
