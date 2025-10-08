@@ -341,13 +341,6 @@ if __name__ == "__main__":
     tester = OnboardingStep1Tester()
     success = tester.run_comprehensive_test()
     exit(0 if success else 1)
-            "timestamp": datetime.now().isoformat(),
-            "response_data": response_data
-        }
-        self.test_results.append(result)
-        
-        status = "✅ PASS" if success else "❌ FAIL"
-        logger.info(f"{status} {test_name}: {details}")
         
         if not success and response_data:
             logger.info(f"   Response: {json.dumps(response_data, indent=2)}")
