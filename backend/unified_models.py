@@ -41,12 +41,22 @@ class UserLoginRequest(BaseModel):
 # ================================
 
 class OnboardingStep1Request(BaseModel):
-    """Step 1: Basic user information"""
+    """Step 1: Basic user information (with OTP verification)"""
     mobile: str = Field(..., pattern=r'^\+91[6-9]\d{9}$')
     otp: str = Field(..., min_length=6, max_length=6)
     name: str = Field(..., min_length=2, max_length=100)
     email: Optional[EmailStr] = None
     role: str = Field(..., pattern="^(venue_partner)$")  # Only venue partners use onboarding
+    
+    # Optional business info (can be filled in step 1 or later)
+    business_name: Optional[str] = Field(None, min_length=2, max_length=200)
+    business_address: Optional[str] = Field(None, min_length=10, max_length=500)
+    gst_number: Optional[str] = Field(None, max_length=20)
+
+class OnboardingStep1JWTRequest(BaseModel):
+    """Step 1: JWT-Protected Basic user information (no OTP needed)"""
+    name: str = Field(..., min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
     
     # Optional business info (can be filled in step 1 or later)
     business_name: Optional[str] = Field(None, min_length=2, max_length=200)
