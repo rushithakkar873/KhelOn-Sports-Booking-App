@@ -634,14 +634,15 @@ class AuthService:
                         "message": "User not found"
                     }
                 
-                # Update existing user's basic info
+                # Update existing user's basic info (unified schema)
                 await self.db.users.update_one(
                     {"_id": current_user_id},
                     {"$set": {
-                        "first_name": step1_data.first_name,
-                        "last_name": step1_data.last_name,
-                        "name": f"{step1_data.first_name} {step1_data.last_name}",
+                        "name": step1_data.name,  # Single name field (unified schema)
                         "email": step1_data.email if hasattr(step1_data, 'email') else existing_user.get("email"),
+                        "business_name": getattr(step1_data, 'business_name', existing_user.get("business_name")),
+                        "business_address": getattr(step1_data, 'business_address', existing_user.get("business_address")),
+                        "gst_number": getattr(step1_data, 'gst_number', existing_user.get("gst_number")),
                         "completed_steps": list(set(existing_user.get("completed_steps", []) + [1])),
                         "current_step": 2,
                         "updated_at": datetime.utcnow()
