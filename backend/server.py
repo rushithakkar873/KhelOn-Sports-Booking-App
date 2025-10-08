@@ -328,6 +328,7 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
         has_venue=venue_count > 0,
         has_arenas=total_arenas > 0,
         can_go_live=current_user.get("can_go_live", False),
+        total_venues=venue_count,
         total_arenas=total_arenas,
         total_bookings=current_user.get("total_bookings", 0),
         total_revenue=current_user.get("total_revenue", 0.0),
