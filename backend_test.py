@@ -13,7 +13,8 @@ from typing import Dict, Any, Optional
 
 # Test Configuration
 BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
-TEST_MOBILE = "+919876543210"
+import random
+TEST_MOBILE = f"+9198765432{random.randint(10, 99)}"
 TEST_USER_DATA = {
     "name": "Rajesh Kumar",
     "email": "rajesh@example.com",
