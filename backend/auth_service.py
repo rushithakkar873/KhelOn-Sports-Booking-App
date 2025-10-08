@@ -571,23 +571,38 @@ class AuthService:
                         "message": "User with this mobile number already exists"
                     }
                 
-                # Create new permanent user with basic info
+                # Create new permanent user with basic info (unified schema)
                 user_id = str(uuid.uuid4())
                 user_doc = {
                     "_id": user_id,
                     "mobile": mobile,
-                    "first_name": step1_data.first_name,
-                    "last_name": step1_data.last_name,
-                    "name": f"{step1_data.first_name} {step1_data.last_name}",
+                    "name": step1_data.name,  # Single name field (unified schema)
                     "email": step1_data.email if hasattr(step1_data, 'email') else None,
                     "role": "venue_partner",
                     "is_verified": True,
+                    
+                    # Business info (optional in step 1)
+                    "business_name": getattr(step1_data, 'business_name', None),
+                    "business_address": getattr(step1_data, 'business_address', None),
+                    "gst_number": getattr(step1_data, 'gst_number', None),
+                    
+                    # Onboarding progress
                     "onboarding_completed": False,
                     "completed_steps": [1],
                     "current_step": 2,
+                    
+                    # Flags
+                    "has_venue": False,
+                    "has_arenas": False,
+                    "can_go_live": False,
+                    "is_active": True,
+                    
+                    # Stats
+                    "total_bookings": 0,
+                    "total_revenue": 0.0,
+                    
                     "created_at": datetime.utcnow(),
-                    "updated_at": datetime.utcnow(),
-                    "is_active": True
+                    "updated_at": datetime.utcnow()
                 }
                 
                 await self.db.users.insert_one(user_doc)
