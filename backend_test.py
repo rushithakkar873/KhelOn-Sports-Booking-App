@@ -90,10 +90,10 @@ class OnboardingStep1Tester:
     def test_login_with_otp(self):
         """Test 3: Login with mobile + OTP to get JWT token"""
         try:
-            # Use mock OTP for testing
+            # Use the actual OTP received from send_otp
             payload = {
                 "mobile": TEST_MOBILE,
-                "otp": "123456"  # Mock OTP
+                "otp": self.received_otp or "123456"  # Use received OTP or fallback
             }
             response = self.session.post(f"{BASE_URL}/auth/login", json=payload)
             
