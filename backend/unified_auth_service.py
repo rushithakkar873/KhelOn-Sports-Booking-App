@@ -334,33 +334,79 @@ class UnifiedAuthService:
             return {"success": False, "message": "Step 1 failed"}
     
     async def onboarding_step2(self, user_id: str, step2_data: OnboardingStep2Request) -> Dict[str, Any]:
-        """Step 2: Venue basic information"""
+        """Step 2: Create venue with empty arenas array (Unified Schema)"""
         try:
-            user_update = {
-                "venue_name": step2_data.venue_name,
-                "venue_address": step2_data.address,
-                "venue_city": step2_data.city,
-                "venue_state": step2_data.state,
-                "venue_pincode": step2_data.pincode,
-                "cover_photo": step2_data.cover_photo,
+            # Get user info
+            user = await self.db.users.find_one({"_id": user_id})
+            if not user:
+                return {"success": False, "message": "User not found"}
+            
+            # Create venue document according to unified schema
+            venue_id = str(uuid.uuid4())
+            venue_doc = {
+                "_id": venue_id,
+                "name": step2_data.venue_name,
+                "owner_id": user_id,
+                "owner_name": user.get("name", ""),
+                
+                # Venue basic info
+                "address": step2_data.address,
+                "city": step2_data.city,
+                "state": step2_data.state,
+                "pincode": step2_data.pincode,
+                "description": "",  # Will be set later if needed
+                
+                # Operational info
+                "contact_number": step2_data.contact_phone,  # Renamed from contact_phone
+                "whatsapp_number": step2_data.contact_phone,  # Default to same as contact
                 "operating_days": step2_data.operating_days,
                 "start_time": step2_data.start_time,
                 "end_time": step2_data.end_time,
-                "contact_phone": step2_data.contact_phone,
-                "completed_steps": [1, 2],
-                "current_step": 3,
-                "has_venue": True,
+                
+                # Venue amenities & policies (will be set in step 4)
+                "amenities": [],
+                "rules": "",
+                "cancellation_policy": "24 hours advance notice required",
+                
+                # Media
+                "cover_photo": step2_data.cover_photo if step2_data.cover_photo else "",
+                "images": [],
+                
+                # Empty arenas array (will be populated in step 3)
+                "arenas": [],
+                
+                # Computed fields
+                "sports_supported": [],  # Will be computed from arenas
+                
+                # Statistics
+                "rating": 0.0,
+                "total_bookings": 0,
+                "total_reviews": 0,
+                
+                # Status
+                "is_active": True,
+                "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow()
             }
             
+            # Insert venue
+            await self.db.venues.insert_one(venue_doc)
+            
+            # Update user onboarding progress and venue count
             await self.db.users.update_one(
                 {"_id": user_id},
-                {"$set": user_update}
+                {"$set": {
+                    "completed_steps": [1, 2],
+                    "current_step": 3,
+                    "total_venues": 1,  # First venue
+                    "updated_at": datetime.utcnow()
+                }}
             )
             
             return {
                 "success": True,
                 "message": "Step 2 completed successfully",
+                "venue_id": venue_id,
                 "next_step": 3
             }
             
