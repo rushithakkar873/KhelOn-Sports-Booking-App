@@ -479,43 +479,44 @@ class UnifiedAuthService:
             return {"success": False, "message": "Step 3 failed"}
     
     async def onboarding_step4(self, user_id: str, step4_data: OnboardingStep4Request) -> Dict[str, Any]:
-        """Step 4: Amenities and rules"""
+        """Step 4: Update venue amenities and rules (Unified Schema)"""
         try:
-            # Update user with general amenities and rules
+            # Get user's venue
+            venue = await self.db.venues.find_one({"owner_id": user_id})
+            if not venue:
+                return {"success": False, "message": "Venue not found"}
+            
+            # Update venue with amenities and rules
+            venue_update = {
+                "amenities": step4_data.amenities,
+                "rules": step4_data.rules or "Please follow venue guidelines",
+                "updated_at": datetime.utcnow()
+            }
+            
+            await self.db.venues.update_one(
+                {"_id": venue["_id"]},
+                {"$set": venue_update}
+            )
+            
+            # Update arena amenities (arena-specific or use venue amenities)
+            arena_amenities = getattr(step4_data, 'arena_amenities', None) or step4_data.amenities
+            
+            # Update the first arena's amenities (since we only have one arena at this point)
+            if venue.get("arenas") and len(venue["arenas"]) > 0:
+                await self.db.venues.update_one(
+                    {"_id": venue["_id"], "arenas.0._id": venue["arenas"][0]["_id"]},
+                    {"$set": {"arenas.0.amenities": arena_amenities}}
+                )
+            
+            # Update user progress
             await self.db.users.update_one(
                 {"_id": user_id},
                 {"$set": {
-                    "amenities": step4_data.amenities,
-                    "rules": step4_data.rules,
                     "completed_steps": [1, 2, 3, 4],
                     "current_step": 5,
                     "updated_at": datetime.utcnow()
                 }}
             )
-            
-            # Update arena with amenities (if arena-specific amenities provided)
-            if step4_data.arena_amenities:
-                # Get the most recent arena for this user
-                arena = await self.db.arenas.find_one(
-                    {"owner_id": user_id},
-                    sort=[("created_at", -1)]
-                )
-                if arena:
-                    await self.db.arenas.update_one(
-                        {"_id": arena["_id"]},
-                        {"$set": {"amenities": step4_data.arena_amenities}}
-                    )
-            else:
-                # Use general amenities for arena
-                arena = await self.db.arenas.find_one(
-                    {"owner_id": user_id},
-                    sort=[("created_at", -1)]
-                )
-                if arena:
-                    await self.db.arenas.update_one(
-                        {"_id": arena["_id"]},
-                        {"$set": {"amenities": step4_data.amenities}}
-                    )
             
             return {
                 "success": True,
