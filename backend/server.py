@@ -358,8 +358,8 @@ async def check_user_exists(request: MobileOTPRequest):
 async def onboarding_step1(request: OnboardingStep1JWTRequest, current_user: dict = Depends(get_current_user)):
     """Progressive Onboarding Step 1: Basic partner details (JWT Protected)"""
     
-    # Ensure this is a temp user or new onboarding user
-    if not current_user.get("temp") and current_user.get("onboarding_completed"):
+    # Ensure onboarding is not already completed
+    if current_user.get("onboarding_completed"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Onboarding already completed"
