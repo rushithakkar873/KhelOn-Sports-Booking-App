@@ -217,7 +217,7 @@ async def login_user(request: OTPVerifyRequest):
             # Generate JWT token for onboarding process
             access_token_expires = timedelta(minutes=60)  # 1 hour for onboarding
             access_token = auth_service.create_access_token(
-                data={"sub": temp_user_id, "role": "venue_partner", "temp": True},
+                data={"sub": temp_user_id, "role": "venue_partner"},
                 expires_delta=access_token_expires
             )
             
