@@ -11,7 +11,7 @@ from datetime import datetime
 
 # Configuration
 BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
-TEST_MOBILE = "+919876543210"
+TEST_MOBILE = "+919876543211"  # Use different number for fresh test
 TEST_NAME = "Rajesh Kumar"
 TEST_EMAIL = "rajesh@example.com"
 
