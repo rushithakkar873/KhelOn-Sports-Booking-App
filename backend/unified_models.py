@@ -130,6 +130,7 @@ class UserResponse(BaseModel):
     can_go_live: Optional[bool] = False
     
     # Stats
+    total_venues: Optional[int] = 0
     total_arenas: Optional[int] = 0
     total_bookings: Optional[int] = 0
     total_revenue: Optional[float] = 0.0
