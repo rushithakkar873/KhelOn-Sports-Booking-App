@@ -648,7 +648,7 @@ async def get_partner_venues(
                     capacity=arena.get("capacity", 1),
                     description="Migrated from old slot system",
                     amenities=[],
-                    base_price_per_hour=arena.get("price_per_hour", venue["base_price_per_hour"]),
+                    base_price_per_hour=arena.get("price_per_hour", venue.get("base_price_per_hour", 1000)),
                     images=[],
                     slots=[arena],  # Single slot becomes arena's slot
                     is_active=arena.get("is_active", True),
