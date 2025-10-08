@@ -602,17 +602,37 @@ class UnifiedAuthService:
         return await self.db.users.find_one({"mobile": mobile})
     
     async def create_temp_user(self, mobile: str) -> str:
-        """Create temporary user for onboarding process"""
-        temp_user_id = str(uuid.uuid4())
-        temp_user = {
-            "_id": temp_user_id,
+        """Create user directly in users collection (no temp_users) - Unified Schema"""
+        user_id = str(uuid.uuid4())
+        user_doc = {
+            "_id": user_id,
             "mobile": mobile,
+            "name": "",  # Will be filled in step 1
+            "email": None,
             "role": "venue_partner",
-            "is_temp": True,
-            "created_at": datetime.utcnow()
+            "is_verified": True,  # Mobile verified via OTP
+            
+            # Onboarding progress
+            "onboarding_completed": False,
+            "completed_steps": [],
+            "current_step": 1,
+            
+            # Flags
+            "has_venue": False,
+            "has_arenas": False,
+            "can_go_live": False,
+            "is_active": True,
+            
+            # Stats (initialize)
+            "total_venues": 0,
+            "total_bookings": 0,
+            "total_revenue": 0.0,
+            
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
         }
-        await self.db.temp_users.insert_one(temp_user)
-        return temp_user_id
+        await self.db.users.insert_one(user_doc)
+        return user_id
     
     async def verify_token(self, token: str) -> Optional[dict]:
         """Verify JWT token and return user"""
