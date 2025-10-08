@@ -643,6 +643,8 @@ async def get_partner_venues(
                     id=arena["_id"],
                     name=f"Arena {len(arena_responses) + 1}",
                     sport=venue["sports_supported"][0] if venue["sports_supported"] else "General",
+                    owner_id=venue["owner_id"],
+                    venue_name=venue["name"],
                     capacity=arena.get("capacity", 1),
                     description="Migrated from old slot system",
                     amenities=[],
