@@ -668,7 +668,7 @@ async def get_partner_venues(
             description=venue.get("description"),
             amenities=venue.get("amenities", []),
             base_price_per_hour=venue.get("base_price_per_hour", 1000),
-            contact_phone=venue["contact_phone"],
+            contact_phone=venue.get("contact_number", venue.get("contact_phone", "")),
             whatsapp_number=venue.get("whatsapp_number"),
             images=venue.get("images", []),
             rules_and_regulations=venue.get("rules_and_regulations"),
