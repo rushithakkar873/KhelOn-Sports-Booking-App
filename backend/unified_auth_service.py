@@ -415,34 +415,46 @@ class UnifiedAuthService:
             return {"success": False, "message": "Step 2 failed"}
     
     async def onboarding_step3(self, user_id: str, step3_data: OnboardingStep3Request) -> Dict[str, Any]:
-        """Step 3: Create first arena"""
+        """Step 3: Add first arena to venue (Unified Schema)"""
         try:
-            # Get user info for arena creation
-            user = await self.db.users.find_one({"_id": user_id})
-            if not user:
-                return {"success": False, "message": "User not found"}
+            # Get user's venue (created in step 2)
+            venue = await self.db.venues.find_one({"owner_id": user_id})
+            if not venue:
+                return {"success": False, "message": "Venue not found. Please complete step 2 first."}
             
-            # Create arena document
+            # Create arena according to unified schema (embedded in venue)
             arena_id = str(uuid.uuid4())
             arena_name = step3_data.arena_name or f"{step3_data.sport_type} Arena"
             
-            arena_doc = {
+            # Calculate price per slot based on slot duration and hourly rate
+            slot_duration_hours = step3_data.slot_duration / 60  # Convert minutes to hours
+            base_price_per_slot = step3_data.price_per_hour * slot_duration_hours
+            
+            arena_data = {
                 "_id": arena_id,
                 "name": arena_name,
                 "sport": step3_data.sport_type,
-                "owner_id": user_id,
-                "venue_name": user.get("venue_name", ""),
                 "capacity": step3_data.capacity,
-                "description": step3_data.description,
+                "description": step3_data.description or f"Professional {step3_data.sport_type} arena",
                 "amenities": [],  # Will be set in step 4
-                "base_price_per_hour": step3_data.price_per_hour,
+                "base_price_per_slot": base_price_per_slot,  # Per slot pricing (unified schema)
                 "images": [],
-                "slots": [],  # Will be populated via UI
+                "slots": [],  # Will be populated via UI later
                 "is_active": True,
                 "created_at": datetime.utcnow()
             }
             
-            await self.db.arenas.insert_one(arena_doc)
+            # Add arena to venue's arenas array
+            await self.db.venues.update_one(
+                {"_id": venue["_id"]},
+                {
+                    "$push": {"arenas": arena_data},
+                    "$set": {
+                        "sports_supported": [step3_data.sport_type],  # First sport
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
             
             # Update user progress
             await self.db.users.update_one(
@@ -450,7 +462,6 @@ class UnifiedAuthService:
                 {"$set": {
                     "completed_steps": [1, 2, 3],
                     "current_step": 4,
-                    "has_arenas": True,
                     "updated_at": datetime.utcnow()
                 }}
             )
@@ -459,6 +470,7 @@ class UnifiedAuthService:
                 "success": True,
                 "message": "Step 3 completed successfully",
                 "arena_id": arena_id,
+                "venue_id": venue["_id"],
                 "next_step": 4
             }
             
