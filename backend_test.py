@@ -20,6 +20,7 @@ class OnboardingStep1Tester:
         self.session = requests.Session()
         self.jwt_token = None
         self.user_id = None
+        self.received_otp = None
         
     def log_test(self, test_name, status, details=""):
         """Log test results"""
