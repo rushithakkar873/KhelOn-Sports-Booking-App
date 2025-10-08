@@ -20,7 +20,7 @@ except ImportError:
 # Import our unified models and service
 from unified_models import (
     MobileOTPRequest, OTPVerifyRequest, UserLoginRequest,
-    OnboardingStep1Request, OnboardingStep2Request, OnboardingStep3Request,
+    OnboardingStep1Request, OnboardingStep1JWTRequest, OnboardingStep2Request, OnboardingStep3Request,
     OnboardingStep4Request, OnboardingStep5Request,
     UserResponse, ArenaResponse, BookingResponse, OnboardingStatusResponse,
     CreateArenaRequest, UpdateArenaRequest, CreateBookingRequest,
