@@ -627,6 +627,8 @@ async def get_partner_venues(
                     id=arena["_id"],
                     name=arena["name"],
                     sport=arena["sport"],
+                    owner_id=venue["owner_id"],
+                    venue_name=venue["name"],
                     capacity=arena["capacity"],
                     description=arena.get("description"),
                     amenities=arena.get("amenities", []),
