@@ -212,106 +212,50 @@ class UnifiedAuthService:
     # ================================
     
     async def onboarding_step1_jwt(self, step1_data, current_user_id: str) -> Dict[str, Any]:
-        """Step 1: Basic user info (JWT authenticated - no OTP needed)"""
+        """Step 1: Basic user info (JWT authenticated - Clean Unified Schema)"""
         try:
-            # For temp users (new registrations), create permanent user
-            if current_user_id and await self.db.temp_users.find_one({"_id": current_user_id}):
-                # Get temp user data
-                temp_user = await self.db.temp_users.find_one({"_id": current_user_id})
-                mobile = temp_user["mobile"]
-                
-                # Check if user already exists in permanent users table
-                existing_user = await self.db.users.find_one({"mobile": mobile})
-                if existing_user:
-                    return {
-                        "success": False,
-                        "message": "User with this mobile number already exists"
-                    }
-                
-                # Create new permanent user with basic info (using single name field)
-                user_id = str(uuid.uuid4())
-                user_doc = {
-                    "_id": user_id,
-                    "mobile": mobile,
-                    "name": step1_data.name,  # Single name field (unified schema)
-                    "email": step1_data.email if hasattr(step1_data, 'email') else None,
-                    "role": "venue_partner",
-                    "is_verified": True,
-                    
-                    # Business info (optional in step 1)
-                    "business_name": getattr(step1_data, 'business_name', None),
-                    "business_address": getattr(step1_data, 'business_address', None),
-                    "gst_number": getattr(step1_data, 'gst_number', None),
-                    
-                    # Onboarding progress
-                    "onboarding_completed": False,
-                    "completed_steps": [1],
-                    "current_step": 2,
-                    
-                    # Flags
-                    "has_venue": False,
-                    "has_arenas": False,
-                    "can_go_live": False,
-                    "is_active": True,
-                    
-                    # Stats
-                    "total_bookings": 0,
-                    "total_revenue": 0.0,
-                    
-                    "created_at": datetime.utcnow(),
-                    "updated_at": datetime.utcnow()
-                }
-                
-                await self.db.users.insert_one(user_doc)
-                
-                # Clean up temp user
-                await self.db.temp_users.delete_one({"_id": current_user_id})
-                
-                # Create new access token for permanent user
-                access_token_expires = timedelta(minutes=1440)  # 24 hours
-                access_token = self.create_access_token(
-                    data={"sub": user_id, "role": "venue_partner"},
-                    expires_delta=access_token_expires
-                )
-                
+            # Get existing user (should exist from login)
+            existing_user = await self.db.users.find_one({"_id": current_user_id})
+            if not existing_user:
                 return {
-                    "success": True,
-                    "message": "Step 1 completed successfully",
-                    "access_token": access_token,
-                    "token_type": "bearer",
-                    "user_id": user_id,
-                    "next_step": 2
+                    "success": False,
+                    "message": "User not found"
                 }
-            else:
-                # For existing users completing remaining onboarding steps
-                existing_user = await self.db.users.find_one({"_id": current_user_id})
-                if not existing_user:
-                    return {
-                        "success": False,
-                        "message": "User not found"
-                    }
+            
+            # Update user with step 1 data according to unified schema
+            update_data = {
+                "name": step1_data.name,  # Single name field
+                "email": step1_data.email if step1_data.email else existing_user.get("email"),
+                "gst_number": getattr(step1_data, 'gst_number', None),  # Only GST for tax compliance
                 
-                # Update existing user's basic info (using single name field)
-                await self.db.users.update_one(
-                    {"_id": current_user_id},
-                    {"$set": {
-                        "name": step1_data.name,  # Single name field (unified schema)
-                        "email": step1_data.email if hasattr(step1_data, 'email') else existing_user.get("email"),
-                        "business_name": getattr(step1_data, 'business_name', existing_user.get("business_name")),
-                        "business_address": getattr(step1_data, 'business_address', existing_user.get("business_address")),
-                        "gst_number": getattr(step1_data, 'gst_number', existing_user.get("gst_number")),
-                        "completed_steps": list(set(existing_user.get("completed_steps", []) + [1])),
-                        "current_step": 2,
-                        "updated_at": datetime.utcnow()
-                    }}
-                )
+                # Onboarding progress
+                "completed_steps": [1],
+                "current_step": 2,
+                "onboarding_completed": False,
                 
-                return {
-                    "success": True,
-                    "message": "Step 1 completed successfully",
-                    "user_id": current_user_id,
-                    "next_step": 2
-                }
+                # Flags
+                "is_active": True,
+                "can_go_live": False,
+                
+                # Stats (initialize)
+                "total_venues": 0,
+                "total_bookings": 0,
+                "total_revenue": 0.0,
+                
+                "updated_at": datetime.utcnow()
+            }
+            
+            await self.db.users.update_one(
+                {"_id": current_user_id},
+                {"$set": update_data}
+            )
+            
+            return {
+                "success": True,
+                "message": "Step 1 completed successfully",
+                "user_id": current_user_id,
+                "next_step": 2
+            }
                 
         except Exception as e:
             logger.error(f"Onboarding Step 1 JWT error: {str(e)}")
