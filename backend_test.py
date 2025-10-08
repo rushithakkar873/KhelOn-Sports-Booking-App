@@ -329,11 +329,17 @@ class UnifiedOnboardingTester:
     async def test_existing_user_login(self):
         """Test login for existing user (should go to dashboard)"""
         # Send OTP again for existing user
-        await self.make_request("POST", "/auth/send-otp", {"mobile": TEST_MOBILE})
+        otp_response = await self.make_request("POST", "/auth/send-otp", {"mobile": TEST_MOBILE})
+        
+        if otp_response["success"] and otp_response["data"].get("success"):
+            # Get fresh OTP
+            fresh_otp = otp_response["data"]["dev_info"].split(": ")[1] if ": " in otp_response["data"]["dev_info"] else "123456"
+        else:
+            fresh_otp = "123456"
         
         response = await self.make_request("POST", "/auth/login", {
             "mobile": TEST_MOBILE,
-            "otp": self.otp_code
+            "otp": fresh_otp
         })
         
         if response["success"]:
