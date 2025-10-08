@@ -64,10 +64,16 @@ class OnboardingStep1Tester:
             if response.status_code == 200:
                 data = response.json()
                 if data.get("success") and "request_id" in data:
+                    # Extract OTP from dev_info
+                    if "dev_info" in data:
+                        dev_info = data["dev_info"]
+                        if "OTP:" in dev_info:
+                            self.received_otp = dev_info.split("OTP:")[1].strip()
+                        print(f"    Development OTP: {data['dev_info']}")
+                        print(f"    Extracted OTP: {self.received_otp}")
+                    
                     self.log_test("Send OTP", "PASS", 
                                 f"OTP sent successfully. Request ID: {data['request_id']}")
-                    if "dev_info" in data:
-                        print(f"    Development OTP: {data['dev_info']}")
                     return True
                 else:
                     self.log_test("Send OTP", "FAIL", f"Unexpected response: {data}")
