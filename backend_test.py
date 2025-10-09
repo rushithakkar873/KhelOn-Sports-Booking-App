@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Unified Onboarding System
-Testing the complete reimplemented onboarding flow according to unified schema
+Comprehensive Backend Testing for KhelON Onboarding Step 3 Multi-Arena Functionality
+Testing the updated onboarding step 3 API with new multi-arena functionality
 """
 
 import asyncio
 import aiohttp
 import json
 import sys
+import uuid
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 # Test Configuration
 BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
