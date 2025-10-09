@@ -280,12 +280,12 @@ export default function OnboardingStep3Screen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Slot Duration</Text>
-              <View style={styles.pickerContainer}>
+              <Text style={styles.label}>Slot Duration *</Text>
+              <View style={styles.dropdownContainer}>
                 <Picker
                   selectedValue={slotDuration}
                   onValueChange={(itemValue) => setSlotDuration(itemValue)}
-                  style={styles.picker}
+                  style={styles.modernPicker}
                 >
                   {SLOT_DURATIONS.map((duration) => (
                     <Picker.Item 
@@ -296,6 +296,9 @@ export default function OnboardingStep3Screen() {
                   ))}
                 </Picker>
               </View>
+              <Text style={styles.helperText}>
+                How long each booking slot should be
+              </Text>
             </View>
 
             <View style={styles.inputGroup}>
