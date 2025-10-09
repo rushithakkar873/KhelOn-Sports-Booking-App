@@ -40,10 +40,22 @@ export default function OnboardingStep3Screen() {
   const [slotDuration, setSlotDuration] = useState(60);
   const [pricePerSlot, setPricePerSlot] = useState('1000');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSportDropdown, setShowSportDropdown] = useState(false);
 
   // Field validation states
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [showErrors, setShowErrors] = useState(false);
+
+  // Generate arena names based on sport and court count
+  const generateArenaNames = () => {
+    const suffix = selectedSport === 'Cricket' ? 'Turf' : 
+                   selectedSport === 'Football' ? 'Field' : 'Court';
+    
+    return Array.from({ length: numberOfCourts }, (_, i) => ({
+      name: `${selectedSport} ${suffix} ${i + 1}`,
+      id: `${selectedSport.toLowerCase()}_${i + 1}`
+    }));
+  };
 
   const incrementCourts = () => {
     if (numberOfCourts < 20) {
