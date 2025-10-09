@@ -77,13 +77,12 @@ class OnboardingStep2Request(BaseModel):
     contact_phone: str = Field(..., pattern=r'^\+91[6-9]\d{9}$')
 
 class OnboardingStep3Request(BaseModel):
-    """Step 3: Arena/Sport configuration"""
+    """Step 3: Arena/Sport configuration with multi-arena support"""
     sport_type: str = Field(..., min_length=2, max_length=50)
-    arena_name: Optional[str] = Field(None, max_length=200)  # Custom arena name
-    capacity: int = Field(..., ge=1, le=50)
-    description: Optional[str] = Field(None, max_length=500)
+    number_of_courts: int = Field(..., ge=1, le=20)
     slot_duration: int = Field(..., ge=30, le=240)  # minutes
-    price_per_hour: float = Field(..., ge=0)
+    price_per_slot: float = Field(..., ge=0)
+    arena_names: Optional[List[Dict[str, str]]] = []  # [{"name": "Cricket Turf 1", "id": "cricket_1"}]
 
 class OnboardingStep4Request(BaseModel):
     """Step 4: Amenities and rules"""
