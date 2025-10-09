@@ -134,6 +134,8 @@ export default function OnboardingStep3Screen() {
 
     try {
       const token = authService.getToken();
+      const generatedArenas = generateArenaNames();
+      
       const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/onboarding/step3`, {
         method: 'POST',
         headers: {
@@ -145,6 +147,7 @@ export default function OnboardingStep3Screen() {
           number_of_courts: numberOfCourts,
           slot_duration: slotDuration,
           price_per_slot: parseFloat(pricePerSlot),
+          arena_names: generatedArenas, // Send generated arena names to backend
         }),
       });
 
