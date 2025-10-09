@@ -292,12 +292,12 @@ const styles = StyleSheet.create({
   inputContainerDisabled: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#e5f3ff',
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 56,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: '#60a5fa',
   },
   inputIcon: {
     marginRight: 12,
