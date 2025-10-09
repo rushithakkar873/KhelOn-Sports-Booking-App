@@ -415,42 +415,63 @@ class UnifiedAuthService:
             return {"success": False, "message": "Step 2 failed"}
     
     async def onboarding_step3(self, user_id: str, step3_data: OnboardingStep3Request) -> Dict[str, Any]:
-        """Step 3: Add first arena to venue (Unified Schema)"""
+        """Step 3: Create multiple arenas based on sport and court count"""
         try:
             # Get user's venue (created in step 2)
             venue = await self.db.venues.find_one({"owner_id": user_id})
             if not venue:
                 return {"success": False, "message": "Venue not found. Please complete step 2 first."}
             
-            # Create arena according to unified schema (embedded in venue)
-            arena_id = str(uuid.uuid4())
-            arena_name = step3_data.arena_name or f"{step3_data.sport_type} Arena"
+            # Validate arena count matches number of courts
+            if step3_data.arena_names and len(step3_data.arena_names) != step3_data.number_of_courts:
+                return {
+                    "success": False, 
+                    "message": f"Arena count mismatch. Expected {step3_data.number_of_courts} arenas, got {len(step3_data.arena_names)}"
+                }
             
-            # Calculate price per slot based on slot duration and hourly rate
-            slot_duration_hours = step3_data.slot_duration / 60  # Convert minutes to hours
-            base_price_per_slot = step3_data.price_per_hour * slot_duration_hours
+            # Generate arena names if not provided by frontend
+            arena_names_to_use = step3_data.arena_names or self._generate_arena_names(
+                step3_data.sport_type, 
+                step3_data.number_of_courts
+            )
             
-            arena_data = {
-                "_id": arena_id,
-                "name": arena_name,
-                "sport": step3_data.sport_type,
-                "capacity": step3_data.capacity,
-                "description": step3_data.description or f"Professional {step3_data.sport_type} arena",
-                "amenities": [],  # Will be set in step 4
-                "base_price_per_slot": base_price_per_slot,  # Per slot pricing (unified schema)
-                "images": [],
-                "slots": [],  # Will be populated via UI later
-                "is_active": True,
-                "created_at": datetime.utcnow()
-            }
+            # Create multiple arenas
+            created_arenas = []
+            arena_ids = []
             
-            # Add arena to venue's arenas array
+            for i, arena_info in enumerate(arena_names_to_use):
+                arena_id = str(uuid.uuid4())
+                arena_name = arena_info.get("name", f"{step3_data.sport_type} Arena {i + 1}")
+                
+                # Default capacity based on sport type
+                default_capacity = self._get_default_capacity(step3_data.sport_type)
+                
+                arena_data = {
+                    "_id": arena_id,
+                    "name": arena_name,
+                    "sport": step3_data.sport_type,
+                    "capacity": default_capacity,
+                    "description": f"Professional {step3_data.sport_type} arena with modern facilities",
+                    "amenities": [],  # Will be set in step 4
+                    "base_price_per_slot": step3_data.price_per_slot,  # Direct slot pricing
+                    "images": [],
+                    "slots": [],  # Will be populated via UI later
+                    "is_active": True,
+                    "created_at": datetime.utcnow()
+                }
+                
+                created_arenas.append(arena_data)
+                arena_ids.append(arena_id)
+            
+            # Add all arenas to venue
             await self.db.venues.update_one(
                 {"_id": venue["_id"]},
                 {
-                    "$push": {"arenas": arena_data},
+                    "$push": {"arenas": {"$each": created_arenas}},
                     "$set": {
-                        "sports_supported": [step3_data.sport_type],  # First sport
+                        "sports_supported": [step3_data.sport_type],  # Update supported sports
+                        "base_price_per_hour": step3_data.price_per_slot * (60 / step3_data.slot_duration),  # Calculate hourly rate
+                        "slot_duration": step3_data.slot_duration,
                         "updated_at": datetime.utcnow()
                     }
                 }
@@ -468,15 +489,17 @@ class UnifiedAuthService:
             
             return {
                 "success": True,
-                "message": "Step 3 completed successfully",
-                "arena_id": arena_id,
+                "message": f"Step 3 completed successfully. Created {len(created_arenas)} arenas.",
+                "arena_ids": arena_ids,
                 "venue_id": venue["_id"],
+                "arenas_created": len(created_arenas),
+                "sport_type": step3_data.sport_type,
                 "next_step": 4
             }
             
         except Exception as e:
             logger.error(f"Onboarding Step 3 error: {str(e)}")
-            return {"success": False, "message": "Step 3 failed"}
+            return {"success": False, "message": f"Step 3 failed: {str(e)}"}
     
     async def onboarding_step4(self, user_id: str, step4_data: OnboardingStep4Request) -> Dict[str, Any]:
         """Step 4: Update venue amenities and rules (Unified Schema)"""
