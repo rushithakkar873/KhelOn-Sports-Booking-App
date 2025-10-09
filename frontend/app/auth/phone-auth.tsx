@@ -45,6 +45,52 @@ export default function PhoneAuthScreen() {
     return () => clearInterval(interval);
   }, [countdown]);
 
+  // Handle OTP input changes
+  const handleOtpChange = (value: string, index: number) => {
+    const newOtpDigits = [...otpDigits];
+    newOtpDigits[index] = value;
+    setOtpDigits(newOtpDigits);
+    
+    // Update the main OTP state
+    const fullOtp = newOtpDigits.join('');
+    setOtp(fullOtp);
+
+    // Auto-focus next field
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // Handle OTP backspace
+  const handleOtpKeyPress = (key: string, index: number) => {
+    if (key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Handle paste functionality
+  const handleOtpPaste = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 6).split('');
+    const newOtpDigits = [...otpDigits];
+    
+    digits.forEach((digit, index) => {
+      if (index < 6) {
+        newOtpDigits[index] = digit;
+      }
+    });
+    
+    setOtpDigits(newOtpDigits);
+    setOtp(newOtpDigits.join(''));
+    
+    // Focus the next empty field or last field
+    const nextEmptyIndex = newOtpDigits.findIndex(digit => !digit);
+    if (nextEmptyIndex !== -1 && nextEmptyIndex < 6) {
+      otpRefs.current[nextEmptyIndex]?.focus();
+    } else {
+      otpRefs.current[5]?.focus();
+    }
+  };
+
   const handleSendOTP = async () => {
     const formattedMobile = AuthService.formatIndianMobile(mobile);
 
