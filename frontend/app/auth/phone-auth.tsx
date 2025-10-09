@@ -543,4 +543,33 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 18,
   },
+  otpLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#212529",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  otpContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
+  },
+  otpInput: {
+    width: 48,
+    height: 56,
+    borderWidth: 2,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    backgroundColor: "#f9fafb",
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#212529",
+  },
+  otpInputFilled: {
+    borderColor: "#212529",
+    backgroundColor: "#ffffff",
+  },
 });
