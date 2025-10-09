@@ -415,65 +415,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
     overflow: 'hidden',
   },
-  dropdownHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    minHeight: 56,
-  },
-  dropdownText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#212529',
-    marginLeft: 12,
-  },
-  dropdownOptions: {
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  dropdownOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  dropdownOptionSelected: {
-    backgroundColor: '#f0f9ff',
-  },
-  dropdownOptionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#212529',
-    marginBottom: 2,
-  },
-  dropdownOptionTextSelected: {
-    color: '#1d4ed8',
-    fontWeight: '600',
-  },
-  dropdownOptionPrice: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  arenaPreview: {
-    backgroundColor: '#f0f9ff',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
-  },
-  arenaPreviewTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1d4ed8',
-    marginBottom: 8,
-  },
-  arenaPreviewItem: {
-    fontSize: 14,
-    color: '#374151',
-    marginBottom: 4,
-  },
   counterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
