@@ -310,23 +310,38 @@ export default function PhoneAuthScreen() {
                 ) : (
                   <>
                     <View style={styles.inputGroup}>
-                      <View style={styles.inputContainer}>
-                        <Ionicons
-                          name="shield-checkmark-outline"
-                          size={20}
-                          color="#9ca3af"
-                          style={styles.inputIcon}
-                        />
-                        <TextInput
-                          style={styles.input}
-                          placeholder="Enter 6-digit OTP"
-                          placeholderTextColor="#9ca3af"
-                          value={otp}
-                          onChangeText={setOtp}
-                          keyboardType="number-pad"
-                          maxLength={6}
-                          autoComplete="sms-otp"
-                        />
+                      <Text style={styles.otpLabel}>Enter Verification Code</Text>
+                      <View style={styles.otpContainer}>
+                        {otpDigits.map((digit, index) => (
+                          <TextInput
+                            key={index}
+                            ref={(ref) => {
+                              if (ref) otpRefs.current[index] = ref;
+                            }}
+                            style={[
+                              styles.otpInput,
+                              digit && styles.otpInputFilled,
+                            ]}
+                            value={digit}
+                            onChangeText={(value) => {
+                              const numericValue = value.replace(/[^0-9]/g, '');
+                              if (numericValue.length <= 1) {
+                                handleOtpChange(numericValue, index);
+                              } else if (numericValue.length > 1) {
+                                // Handle paste
+                                handleOtpPaste(numericValue);
+                              }
+                            }}
+                            onKeyPress={({ nativeEvent }) => {
+                              handleOtpKeyPress(nativeEvent.key, index);
+                            }}
+                            keyboardType="number-pad"
+                            maxLength={1}
+                            textAlign="center"
+                            autoComplete="sms-otp"
+                            selectTextOnFocus
+                          />
+                        ))}
                       </View>
                       <Text style={styles.helperText}>
                         OTP sent to {mobile}
