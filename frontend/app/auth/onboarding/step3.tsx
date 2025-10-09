@@ -444,35 +444,71 @@ const styles = StyleSheet.create({
     color: '#212529',
     marginBottom: 12,
   },
-  sportsGrid: {
-    gap: 12,
-  },
-  sportCard: {
-    padding: 16,
-    borderRadius: 12,
+  dropdownContainer: {
     borderWidth: 1,
     borderColor: '#e5e7eb',
+    borderRadius: 12,
     backgroundColor: '#f9fafb',
+    overflow: 'hidden',
   },
-  sportCardSelected: {
-    borderColor: '#212529',
-    backgroundColor: '#ffffff',
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    minHeight: 56,
   },
-  sportName: {
+  dropdownText: {
+    flex: 1,
     fontSize: 16,
     fontWeight: '600',
     color: '#212529',
-    marginBottom: 4,
+    marginLeft: 12,
   },
-  sportNameSelected: {
+  dropdownOptions: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  dropdownOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  dropdownOptionSelected: {
+    backgroundColor: '#f0f9ff',
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    fontWeight: '500',
     color: '#212529',
+    marginBottom: 2,
   },
-  sportPrice: {
+  dropdownOptionTextSelected: {
+    color: '#1d4ed8',
+    fontWeight: '600',
+  },
+  dropdownOptionPrice: {
     fontSize: 14,
     color: '#6b7280',
   },
-  sportPriceSelected: {
-    color: '#212529',
+  arenaPreview: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+  },
+  arenaPreviewTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1d4ed8',
+    marginBottom: 8,
+  },
+  arenaPreviewItem: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 4,
   },
   counterContainer: {
     flexDirection: 'row',
