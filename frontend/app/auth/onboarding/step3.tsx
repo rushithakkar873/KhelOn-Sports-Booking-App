@@ -201,30 +201,59 @@ export default function OnboardingStep3Screen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Select Sport</Text>
-              <View style={styles.sportsGrid}>
-                {SPORTS_OPTIONS.map((sport) => (
-                  <TouchableOpacity
-                    key={sport.value}
-                    style={[
-                      styles.sportCard,
-                      selectedSport === sport.value && styles.sportCardSelected,
-                    ]}
-                    onPress={() => setSelectedSport(sport.value)}
-                  >
-                    <Text style={[
-                      styles.sportName,
-                      selectedSport === sport.value && styles.sportNameSelected,
-                    ]}>
-                      {sport.label}
-                    </Text>
-                    <Text style={[
-                      styles.sportPrice,
-                      selectedSport === sport.value && styles.sportPriceSelected,
-                    ]}>
-                      Suggested: {sport.price}
-                    </Text>
-                  </TouchableOpacity>
+              <Text style={styles.label}>Select Sport *</Text>
+              <TouchableOpacity
+                style={styles.dropdownContainer}
+                onPress={() => setShowSportDropdown(!showSportDropdown)}
+              >
+                <View style={styles.dropdownHeader}>
+                  <Ionicons name="fitness-outline" size={20} color="#9ca3af" style={styles.inputIcon} />
+                  <Text style={styles.dropdownText}>{selectedSport}</Text>
+                  <Ionicons 
+                    name={showSportDropdown ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color="#9ca3af" 
+                  />
+                </View>
+              </TouchableOpacity>
+              
+              {showSportDropdown && (
+                <View style={styles.dropdownOptions}>
+                  {SPORTS_OPTIONS.map((sport) => (
+                    <TouchableOpacity
+                      key={sport.value}
+                      style={[
+                        styles.dropdownOption,
+                        selectedSport === sport.value && styles.dropdownOptionSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedSport(sport.value);
+                        setShowSportDropdown(false);
+                      }}
+                    >
+                      <Text style={[
+                        styles.dropdownOptionText,
+                        selectedSport === sport.value && styles.dropdownOptionTextSelected,
+                      ]}>
+                        {sport.label}
+                      </Text>
+                      <Text style={styles.dropdownOptionPrice}>
+                        Suggested: {sport.price}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              
+              {/* Preview of generated arena names */}
+              <View style={styles.arenaPreview}>
+                <Text style={styles.arenaPreviewTitle}>
+                  Arena Names ({numberOfCourts} {numberOfCourts === 1 ? 'court' : 'courts'}):
+                </Text>
+                {generateArenaNames().map((arena, index) => (
+                  <Text key={arena.id} style={styles.arenaPreviewItem}>
+                    • {arena.name}
+                  </Text>
                 ))}
               </View>
             </View>
