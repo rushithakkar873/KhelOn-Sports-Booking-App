@@ -271,13 +271,13 @@ export default function OnboardingStep3Screen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Price per Slot (₹) *</Text>
+              <Text style={styles.label}>Price per Slot *</Text>
               <View style={styles.priceContainer}>
-                <Text style={styles.currencySymbol}>₹</Text>
                 <View style={[
                   styles.priceInputContainer,
                   fieldErrors.pricePerSlot && showErrors && styles.inputContainerError
                 ]}>
+                  <Text style={styles.currencySymbol}>₹</Text>
                   <TextInput
                     style={styles.priceInput}
                     value={pricePerSlot}
@@ -286,15 +286,15 @@ export default function OnboardingStep3Screen() {
                     placeholder="1000"
                     placeholderTextColor="#9ca3af"
                   />
+                  <Text style={styles.priceUnit}>/ {slotDuration} min</Text>
                 </View>
-                <Text style={styles.priceUnit}>per {slotDuration} min</Text>
               </View>
               {fieldErrors.pricePerSlot && showErrors && (
                 <Text style={styles.errorText}>{fieldErrors.pricePerSlot}</Text>
               )}
               {!fieldErrors.pricePerSlot && (
                 <Text style={styles.helperText}>
-                  Suggested: ₹{Math.round((parseFloat(pricePerSlot) || 1000) / (slotDuration / 60))}/hour
+                  Equivalent to ₹{Math.round((parseFloat(pricePerSlot) || 1000) / (slotDuration / 60))} per hour
                 </Text>
               )}
             </View>
