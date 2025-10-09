@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Test Configuration
-BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 import random
 TEST_MOBILE = f"+9198765432{random.randint(10, 99)}"
 TEST_USER_DATA = {

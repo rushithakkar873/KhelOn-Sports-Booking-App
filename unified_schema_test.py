@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Configuration
-BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 
 class UnifiedSchemaTester:
     """Focused tester for KhelON unified schema changes"""

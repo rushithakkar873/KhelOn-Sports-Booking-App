@@ -350,7 +350,7 @@ index 3a742ef..6873ad9 100644
 ---+logger = logging.getLogger(__name__)
 ---+
 ---+# Configuration
----+BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+---+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 ---+
 ---+class FinalUnifiedTester:
 ---+    """Final comprehensive tester for all unified schema changes"""
@@ -1447,7 +1447,7 @@ index 3a742ef..6873ad9 100644
 --------------------+from datetime import datetime
 --------------------+
 --------------------+# Configuration - Use the correct backend URL from frontend/.env
---------------------+BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+--------------------+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 --------------------+HEADERS = {"Content-Type": "application/json"}
 --------------------+
 --------------------+# Test data as specified in review request
@@ -2088,7 +2088,7 @@ index 3a742ef..6873ad9 100644
 --------------------+from datetime import datetime
 --------------------+
 --------------------+# Configuration - Use the correct backend URL from frontend/.env
---------------------+BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+--------------------+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 --------------------+HEADERS = {"Content-Type": "application/json"}
 --------------------+
 --------------------+# Generate unique mobile number based on timestamp (valid Indian format)
@@ -3808,7 +3808,7 @@ index 3a742ef..6873ad9 100644
 -----------------------------from typing import Dict, Any, Optional
 ---------------------------- 
 ---------------------------- # Configuration
------------------------------BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+-----------------------------BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 -----------------------------HEADERS = {"Content-Type": "application/json"}
 ----------------------------+BASE_URL = "http://0.0.0.0:8001/api"
 ----------------------------+VENUE_OWNER_MOBILE = "+919876543210"
@@ -4970,7 +4970,7 @@ index 3a742ef..6873ad9 100644
 --------------------------+  - agent: "testing"
 --------------------------+    message: "ENHANCED VENUE OWNER REGISTRATION FLOW TESTING COMPLETED SUCCESSFULLY: Comprehensive testing of the updated venue partner registration with automatic venue creation completed with all functionality working perfectly as requested in review. ✅ ENHANCED REGISTRATION ENDPOINT - POST /api/auth/register for venue owners working perfectly with all new venue details fields: venue_name, venue_address, venue_city, venue_state, venue_pincode, venue_description, venue_amenities, base_price_per_hour, contact_phone, whatsapp_number, ✅ OTP VALIDATION SYSTEM - Mobile OTP verification working correctly with Indian mobile number validation (+91XXXXXXXXXX), OTP sending via mock SMS service, OTP verification with correct/incorrect codes, proper error handling for expired/invalid OTPs, ✅ VENUE DETAILS VALIDATION - All venue details properly validated during registration: venue_name, venue_address, venue_city, venue_state, venue_pincode (6 digits), base_price_per_hour (≥0), contact_phone, business_name required for venue owners, ✅ AUTOMATIC VENUE CREATION - When venue partner registers, venue automatically created in venues collection with correct owner_id, all venue details from registration (name: Elite Cricket & Football Ground, address: 456 Ground Road Andheri West Mumbai, city: Mumbai, state: Maharashtra, pincode: 400058, amenities: [Parking, Washroom, Floodlights, Seating], base_price: ₹1200/hr), venue marked as active (is_active: true), ✅ SINGLE VENUE MVP - GET /api/venue-owner/venues returns exactly 1 venue for venue partner, venue data structure includes all required fields (id, name, owner_id, owner_name, sports_supported, address, city, state, pincode, description, amenities, base_price_per_hour, contact_phone, is_active, arenas, created_at), venue starts with empty arenas array ready for UI population, ✅ ERROR CASE VALIDATION - Invalid mobile number formats properly rejected (422 validation error), invalid base price values rejected (negative values), duplicate registration prevention working (400 error for existing users), missing venue fields cause venue creation to fail (proper validation enforcement), ✅ REALISTIC TEST DATA - Tested with realistic Indian venue partner data (Rajesh Kumar, Elite Sports Complex, Mumbai cricket ground, ₹1200/hr base price, comprehensive amenities list). Created venue_owner_registration_test.py with comprehensive test coverage. All 7/7 test suites passed covering API health, OTP sending/verification, enhanced registration, automatic venue creation, single venue MVP, and error cases. Enhanced venue partner registration flow is production-ready and fully functional for single venue MVP."
 --------------------------   - agent: "testing"
---------------------------     message: "BACKEND TESTING COMPLETED SUCCESSFULLY: All 4 high-priority backend tasks are now fully tested and working. ✅ User Authentication API (JWT, registration, login, protected endpoints), ✅ Venue Management API (CRUD, filtering, role-based access), ✅ Booking System API (creation, conflict detection, history), ✅ Tournament Management API (creation, listing, filtering). Created comprehensive backend_test.py with 8 test suites covering 100+ test scenarios. All endpoints responding correctly at https://sportsbooker-5.preview.emergentagent.com/api. Database persistence verified. Ready for frontend-backend integration."
+--------------------------     message: "BACKEND TESTING COMPLETED SUCCESSFULLY: All 4 high-priority backend tasks are now fully tested and working. ✅ User Authentication API (JWT, registration, login, protected endpoints), ✅ Venue Management API (CRUD, filtering, role-based access), ✅ Booking System API (creation, conflict detection, history), ✅ Tournament Management API (creation, listing, filtering). Created comprehensive backend_test.py with 8 test suites covering 100+ test scenarios. All endpoints responding correctly at https://tourneymaster-16.preview.emergentagent.com/api. Database persistence verified. Ready for frontend-backend integration."
 --------------------------   - agent: "testing"
 --------------------------diff --git a/venue_owner_registration_test.py b/venue_owner_registration_test.py
 --------------------------new file mode 100644
@@ -5728,7 +5728,7 @@ index 3a742ef..6873ad9 100644
 ---------------------+from typing import Dict, Any, Optional
 ---------------------+
 ---------------------+# Configuration
----------------------+BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+---------------------+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 ---------------------+TEST_MOBILE = "+919876541234"  # New number for testing
 ---------------------+TEST_USER_DATA = {
 ---------------------+    "first_name": "Amit",
@@ -6253,7 +6253,7 @@ index 3a742ef..6873ad9 100644
 ----------------+                    return line.split('=')[1].strip()
 ----------------+    except:
 ----------------+        pass
-----------------+    return "https://sportsbooker-5.preview.emergentagent.com"
+----------------+    return "https://tourneymaster-16.preview.emergentagent.com"
 ----------------+
 ----------------+BASE_URL = f"{get_backend_url()}/api"
 ----------------+
@@ -6737,7 +6737,7 @@ index 3a742ef..6873ad9 100644
 ---------------+from datetime import datetime
 ---------------+
 ---------------+# Backend URL from frontend/.env
----------------+BACKEND_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+---------------+BACKEND_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 ---------------+
 ---------------+class SecureOnboardingTester:
 ---------------+    def __init__(self):
@@ -7844,7 +7844,7 @@ index 3a742ef..6873ad9 100644
 ---+logger = logging.getLogger(__name__)
 ---+
 ---+# Configuration
----+BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+---+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 ---+
 ---+class UnifiedSchemaTester:
 ---+    """Focused tester for KhelON unified schema changes"""

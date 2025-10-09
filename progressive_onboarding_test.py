@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Configuration
-BASE_URL = "https://sportsbooker-5.preview.emergentagent.com/api"
+BASE_URL = "https://tourneymaster-16.preview.emergentagent.com/api"
 TEST_MOBILE = "+919876541234"  # New number for testing
 TEST_USER_DATA = {
     "first_name": "Amit",
