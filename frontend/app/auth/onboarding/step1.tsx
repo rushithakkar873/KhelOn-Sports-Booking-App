@@ -310,7 +310,8 @@ const styles = StyleSheet.create({
   inputDisabled: {
     flex: 1,
     fontSize: 16,
-    color: '#6b7280',
+    color: '#1d4ed8',
+    fontWeight: '600',
   },
   helperText: {
     fontSize: 12,
