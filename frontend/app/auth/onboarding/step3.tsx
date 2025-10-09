@@ -467,23 +467,27 @@ const styles = StyleSheet.create({
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-  },
-  currencySymbol: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#212529',
   },
   priceInputContainer: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#e5e7eb',
     borderRadius: 12,
     backgroundColor: '#f9fafb',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
+    minHeight: 56,
+  },
+  currencySymbol: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginRight: 8,
   },
   priceInput: {
+    flex: 1,
     fontSize: 18,
     fontWeight: '600',
     color: '#212529',
@@ -491,6 +495,7 @@ const styles = StyleSheet.create({
   priceUnit: {
     fontSize: 14,
     color: '#6b7280',
+    marginLeft: 8,
   },
   helperText: {
     fontSize: 12,
