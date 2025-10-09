@@ -223,24 +223,29 @@ export default function OnboardingStep3Screen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Number of Courts/Turfs</Text>
+              <Text style={styles.label}>Number of {selectedSport === 'Cricket' ? 'Turfs' : selectedSport === 'Football' ? 'Fields' : 'Courts'} *</Text>
               <View style={styles.counterContainer}>
                 <TouchableOpacity 
-                  style={styles.counterButton}
+                  style={[styles.counterButton, numberOfCourts <= 1 && styles.counterButtonDisabled]}
                   onPress={decrementCourts}
                   disabled={numberOfCourts <= 1}
                 >
-                  <Ionicons name="remove" size={20} color="#212529" />
+                  <Ionicons name="remove" size={20} color={numberOfCourts <= 1 ? "#9ca3af" : "#212529"} />
                 </TouchableOpacity>
-                <Text style={styles.counterValue}>{numberOfCourts}</Text>
+                <View style={styles.counterDisplay}>
+                  <Text style={styles.counterValue}>{numberOfCourts}</Text>
+                </View>
                 <TouchableOpacity 
-                  style={styles.counterButton}
+                  style={[styles.counterButton, numberOfCourts >= 20 && styles.counterButtonDisabled]}
                   onPress={incrementCourts}
                   disabled={numberOfCourts >= 20}
                 >
-                  <Ionicons name="add" size={20} color="#212529" />
+                  <Ionicons name="add" size={20} color={numberOfCourts >= 20 ? "#9ca3af" : "#212529"} />
                 </TouchableOpacity>
               </View>
+              <Text style={styles.helperText}>
+                Maximum 20 {selectedSport === 'Cricket' ? 'turfs' : selectedSport === 'Football' ? 'fields' : 'courts'} allowed
+              </Text>
             </View>
 
             <View style={styles.inputGroup}>
@@ -261,7 +266,7 @@ export default function OnboardingStep3Screen() {
                 </Picker>
               </View>
               <Text style={styles.helperText}>
-                How long each booking slot should be
+                Duration for each booking slot
               </Text>
             </View>
 
