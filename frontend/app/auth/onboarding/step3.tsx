@@ -533,14 +533,12 @@ const styles = StyleSheet.create({
     minWidth: 40,
     textAlign: 'center',
   },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    backgroundColor: '#f9fafb',
+  modernPicker: {
+    height: 56,
+    color: '#212529',
   },
-  picker: {
-    height: 50,
+  inputIcon: {
+    marginRight: 8,
   },
   priceContainer: {
     flexDirection: 'row',
