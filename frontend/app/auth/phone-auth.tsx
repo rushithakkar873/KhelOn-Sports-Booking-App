@@ -309,8 +309,12 @@ export default function PhoneAuthScreen() {
                   </>
                 ) : (
                   <>
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.otpLabel}>Enter Verification Code</Text>
+                    <View style={styles.otpSection}>
+                      <Text style={styles.otpTitle}>Enter Verification Code</Text>
+                      <Text style={styles.otpSubtitle}>
+                        We sent a 6-digit code to {mobile}
+                      </Text>
+                      
                       <View style={styles.otpContainer}>
                         {otpDigits.map((digit, index) => (
                           <TextInput
@@ -343,10 +347,12 @@ export default function PhoneAuthScreen() {
                           />
                         ))}
                       </View>
-                      <Text style={styles.helperText}>
-                        OTP sent to {mobile}
-                        {devOtp ? `\nDev OTP: ${devOtp.split(": ")[1]}` : ""}
-                      </Text>
+                      
+                      {devOtp && (
+                        <View style={styles.devInfo}>
+                          <Text style={styles.devText}>Dev OTP: {devOtp.split(": ")[1]}</Text>
+                        </View>
+                      )}
                     </View>
 
                     <TouchableOpacity
