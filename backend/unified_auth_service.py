@@ -500,6 +500,39 @@ class UnifiedAuthService:
         except Exception as e:
             logger.error(f"Onboarding Step 3 error: {str(e)}")
             return {"success": False, "message": f"Step 3 failed: {str(e)}"}
+
+    def _generate_arena_names(self, sport_type: str, count: int) -> List[Dict[str, str]]:
+        """Generate arena names based on sport type and count"""
+        # Determine suffix based on sport type
+        if sport_type.lower() == 'cricket':
+            suffix = 'Turf'
+        elif sport_type.lower() == 'football':
+            suffix = 'Field'  
+        else:
+            suffix = 'Court'
+        
+        arena_names = []
+        for i in range(count):
+            arena_names.append({
+                "name": f"{sport_type} {suffix} {i + 1}",
+                "id": f"{sport_type.lower()}_{i + 1}"
+            })
+        
+        return arena_names
+
+    def _get_default_capacity(self, sport_type: str) -> int:
+        """Get default capacity based on sport type"""
+        sport_capacities = {
+            'cricket': 22,      # 11 per side
+            'football': 22,     # 11 per side  
+            'basketball': 10,   # 5 per side
+            'badminton': 4,     # 2 per side (doubles)
+            'tennis': 4,        # 2 per side (doubles)
+            'volleyball': 12,   # 6 per side
+            'hockey': 22        # 11 per side
+        }
+        
+        return sport_capacities.get(sport_type.lower(), 20)  # Default to 20
     
     async def onboarding_step4(self, user_id: str, step4_data: OnboardingStep4Request) -> Dict[str, Any]:
         """Step 4: Update venue amenities and rules (Unified Schema)"""
