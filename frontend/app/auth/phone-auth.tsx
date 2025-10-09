@@ -18,6 +18,7 @@ import AuthService from "../../services/authService";
 export default function PhoneAuthScreen() {
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -25,6 +26,14 @@ export default function PhoneAuthScreen() {
 
   const router = useRouter();
   const authService = AuthService.getInstance();
+  
+  // Refs for OTP input fields
+  const otpRefs = useRef<TextInput[]>([]);
+
+  // Initialize refs
+  useEffect(() => {
+    otpRefs.current = otpRefs.current.slice(0, 6);
+  }, []);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
