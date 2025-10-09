@@ -214,6 +214,7 @@ export default function PhoneAuthScreen() {
     setCountdown(0);
     setOtpSent(false);
     setOtp("");
+    setOtpDigits(["", "", "", "", "", ""]);
     await handleSendOTP();
   };
 
